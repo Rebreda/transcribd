@@ -41,6 +41,8 @@ dependency('gtk4', version: '>= 4.4.0')
 dependency('gstreamer-player-1.0', version: '>= 1.12')
 dependency('libadwaita-1', version: '>= 1.0.0')
 dependency('gobject-introspection-1.0', version: '>= 1.31.6')
+dependency('gstreamer-1.0')
+dependency('gstreamer-pbutils-1.0')
 
 gnome = import('gnome')
 i18n = import('i18n')
