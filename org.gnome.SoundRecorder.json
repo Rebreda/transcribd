@@ -31,8 +31,8 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "https://gitlab.gnome.org/GNOME/libhandy.git",
-                    "tag" : "1.1.90"
+                    "url" : "https://gitlab.gnome.org/exalm/libhandy.git",
+                    "branch" : "gtk4"
                 }
             ]
         },

@@ -49,6 +49,7 @@ var WaveForm = GObject.registerClass({
     },
     Signals: {
         'position-changed': {  param_types: [GObject.TYPE_FLOAT]  },
+        'gesture-pressed': {},
     },
 }, class WaveForm extends Gtk.DrawingArea {
     _init(params, type) {
@@ -58,47 +59,53 @@ var WaveForm = GObject.registerClass({
         this.waveType = type;
         super._init(params);
 
-        if (this.waveType === WaveType.PLAYER) {
-            this.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
-                Gdk.EventMask.BUTTON_RELEASE_MASK |
-                Gdk.EventMask.BUTTON1_MOTION_MASK);
-        }
-
         this.rightColor = (IsDark ? [80, 80, 80] : [192, 191, 188]).map(x => x / 255);
         this.leftColor = (IsDark ? [192, 191, 188] : [46, 52, 54]).map(x => x / 255);
         this.dividerColor = (this.waveType === WaveType.PLAYER ? [28, 113, 216] : [255, 0, 0]).map(x => x / 255);
 
+        // TODO: Figure out how to mesh these gestures with the row-activated cb and
+        // new event handling
+        if (this.waveType === WaveType.PLAYER) {
+            this.clickGesture = Gtk.GestureClick.new();
+            this.clickGesture.connect('pressed', this.gesturePressed.bind(this));
+            this.clickGesture.connect('released', this.gestureReleased.bind(this));
+            this.add_controller(this.clickGesture);
+
+            this.motionGesture = Gtk.EventControllerMotion.new();
+            this.motionGesture.connect('motion', this.onMotion.bind(this));
+        }
+
+        this.set_draw_func(this.drawFunc);
+
         this.show();
     }
 
-    vfunc_button_press_event(event) {
-        this._startX = event.x;
-        return true;
+    gesturePressed(n_press, x, y) {
+        this._startX = x;
+        this.emit('gesture-pressed');
     }
 
-    vfunc_motion_notify_event(event) {
-        this._position = this._clamped(event.x - this._startX + this._lastX);
+    onMotion(x, y) {
+        this._position = this._clamped(x - this._startX + this._lastX);
         this.queue_draw();
-        return true;
     }
 
-    vfunc_button_release_event(_) {
+    gestureReleased(n_press, x, y) {
         this._lastX = this._position;
         this.emit('position-changed', this.position);
-        return true;
     }
 
-    vfunc_draw(ctx) {
-        const maxHeight = this.get_allocated_height();
+    drawFunc(da, ctx, width, height) {
+        const maxHeight = da.get_allocated_height();
         const vertiCenter = maxHeight / 2;
-        const horizCenter = this.get_allocated_width() / 2;
+        const horizCenter = da.get_allocated_width() / 2;
 
-        let pointer = horizCenter + this._position;
+        let pointer = horizCenter + da._position;
 
         ctx.setLineCap(Cairo.LineCap.ROUND);
         ctx.setLineWidth(2);
 
-        ctx.setSourceRGB(...this.dividerColor);
+        ctx.setSourceRGB(...da.dividerColor);
 
         ctx.moveTo(horizCenter, vertiCenter - maxHeight);
         ctx.lineTo(horizCenter, vertiCenter + maxHeight);
@@ -106,21 +113,21 @@ var WaveForm = GObject.registerClass({
 
         ctx.setLineWidth(1);
 
-        this._peaks.forEach(peak => {
-            if (this.waveType === WaveType.PLAYER) {
+        da._peaks.forEach(peak => {
+            if (da.waveType === WaveType.PLAYER) {
                 if (pointer > horizCenter)
-                    ctx.setSourceRGB(...this.rightColor);
+                    ctx.setSourceRGB(...da.rightColor);
                 else
-                    ctx.setSourceRGB(...this.leftColor);
+                    ctx.setSourceRGB(...da.leftColor);
             } else {
-                ctx.setSourceRGB(...this.leftColor);
+                ctx.setSourceRGB(...da.leftColor);
             }
 
             ctx.moveTo(pointer, vertiCenter + peak * maxHeight);
             ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
             ctx.stroke();
 
-            if (this.waveType === WaveType.PLAYER)
+            if (da.waveType === WaveType.PLAYER)
                 pointer += GUTTER;
             else
                 pointer -= GUTTER;

@@ -29,16 +29,16 @@
 pkg.initGettext();
 pkg.initFormat();
 pkg.require({
-    'Gdk': '3.0',
+    'Gdk': '4.0',
     'GdkPixbuf': '2.0',
     'GLib': '2.0',
     'GObject': '2.0',
-    'Gtk': '3.0',
+    'Gtk': '4.0',
     'Gst': '1.0',
     'GstAudio': '1.0',
     'GstPlayer': '1.0',
     'GstPbutils': '1.0',
-    'Handy': '1',
+    'Handy': '4',
 });
 
 const { Application } = imports.application;

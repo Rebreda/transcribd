@@ -93,7 +93,7 @@ var Window = GObject.registerClass({
             }
             this._notificationUndoBtn.disconnect(this.cancelSignalId);
         });
-        this._column.add(this._recordingListBox);
+        this._column.set_child(this._recordingListBox);
 
         this.recorderWidget.connect('started', this.onRecorderStarted.bind(this));
         this.recorderWidget.connect('canceled', this.onRecorderCanceled.bind(this));
@@ -103,7 +103,7 @@ var Window = GObject.registerClass({
         this.show();
     }
 
-    vfunc_delete_event() {
+    vfunc_close_request() {
         this._recordingList.cancellable.cancel();
         if (this.itemsSignalId)
             this._recordingList.disconnect(this.itemsSignalId);
@@ -115,6 +115,7 @@ var Window = GObject.registerClass({
         }
 
         this.recorder.stop();
+        this.application.quit();
     }
 
     onRecorderStarted() {

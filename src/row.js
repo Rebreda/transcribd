@@ -82,16 +82,16 @@ var Row = GObject.registerClass({
         });
         this.actionGroup.add_action(exportAction);
 
-        let saveRenameAction = new Gio.SimpleAction({ name: 'save', enabled: false });
-        saveRenameAction.connect('activate', this.onRenameRecording.bind(this));
-        this.actionGroup.add_action(saveRenameAction);
+        this.saveRenameAction = new Gio.SimpleAction({ name: 'save', enabled: false });
+        this.saveRenameAction.connect('activate', this.onRenameRecording.bind(this));
+        this.actionGroup.add_action(this.saveRenameAction);
 
         this.renameAction = new Gio.SimpleAction({ name: 'rename', enabled: true });
         this.renameAction.connect('activate', action => {
             this.editMode = true;
             action.enabled = false;
         });
-        this.renameAction.bind_property('enabled', saveRenameAction, 'enabled', GObject.BindingFlags.INVERT_BOOLEAN);
+        this.renameAction.bind_property('enabled', this.saveRenameAction, 'enabled', GObject.BindingFlags.INVERT_BOOLEAN);
         this.actionGroup.add_action(this.renameAction);
 
         let pauseAction = new Gio.SimpleAction({ name: 'pause', enabled: false });
@@ -128,16 +128,24 @@ var Row = GObject.registerClass({
 
         this.insert_action_group('recording', this.actionGroup);
 
-        this.waveform.connect('button-press-event', _ => {
+        this.waveform.connect('gesture-pressed', _ => {
             pauseAction.activate(null);
         });
 
-        this._entry.connect('key-press-event', (_, event) => {
-            const key = event.get_keyval()[1];
+        this.keyController = Gtk.EventControllerKey.new();
+        this.keyController.connect('key-pressed', (controller, key, _code, _state) => {
             this._entry.get_style_context().remove_class('error');
 
-            if (key === Gdk.KEY_Escape)
+            if (key === Gdk.KEY_Escape) {
                 this.editMode = false;
+            } else {
+                controller.forward(this._entry);
+            }
+        });
+        this._entry.add_controller(this.keyController);
+
+        this._entry.connect('activate', _ => {
+            this.saveRenameAction.activate(null);
         });
 
         this._recording.connect('peaks-updated', _recording => {
@@ -181,7 +189,7 @@ var Row = GObject.registerClass({
             if (!this.expanded)
                 this.activate();
             this._entry.grab_focus();
-            this._saveBtn.grab_default();
+            /* TODO: this._saveBtn.grab_default(); */
             this._rightStack.visible_child_name = 'save';
         } else {
             this._rightStack.visible_child_name = 'options';

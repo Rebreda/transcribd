@@ -37,7 +37,7 @@ var RecordingsListBox = new GObject.registerClass({
         this.bind_model(model, recording => {
             let row = new Row(recording);
 
-            row.waveform.connect('button-press-event', _ => {
+            row.waveform.connect('gesture-pressed', _ => {
                 if (!this.activePlayingRow || this.activePlayingRow !== row) {
 
                     if (this.activePlayingRow)
@@ -99,10 +99,12 @@ var RecordingsListBox = new GObject.registerClass({
             return row;
         });
 
+        this.connect('row-activated', this.rowActivated.bind(this));
+
         this.show();
     }
 
-    vfunc_row_activated(row) {
+    rowActivated(list, row) {
         if (row.editMode && row.expanded || this.activeRow && this.activeRow.editMode && this.activeRow.expanded)
             return;
 

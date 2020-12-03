@@ -22,7 +22,7 @@ var RecorderWidget = GObject.registerClass({
         'started': {},
         'stopped': { param_types: [GObject.TYPE_OBJECT] },
     },
-}, class RecorderWidget extends Gtk.Bin {
+}, class RecorderWidget extends Gtk.Box {
     _init(recorder) {
         super._init({});
         this.recorder = recorder;
@@ -31,7 +31,7 @@ var RecorderWidget = GObject.registerClass({
             vexpand: true,
             valign: Gtk.Align.FILL,
         }, WaveType.RECORDER);
-        this._recorderBox.add(this.waveform);
+        this._recorderBox.prepend(this.waveform);
 
         this.recorder.bind_property('current-peak', this.waveform, 'peak', GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT);
         this.recorder.connect('notify::duration', _recorder => {
@@ -118,12 +118,6 @@ var RecorderWidget = GObject.registerClass({
             }
 
             dialog.close();
-        });
-
-        dialog.connect('key-press-event', (_, event) => {
-            const key = event.get_keyval()[1];
-            if (key === Gdk.KEY_Escape)
-                dialog.response(Gtk.ResponseType.NO);
         });
 
         dialog.show();

@@ -66,21 +66,22 @@ var Application = GObject.registerClass(class Application extends Gtk.Applicatio
         });
         this.add_action(quitAction);
 
-        this.add_accelerator('<Primary>q', 'app.quit', null);
-        this.add_accelerator('F10', 'win.open-primary-menu', null);
-        this.add_accelerator('<Primary>question', 'win.show-help-overlay', null);
-        this.add_accelerator('<Primary>r', 'recorder.start', null);
-        this.add_accelerator('space', 'recorder.pause', null);
-        this.add_accelerator('space', 'recorder.resume', null);
-        this.add_accelerator('Delete', 'recorder.cancel', null);
-        this.add_accelerator('s', 'recorder.stop', null);
-        this.add_accelerator('space', 'recording.play', null);
-        this.add_accelerator('space', 'recording.pause', null);
-        this.add_accelerator('b', 'recording.seek-backward', null);
-        this.add_accelerator('n', 'recording.seek-forward', null);
-        this.add_accelerator('F2', 'recording.rename', null);
-        this.add_accelerator('Delete', 'recording.delete', null);
-        this.add_accelerator('<Primary>s', 'recording.export', null);
+        this.set_accels_for_action('app.quit', ['<Primary>q']);
+        this.set_accels_for_action('win.open-primary-menu', ['F10']);
+        this.set_accels_for_action('win.show-help-overlay', ['<Primary>question']);
+        this.set_accels_for_action('recorder.start', ['<Primary>r']);
+        this.set_accels_for_action('recorder.pause', ['space']);
+        this.set_accels_for_action('recorder.resume', ['space']);
+        this.set_accels_for_action('recorder.cancel', ['Delete']);
+        this.set_accels_for_action('recorder.stop', ['s']);
+        /* TODO: Fix recording.* keybindings */
+        this.set_accels_for_action('recording.play', ['space']);
+        this.set_accels_for_action('recording.pause', ['space']);
+        this.set_accels_for_action('recording.seek-backward', ['b']);
+        this.set_accels_for_action('recording.seek-forward', ['n']);
+        this.set_accels_for_action('recording.rename', ['F2']);
+        this.set_accels_for_action('recording.delete', ['Delete']);
+        this.set_accels_for_action('recording.export', ['<Primary>s']);
     }
 
     vfunc_startup() {
@@ -90,11 +91,11 @@ var Application = GObject.registerClass(class Application extends Gtk.Applicatio
 
         let provider = new Gtk.CssProvider();
         provider.load_from_resource('/org/gnome/SoundRecorder/application.css');
-        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),
+        Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(),
             provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-        Gtk.IconTheme.get_default().add_resource_path('/org/gnome/SoundRecorder/icons/');
+        this.set_resource_base_path('/org/gnome/SoundRecorder/');
         Handy.init();
         Gst.init(null);
 
@@ -138,11 +139,7 @@ var Application = GObject.registerClass(class Application extends Gtk.Applicatio
             wrap_license: true,
             modal: true,
             transient_for: this.window,
-            use_header_bar: true,
         });
         aboutDialog.show();
-        aboutDialog.connect('response', () => {
-            aboutDialog.close();
-        });
     }
 });
