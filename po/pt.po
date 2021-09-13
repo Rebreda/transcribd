@@ -4,22 +4,23 @@
 # Tiago Santos <tiagofsantos81@sapo.pt>, 2014 - 2016.
 # Sérgio Cardeira <cardeira dot sergio at gmail dot com>, 2016.
 # Juliano de Souza Camargo <julianosc@protonmail.com>, 2020.
+# Hugo Carvalho <hugokarvalho@hotmail.com>, 2021.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
 "issues\n"
-"POT-Creation-Date: 2020-11-24 14:33+0000\n"
-"PO-Revision-Date: 2020-12-05 10:34+0000\n"
-"Last-Translator: Juliano de Souza Camargo <julianosc@protonmail.com>\n"
-"Language-Team: Portuguese <>\n"
+"POT-Creation-Date: 2021-05-13 17:45+0000\n"
+"PO-Revision-Date: 2021-09-13 17:38+0100\n"
+"Last-Translator: Hugo Carvalho <hugokarvalho@hotmail.com>\n"
+"Language-Team: Portuguese (https://l10n.gnome.org/teams/pt/)\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Gtranslator 3.38.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0\n"
 
 #: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
 #: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
@@ -57,7 +58,7 @@ msgstr "Formatos de áudio suportados:"
 msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
 msgstr "Ogg Vorbis, Opus, FLAC, MP3 e MOV"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:69
+#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:95
 msgid "The GNOME Project"
 msgstr "Projeto GNOME"
 
@@ -109,8 +110,8 @@ msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
 msgstr ""
-"Definir canais disponiveis. Se não estiver nenhum canal definido, o canal "
-"stereo será usado como predefinição."
+"Definir canais disponíveis. Se não estiver nenhum canal definido, o canal "
+"estéreo será usado como predefinição."
 
 #: data/ui/help-overlay.ui:15
 msgctxt "shortcut window"
@@ -118,13 +119,11 @@ msgid "General"
 msgstr "Geral"
 
 #: data/ui/help-overlay.ui:20
-#| msgid "Record"
 msgctxt "shortcut window"
 msgid "Record"
 msgstr "Gravar"
 
 #: data/ui/help-overlay.ui:27
-#| msgid "Recordings"
 msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "Parar a gravação"
@@ -135,7 +134,6 @@ msgid "Play / Pause / Resume"
 msgstr "Reproduzir / Pausa / Retomar"
 
 #: data/ui/help-overlay.ui:42
-#| msgid "Delete"
 msgctxt "shortcut window"
 msgid "Delete"
 msgstr "Eliminar"
@@ -148,16 +146,14 @@ msgstr "Abrir o menu"
 #: data/ui/help-overlay.ui:56
 msgctxt "shortcut window"
 msgid "Keyboard shortcuts"
-msgstr "Atalhos de teclado"
+msgstr "Teclas de atalho"
 
 #: data/ui/help-overlay.ui:63
-#| msgid "Quit"
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Sair"
 
 #: data/ui/help-overlay.ui:71
-#| msgid "Recordings"
 msgctxt "shortcut window"
 msgid "Recording"
 msgstr "Gravações"
@@ -183,22 +179,18 @@ msgid "Export"
 msgstr "Exportar"
 
 #: data/ui/recorder.ui:72
-#| msgid "Recordings"
 msgid "Resume Recording"
 msgstr "Retomar a gravação"
 
 #: data/ui/recorder.ui:96
-#| msgid "Recordings"
 msgid "Pause Recording"
 msgstr "Pausar a gravação"
 
 #: data/ui/recorder.ui:128
-#| msgid "Recordings"
 msgid "Stop Recording"
 msgstr "Parar a gravação"
 
 #: data/ui/recorder.ui:157
-#| msgid "Recordings"
 msgid "Delete Recording"
 msgstr "Eliminar a gravação"
 
@@ -208,7 +200,7 @@ msgstr "Exportar"
 
 #: data/ui/row.ui:189 data/ui/row.ui:440
 msgid "Rename"
-msgstr "Mudar o nome"
+msgstr "Renomear"
 
 #: data/ui/row.ui:241
 msgid "Save"
@@ -228,7 +220,7 @@ msgstr "Reproduzir"
 
 #: data/ui/row.ui:367
 msgid "Pause"
-msgstr "Pausar"
+msgstr "Pausa"
 
 #: data/ui/row.ui:399
 msgid "Seek 10s Forward"
@@ -238,62 +230,59 @@ msgstr "Avançar 10s"
 msgid "Record"
 msgstr "Gravar"
 
-#: data/ui/window.ui:149
+#: data/ui/window.ui:123
 msgid "Add Recordings"
 msgstr "Adicionar gravações"
 
-#: data/ui/window.ui:166
+#: data/ui/window.ui:124
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "Utilize o botão <b>Gravar</b> para fazer gravações de sons"
 
-#: data/ui/window.ui:237
+#: data/ui/window.ui:181
 msgid "Undo"
-msgstr "Desfazer"
+msgstr "Anular"
 
-#: data/ui/window.ui:254
+#: data/ui/window.ui:198
 msgid "Close"
 msgstr "Fechar"
 
-#: data/ui/window.ui:290
-#| msgid "Preferred format"
+#: data/ui/window.ui:234
 msgid "Preferred Format"
 msgstr "Formato preferido"
 
-#: data/ui/window.ui:292
-#| msgid "Ogg Vorbis"
+#: data/ui/window.ui:236
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:297
+#: data/ui/window.ui:241
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:302
+#: data/ui/window.ui:246
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:307
+#: data/ui/window.ui:251
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:313
+#: data/ui/window.ui:257
 msgid "Audio Channel"
 msgstr "Canais de áudio"
 
-#: data/ui/window.ui:315
+#: data/ui/window.ui:259
 msgid "Stereo"
 msgstr "Estéreo"
 
-#: data/ui/window.ui:320
+#: data/ui/window.ui:264
 msgid "Mono"
 msgstr "Mono"
 
-#: data/ui/window.ui:327
+#: data/ui/window.ui:271
 msgid "_Keyboard Shortcuts"
-msgstr "A_talhos de teclado"
+msgstr "_Teclas de atalho"
 
-#: data/ui/window.ui:332
-#| msgid "Sound Recorder"
+#: data/ui/window.ui:276
 msgid "About Sound Recorder"
 msgstr "Acerca do Gravador de som"
 
@@ -303,7 +292,8 @@ msgid "translator-credits"
 msgstr ""
 "Tiago Santos <tiagofsantos81@sapo.pt>\n"
 "Pedro Albuquerque <palbuquerque73@gmail.com>\n"
-"Juliano de Souza Camargo <julianosc@pm.me>"
+"Juliano de Souza Camargo <julianosc@pm.me>\n"
+"Hugo Carvalho <hugokarvalho@hotmail.com>"
 
 #: src/application.js:132
 msgid "A Sound Recording Application for GNOME"
@@ -313,12 +303,10 @@ msgstr "Um gravador de som para GNOME"
 #. by the application (for example, "Recording 1").
 #: src/recorder.js:113
 #, javascript-format
-#| msgid "Recording "
 msgid "Recording %d"
 msgstr "Gravação %d"
 
 #: src/recorderWidget.js:94
-#| msgid "Unable to play recording"
 msgid "Delete recording?"
 msgstr "Eliminar a gravação?"
 
@@ -344,7 +332,6 @@ msgid "%s (Old)"
 msgstr "%s (Antiga)"
 
 #: src/row.js:71
-#| msgid "Recordings"
 msgid "Export Recording"
 msgstr "Exportar gravações"
 
@@ -353,7 +340,6 @@ msgid "_Export"
 msgstr "_Exportar"
 
 #: src/row.js:71
-#| msgid "Cancel"
 msgid "_Cancel"
 msgstr "_Cancelar"
 
