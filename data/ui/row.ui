@@ -111,7 +111,7 @@
                             <property name="tooltip_text" translatable="yes">Delete</property>
                             <property name="icon_name">user-trash-symbolic</property>
                             <style>
-                              <class name="rounded-button"/>
+                              <class name="circular"/>
                             </style>
                           </object>
                         </child>
@@ -131,7 +131,7 @@
                             <property name="tooltip_text" translatable="yes">Seek 10s Backward</property>
                             <property name="icon_name">skip-back-symbolic</property>
                             <style>
-                              <class name="rounded-button"/>
+                              <class name="circular"/>
                             </style>
                           </object>
                         </child>
@@ -154,7 +154,7 @@
                                       </object>
                                     </child>
                                     <style>
-                                      <class name="rounded-button"/>
+                                      <class name="circular"/>
                                       <class name="large"/>
                                     </style>
                                   </object>
@@ -178,7 +178,7 @@
                                       </object>
                                     </child>
                                     <style>
-                                      <class name="rounded-button"/>
+                                      <class name="circular"/>
                                       <class name="large"/>
                                     </style>
                                   </object>
@@ -196,7 +196,7 @@
                             <property name="tooltip_text" translatable="yes">Seek 10s Forward</property>
                             <property name="icon_name">skip-forward-symbolic</property>
                             <style>
-                              <class name="rounded-button"/>
+                              <class name="circular"/>
                             </style>
                           </object>
                         </child>
@@ -224,7 +224,7 @@
                                         <property name="action_name">recording.export</property>
                                         <property name="icon_name">document-save-symbolic</property>
                                         <style>
-                                          <class name="rounded-button"/>
+                                          <class name="circular"/>
                                         </style>
                                       </object>
                                     </child>
@@ -237,7 +237,7 @@
                                         <property name="action_name">recording.rename</property>
                                         <property name="icon_name">document-edit-symbolic</property>
                                         <style>
-                                          <class name="rounded-button"/>
+                                          <class name="circular"/>
                                         </style>
                                       </object>
                                     </child>
@@ -251,7 +251,7 @@
                                     <property name="valign">center</property>
                                     <property name="icon_name">view-more-symbolic</property>
                                     <style>
-                                      <class name="rounded-button"/>
+                                      <class name="circular"/>
                                     </style>
                                   </object>
                                 </child>
@@ -271,7 +271,7 @@
                                 <property name="action_name">recording.save</property>
                                 <property name="icon_name">emblem-ok-symbolic</property>
                                 <style>
-                                  <class name="rounded-button"/>
+                                  <class name="circular"/>
                                   <class name="suggested-action"/>
                                 </style>
                               </object>

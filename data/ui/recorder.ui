@@ -52,7 +52,7 @@
                             <property name="action_name">recorder.resume</property>
                             <property name="icon_name">media-playback-start-symbolic</property>
                             <style>
-                              <class name="rounded-button"/>
+                              <class name="circular"/>
                             </style>
                           </object>
                         </property>
@@ -70,7 +70,7 @@
                             <property name="action_name">recorder.pause</property>
                             <property name="icon_name">media-playback-pause-symbolic</property>
                             <style>
-                              <class name="rounded-button"/>
+                              <class name="circular"/>
                             </style>
                           </object>
                         </property>
@@ -93,7 +93,7 @@
                     </child>
                     <style>
                       <class name="destructive-action"/>
-                      <class name="rounded-button"/>
+                      <class name="circular"/>
                       <class name="large"/>
                     </style>
                   </object>
@@ -107,7 +107,7 @@
                     <property name="action_name">recorder.cancel</property>
                     <property name="icon_name">user-trash-symbolic</property>
                     <style>
-                      <class name="rounded-button"/>
+                      <class name="circular"/>
                     </style>
                   </object>
                 </child>
