@@ -37,9 +37,9 @@ gjs_console = gjs_dep.get_pkgconfig_variable('gjs_console')
 # Lets check whether the dependencies exist
 dependency('gio-2.0', version: '>= 2.43.4')
 dependency('glib-2.0', version: '>= 2.39.3')
-dependency('gtk4', version: '>= 3.99.3')
+dependency('gtk4', version: '>= 4.4.0')
 dependency('gstreamer-player-1.0', version: '>= 1.12')
-dependency('libhandy-4', version: '>= 1.0.0')
+dependency('libadwaita-1', version: '>= 1.0.0')
 dependency('gobject-introspection-1.0', version: '>= 1.31.6')
 
 gnome = import('gnome')

@@ -38,7 +38,7 @@ pkg.require({
     'GstAudio': '1.0',
     'GstPlayer': '1.0',
     'GstPbutils': '1.0',
-    'Handy': '4',
+    'Adw': '1',
 });
 
 const { Application } = imports.application;

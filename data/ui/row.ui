@@ -210,7 +210,7 @@
                           <object class="GtkStackPage">
                             <property name="name">options</property>
                             <property name="child">
-                              <object class="HdySqueezer">
+                              <object class="AdwSqueezer">
                                 <property name="homogeneous">True</property>
                                 <child>
                                   <object class="GtkBox">

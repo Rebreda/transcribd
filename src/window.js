@@ -18,7 +18,7 @@
 *
 */
 
-const { Gio, GLib, GObject, Gst, GstPlayer, Gtk, Handy } = imports.gi;
+const { Gio, GLib, GObject, Gst, GstPlayer, Gtk, Adw } = imports.gi;
 
 const { Recorder } = imports.recorder;
 const { RecordingList } = imports.recordingList;
@@ -38,7 +38,7 @@ var Window = GObject.registerClass({
         'notificationRevealer', 'notificationMessage',
         'notificationUndoBtn', 'notificationCloseBtn',
     ],
-}, class Window extends Handy.ApplicationWindow {
+}, class Window extends Adw.ApplicationWindow {
 
     _init(params) {
         super._init(Object.assign({

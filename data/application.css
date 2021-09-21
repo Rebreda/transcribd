@@ -52,27 +52,6 @@ list row:last-child {
   border-bottom-right-radius: 8px;
 }
 
-list row.expanded {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border-bottom-width: 1px;
-  transition: 250ms all linear;
-}
-
-list row.expanded-before {
-  border-bottom-width: 1px;
-  border-bottom-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  transition: 250ms all linear;
-}
-
-list row.expanded-after {
-  border-top-right-radius: 8px;
-  border-top-left-radius: 8px;
-  transition: 250ms all linear;
-}
-
 list row:first-child.expanded {
   margin-top:0;
 }

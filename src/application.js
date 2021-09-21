@@ -18,7 +18,7 @@
 *
 */
 
-const { Gdk, Gio, GLib, GObject, Gst, Gtk, Handy } = imports.gi;
+const { Gdk, Gio, GLib, GObject, Gst, Gtk, Adw } = imports.gi;
 
 var RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]));
 var CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
@@ -100,7 +100,7 @@ var Application = GObject.registerClass(class Application extends Gtk.Applicatio
         Gtk.IconTheme.get_for_display(display).add_resource_path('/org/gnome/SoundRecorder/icons/');
 
         this.set_resource_base_path('/org/gnome/SoundRecorder/');
-        Handy.init();
+        Adw.init();
         Gst.init(null);
 
         try {
