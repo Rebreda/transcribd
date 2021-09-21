@@ -91,9 +91,13 @@ var Application = GObject.registerClass(class Application extends Gtk.Applicatio
 
         let provider = new Gtk.CssProvider();
         provider.load_from_resource('/org/gnome/SoundRecorder/application.css');
-        Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(),
+
+        let display = Gdk.Display.get_default();
+        Gtk.StyleContext.add_provider_for_display(display,
             provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+        Gtk.IconTheme.get_for_display(display).add_resource_path('/org/gnome/SoundRecorder/icons/');
 
         this.set_resource_base_path('/org/gnome/SoundRecorder/');
         Handy.init();
