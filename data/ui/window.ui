@@ -23,19 +23,9 @@
                     <property name="valign">center</property>
                     <property name="action_name">recorder.start</property>
                     <child>
-                      <object class="GtkBox">
-                        <property name="spacing">4</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon_name">media-record-symbolic</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="margin_end">4</property>
-                            <property name="label" translatable="yes">Record</property>
-                          </object>
-                        </child>
+                      <object class="AdwButtonContent">
+                        <property name="icon_name">media-record-symbolic</property>
+                        <property name="label" translatable="yes">Record</property>
                       </object>
                     </child>
                     <style>
