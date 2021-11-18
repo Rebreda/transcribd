@@ -76,8 +76,6 @@ var WaveForm = GObject.registerClass({
         }
 
         this.set_draw_func(this.drawFunc);
-
-        this.show();
     }
 
     gesturePressed(nPress, x) {
@@ -95,7 +93,7 @@ var WaveForm = GObject.registerClass({
         this.emit('position-changed', this.position);
     }
 
-    drawFunc(da, ctx, width, height) {
+    drawFunc(da, ctx) {
         const maxHeight = da.get_allocated_height();
         const vertiCenter = maxHeight / 2;
         const horizCenter = da.get_allocated_width() / 2;

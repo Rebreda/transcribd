@@ -34,7 +34,7 @@ var WindowState = {
 var Window = GObject.registerClass({
     Template: 'resource:///org/gnome/SoundRecorder/ui/window.ui',
     InternalChildren: [
-        'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay'
+        'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay',
     ],
 }, class Window extends Adw.ApplicationWindow {
 
@@ -66,7 +66,7 @@ var Window = GObject.registerClass({
 
         this._recordingListWidget.connect('row-deleted', (_listBox, recording, index) => {
             this._recordingList.remove(index);
-            this.sendNotification(_('"%s" deleted').format(recording.name), recording, index);0
+            this.sendNotification(_('"%s" deleted').format(recording.name), recording, index);
         });
 
         const builder = Gtk.Builder.new_from_resource('/org/gnome/SoundRecorder/gtk/help-overlay.ui');
@@ -91,7 +91,6 @@ var Window = GObject.registerClass({
         this.recorderWidget.connect('stopped', this.onRecorderStopped.bind(this));
         this.insert_action_group('recorder', this.recorderWidget.actionsGroup);
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
-        this.show();
     }
 
     vfunc_close_request() {
@@ -135,9 +134,9 @@ var Window = GObject.registerClass({
     sendNotification(message, recording, index) {
         const toast = Adw.Toast.new(message);
         toast.connect('dismissed', () => {
-            if (!this.toastUndo) {
+            if (!this.toastUndo)
                 recording.delete();
-            }
+
             this.toastUndo = false;
         });
 
@@ -149,7 +148,7 @@ var Window = GObject.registerClass({
             this.toastUndo = true;
         });
 
-        toast.set_action_name("win.undo");
+        toast.set_action_name('win.undo');
         toast.set_button_label(_('Undo'));
         this._toastOverlay.add_toast(toast);
     }
