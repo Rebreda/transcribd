@@ -23,7 +23,7 @@
 
 // based on code from Pitivi
 
-const { Gio, GObject, Gtk } = imports.gi;
+const { Adw, GObject, Gtk } = imports.gi;
 const Cairo = imports.cairo;
 
 var WaveType = {
@@ -32,7 +32,6 @@ var WaveType = {
 };
 
 const GUTTER = 4;
-const IsDark = new Gio.Settings({ schema: 'org.gnome.desktop.interface' }).get_string('gtk-theme').endsWith('dark');
 
 var WaveForm = GObject.registerClass({
     Properties: {
@@ -59,10 +58,6 @@ var WaveForm = GObject.registerClass({
         this.waveType = type;
         super._init(params);
 
-        this.rightColor = (IsDark ? [80, 80, 80] : [192, 191, 188]).map(x => x / 255);
-        this.leftColor = (IsDark ? [192, 191, 188] : [46, 52, 54]).map(x => x / 255);
-        this.dividerColor = (this.waveType === WaveType.PLAYER ? [28, 113, 216] : [255, 0, 0]).map(x => x / 255);
-
         // TODO: Figure out how to mesh these gestures with the row-activated cb and
         // new event handling
         if (this.waveType === WaveType.PLAYER) {
@@ -74,6 +69,10 @@ var WaveForm = GObject.registerClass({
             this.motionGesture = Gtk.EventControllerMotion.new();
             this.motionGesture.connect('motion', this.onMotion.bind(this));
         }
+
+        this._hcId = Adw.StyleManager.get_default().connect('notify::high-contrast', _ => {
+            this.queue_draw();
+        });
 
         this.set_draw_func(this.drawFunc);
     }
@@ -100,10 +99,20 @@ var WaveForm = GObject.registerClass({
 
         let pointer = horizCenter + da._position;
 
+        const styleContext = da.get_style_context();
+        const leftColor = styleContext.get_color();
+
+        const [_, rightColor] = styleContext.lookup_color('dimmed_color');
+
+        const dividerName = da.waveType === WaveType.PLAYER ? 'accent_color' : 'destructive_color';
+        let [ok, dividerColor] = styleContext.lookup_color(dividerName);
+        if (!ok)
+            dividerColor = styleContext.get_color();
+
         ctx.setLineCap(Cairo.LineCap.ROUND);
         ctx.setLineWidth(2);
 
-        ctx.setSourceRGB(...da.dividerColor);
+        da._setSourceRGBA(ctx, dividerColor);
 
         ctx.moveTo(horizCenter, vertiCenter - maxHeight);
         ctx.lineTo(horizCenter, vertiCenter + maxHeight);
@@ -112,14 +121,10 @@ var WaveForm = GObject.registerClass({
         ctx.setLineWidth(1);
 
         da._peaks.forEach(peak => {
-            if (da.waveType === WaveType.PLAYER) {
-                if (pointer > horizCenter)
-                    ctx.setSourceRGB(...da.rightColor);
-                else
-                    ctx.setSourceRGB(...da.leftColor);
-            } else {
-                ctx.setSourceRGB(...da.leftColor);
-            }
+            if (da.waveType === WaveType.PLAYER && pointer > horizCenter)
+                da._setSourceRGBA(ctx, rightColor);
+            else
+                da._setSourceRGBA(ctx, leftColor);
 
             ctx.moveTo(pointer, vertiCenter + peak * maxHeight);
             ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
@@ -165,7 +170,12 @@ var WaveForm = GObject.registerClass({
         return position;
     }
 
+    _setSourceRGBA(cr, rgba) {
+        cr.setSourceRGBA(rgba.red, rgba.green, rgba.blue, rgba.alpha);
+    }
+
     destroy() {
+        Adw.StyleManager.get_default().disconnect(this._hcId);
         this._peaks.length = 0;
         this.queue_draw();
     }
