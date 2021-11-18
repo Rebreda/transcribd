@@ -18,7 +18,7 @@
 *
 */
 
-const { Gio, GLib, GObject, Gst, GstPlayer, Gtk, Adw } = imports.gi;
+const { Adw, Gio, GLib, GObject, Gst, GstPlayer, Gtk } = imports.gi;
 
 const { Recorder } = imports.recorder;
 const { RecordingList } = imports.recordingList;
@@ -34,9 +34,7 @@ var WindowState = {
 var Window = GObject.registerClass({
     Template: 'resource:///org/gnome/SoundRecorder/ui/window.ui',
     InternalChildren: [
-        'mainStack', 'emptyPage', 'column', 'headerRevealer',
-        'notificationRevealer', 'notificationMessage',
-        'notificationUndoBtn', 'notificationCloseBtn',
+        'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay'
     ],
 }, class Window extends Adw.ApplicationWindow {
 
@@ -68,15 +66,17 @@ var Window = GObject.registerClass({
 
         this._recordingListWidget.connect('row-deleted', (_listBox, recording, index) => {
             this._recordingList.remove(index);
-            this.notify(_('"%s" deleted').format(recording.name),
-                _ => recording.delete(),
-                _ => this._recordingList.insert(index, recording),
-            );
+            this.sendNotification(_('"%s" deleted').format(recording.name), recording, index);0
         });
 
         const builder = Gtk.Builder.new_from_resource('/org/gnome/SoundRecorder/gtk/help-overlay.ui');
         const dialog = builder.get_object('help_overlay');
         this.set_help_overlay(dialog);
+
+        this.toastUndo = false;
+        this.undoSignalID = null;
+        this.undoAction = new Gio.SimpleAction({ name: 'undo' });
+        this.add_action(this.undoAction);
 
         let openMenuAction = new Gio.SimpleAction({ name: 'open-primary-menu', state: new GLib.Variant('b', true) });
         openMenuAction.connect('activate', action => {
@@ -84,15 +84,6 @@ var Window = GObject.registerClass({
             action.state = new GLib.Variant('b', !state);
         });
         this.add_action(openMenuAction);
-
-        this._notificationCloseBtn.connect('clicked', _ => {
-            this._notificationRevealer.reveal_child = false;
-            if (this.deleteSignalId && this.deleteSignalId > 0) {
-                GLib.source_remove(this.deleteSignalId);
-                this.deleteSignalId = 0;
-            }
-            this._notificationUndoBtn.disconnect(this.cancelSignalId);
-        });
         this._column.set_child(this._recordingListWidget);
 
         this.recorderWidget.connect('started', this.onRecorderStarted.bind(this));
@@ -136,34 +127,31 @@ var Window = GObject.registerClass({
     }
 
     onRecorderStopped(widget, recording) {
-
         this._recordingList.insert(0, recording);
         this._recordingListWidget.list.get_row_at_index(0).editMode = true;
         this.state = WindowState.LIST;
     }
 
-    notify(message, callback, cancelCallback) {
-        this._notificationMessage.label = message;
-        this._notificationMessage.tooltip_text = message;
-        this._notificationRevealer.reveal_child = true;
-        this.deleteSignalId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 3, () => {
-            callback();
-            this._notificationRevealer.reveal_child = false;
-            if (this.cancelSignalId && this.cancelSignalId > 0) {
-                this._notificationUndoBtn.disconnect(this.cancelSignalId);
-                this.cancelSignalId = -1;
+    sendNotification(message, recording, index) {
+        const toast = Adw.Toast.new(message);
+        toast.connect('dismissed', () => {
+            if (!this.toastUndo) {
+                recording.delete();
             }
+            this.toastUndo = false;
         });
 
-        this.cancelSignalId = this._notificationUndoBtn.connect('clicked', _ => {
-            cancelCallback();
-            this._notificationRevealer.reveal_child = false;
-            if (this.deleteSignalId && this.deleteSignalId > 0) {
-                GLib.source_remove(this.deleteSignalId);
-                this.deleteSignalId = 0;
-            }
-            this._notificationUndoBtn.disconnect(this.cancelSignalId);
+        if (this.undoSignalID !== null)
+            this.undoAction.disconnect(this.undoSignalID);
+
+        this.undoSignalID = this.undoAction.connect('activate', () => {
+            this._recordingList.insert(index, recording);
+            this.toastUndo = true;
         });
+
+        toast.set_action_name("win.undo");
+        toast.set_button_label(_('Undo'));
+        this._toastOverlay.add_toast(toast);
     }
 
     set state(state) {

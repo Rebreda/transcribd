@@ -48,8 +48,8 @@
           </object>
         </child>
         <child>
-          <object class="GtkOverlay">
-            <child>
+          <object class="AdwToastOverlay" id="toastOverlay">
+            <property name="child">
               <object class="GtkStack" id="mainStack">
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
@@ -87,43 +87,7 @@
                   </object>
                 </child>
               </object>
-            </child>
-            <child type="overlay">
-              <object class="GtkRevealer" id="notificationRevealer">
-                <property name="halign">center</property>
-                <property name="valign">start</property>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkLabel" id="notificationMessage">
-                        <property name="wrap">True</property>
-                        <property name="ellipsize">end</property>
-                        <property name="xalign">0</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="notificationUndoBtn">
-                        <property name="label" translatable="yes">Undo</property>
-                        <property name="receives_default">True</property>
-                        <property name="margin_start">12</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="notificationCloseBtn">
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Close</property>
-                        <property name="margin_start">8</property>
-                        <property name="has_frame">False</property>
-                        <property name="icon_name">window-close-symbolic</property>
-                      </object>
-                    </child>
-                    <style>
-                      <class name="app-notification"/>
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
+            </property>
           </object>
         </child>
       </object>
