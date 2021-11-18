@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/gnome/SoundRecorder">
-    <file>application.css</file>
+    <file>style.css</file>
     <file>ui/recorder.ui</file>
     <file>ui/row.ui</file>
     <file>ui/window.ui</file>

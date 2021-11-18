@@ -26,9 +26,9 @@ var Settings = new Gio.Settings({ schema: pkg.name });
 
 const { Window } = imports.window;
 
-var Application = GObject.registerClass(class Application extends Gtk.Application {
+var Application = GObject.registerClass(class Application extends Adw.Application {
     _init() {
-        super._init({ application_id: pkg.name });
+        super._init({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
         GLib.set_application_name(_('Sound Recorder'));
         GLib.set_prgname('gnome-sound-recorder');
         GLib.setenv('PULSE_PROP_media.role', 'production', 1);
@@ -89,18 +89,6 @@ var Application = GObject.registerClass(class Application extends Gtk.Applicatio
         log('Sound Recorder (%s)'.format(pkg.name));
         log('Version: %s'.format(pkg.version));
 
-        let provider = new Gtk.CssProvider();
-        provider.load_from_resource('/org/gnome/SoundRecorder/application.css');
-
-        let display = Gdk.Display.get_default();
-        Gtk.StyleContext.add_provider_for_display(display,
-            provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-        Gtk.IconTheme.get_for_display(display).add_resource_path('/org/gnome/SoundRecorder/icons/');
-
-        this.set_resource_base_path('/org/gnome/SoundRecorder/');
-        Adw.init();
         Gst.init(null);
 
         try {
