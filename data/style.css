@@ -25,16 +25,3 @@
 button.large {
   padding: 12px;
 }
-
-list row {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-list row:first-child.expanded {
-  margin-top: 0;
-}
-
-list row:last-child.expanded {
-  margin-bottom: 0;
-}
