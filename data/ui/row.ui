@@ -27,7 +27,7 @@
                             <property name="single_line_mode">True</property>
                             <property name="xalign">0</property>
                             <style>
-                              <class name="title"/>
+                              <class name="heading"/>
                             </style>
                           </object>
                         </child>

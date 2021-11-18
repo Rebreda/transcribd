@@ -26,14 +26,6 @@ button.large {
   padding: 12px;
 }
 
-list row label.title {
-  font-weight: bold;
-}
-
-list row label.subtitle {
-  font-size: smaller;
-}
-
 list row {
   margin-top: 0;
   margin-bottom: 0;
