@@ -1,25 +1,26 @@
-/* exported RecordingsListBox */
-const { GObject, GstPlayer, Gtk, Gst } = imports.gi;
+/* exported RecordingsListWidget */
+const { Adw, GObject, GstPlayer, Gtk, Gst } = imports.gi;
 const { Row, RowState } = imports.row;
 
-var RecordingsListBox = new GObject.registerClass({
+var RecordingsListWidget = new GObject.registerClass({
     Signals: {
         'row-deleted': { param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT] },
     },
-}, class RecordingsListBox extends Gtk.ListBox {
+}, class RecordingsListWidget extends Adw.Bin {
     _init(model, player) {
+        super._init();
+        this.list = Gtk.ListBox.new();
+        this.list.valign = Gtk.Align.START;
+        this.list.margin_start = 8;
+        this.list.margin_end = 8;
+        this.list.margin_top = 12;
+        this.list.margin_bottom = 12;
+        this.list.activate_on_single_click = true;
+        this.list.add_css_class('boxed-list');
+
+        this.set_child(this.list);
+
         this._player = player;
-        super._init({
-            valign: Gtk.Align.FILL,
-            margin_start: 8,
-            margin_end: 8,
-            margin_top: 12,
-            margin_bottom: 12,
-            activate_on_single_click: true,
-        });
-
-        this.get_style_context().add_class('content');
-
         this._player.connect('state-changed', (_player, state) => {
             if (state === GstPlayer.PlayerState.STOPPED && this.activePlayingRow) {
                 this.activePlayingRow.state = RowState.PAUSED;
@@ -34,7 +35,7 @@ var RecordingsListBox = new GObject.registerClass({
             this.activePlayingRow.waveform.position = pos / duration;
         });
 
-        this.bind_model(model, recording => {
+        this.list.bind_model(model, recording => {
             let row = new Row(recording);
 
             row.waveform.connect('gesture-pressed', _ => {
@@ -99,9 +100,7 @@ var RecordingsListBox = new GObject.registerClass({
             return row;
         });
 
-        this.connect('row-activated', this.rowActivated.bind(this));
-
-        this.show();
+        this.list.connect('row-activated', this.rowActivated.bind(this));
     }
 
     rowActivated(list, row) {
@@ -119,9 +118,9 @@ var RecordingsListBox = new GObject.registerClass({
     }
 
     isolateAt(index, expanded) {
-        const before = this.get_row_at_index(index - 1);
-        const current = this.get_row_at_index(index);
-        const after = this.get_row_at_index(index + 1);
+        const before = this.list.get_row_at_index(index - 1);
+        const current = this.list.get_row_at_index(index);
+        const after = this.list.get_row_at_index(index + 1);
 
         if (expanded) {
             if (current)

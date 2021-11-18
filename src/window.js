@@ -22,7 +22,7 @@ const { Gio, GLib, GObject, Gst, GstPlayer, Gtk, Adw } = imports.gi;
 
 const { Recorder } = imports.recorder;
 const { RecordingList } = imports.recordingList;
-const { RecordingsListBox } = imports.recordingsListBox;
+const { RecordingsListWidget } = imports.recordingListWidget;
 const { RecorderWidget } = imports.recorderWidget;
 
 var WindowState = {
@@ -64,9 +64,9 @@ var Window = GObject.registerClass({
             }
         });
 
-        this._recordingListBox = new RecordingsListBox(this._recordingList, this.player);
+        this._recordingListWidget = new RecordingsListWidget(this._recordingList, this.player);
 
-        this._recordingListBox.connect('row-deleted', (_listBox, recording, index) => {
+        this._recordingListWidget.connect('row-deleted', (_listBox, recording, index) => {
             this._recordingList.remove(index);
             this.notify(_('"%s" deleted').format(recording.name),
                 _ => recording.delete(),
@@ -93,7 +93,7 @@ var Window = GObject.registerClass({
             }
             this._notificationUndoBtn.disconnect(this.cancelSignalId);
         });
-        this._column.set_child(this._recordingListBox);
+        this._column.set_child(this._recordingListWidget);
 
         this.recorderWidget.connect('started', this.onRecorderStarted.bind(this));
         this.recorderWidget.connect('canceled', this.onRecorderCanceled.bind(this));
@@ -121,7 +121,7 @@ var Window = GObject.registerClass({
     onRecorderStarted() {
         this.player.stop();
 
-        const activeRow = this._recordingListBox.activeRow;
+        const activeRow = this._recordingListWidget.activeRow;
         if (activeRow && activeRow.editMode)
             activeRow.editMode = false;
 
@@ -138,7 +138,7 @@ var Window = GObject.registerClass({
     onRecorderStopped(widget, recording) {
 
         this._recordingList.insert(0, recording);
-        this._recordingListBox.get_row_at_index(0).editMode = true;
+        this._recordingListWidget.list.get_row_at_index(0).editMode = true;
         this.state = WindowState.LIST;
     }
 
