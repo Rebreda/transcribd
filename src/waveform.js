@@ -58,16 +58,12 @@ var WaveForm = GObject.registerClass({
         this.waveType = type;
         super._init(params);
 
-        // TODO: Figure out how to mesh these gestures with the row-activated cb and
-        // new event handling
         if (this.waveType === WaveType.PLAYER) {
-            this.clickGesture = Gtk.GestureClick.new();
-            this.clickGesture.connect('pressed', this.gesturePressed.bind(this));
-            this.clickGesture.connect('released', this.gestureReleased.bind(this));
-            this.add_controller(this.clickGesture);
-
-            this.motionGesture = Gtk.EventControllerMotion.new();
-            this.motionGesture.connect('motion', this.onMotion.bind(this));
+            this._dragGesture = Gtk.GestureDrag.new();
+            this._dragGesture.connect('drag-begin', this.dragBegin.bind(this));
+            this._dragGesture.connect('drag-update', this.dragUpdate.bind(this));
+            this._dragGesture.connect('drag-end', this.dragEnd.bind(this));
+            this.add_controller(this._dragGesture);
         }
 
         this._hcId = Adw.StyleManager.get_default().connect('notify::high-contrast', _ => {
@@ -77,17 +73,17 @@ var WaveForm = GObject.registerClass({
         this.set_draw_func(this.drawFunc);
     }
 
-    gesturePressed(nPress, x) {
-        this._startX = x;
+    dragBegin(gesture, _) {
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED);
         this.emit('gesture-pressed');
     }
 
-    onMotion(x) {
-        this._position = this._clamped(x - this._startX + this._lastX);
+    dragUpdate(_, offsetX) {
+        this._position = this._clamped(offsetX + this._lastX);
         this.queue_draw();
     }
 
-    gestureReleased() {
+    dragEnd() {
         this._lastX = this._position;
         this.emit('position-changed', this.position);
     }
