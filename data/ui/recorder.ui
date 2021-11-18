@@ -22,7 +22,6 @@
                       <attribute name="font-features" value="tnum=1"/>
                     </attributes>
                     <style>
-                      <class name="dim-label"/>
                       <class name="recorder-time-label"/>
                     </style>
                   </object>
