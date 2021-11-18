@@ -138,8 +138,6 @@ var Row = GObject.registerClass({
 
             if (key === Gdk.KEY_Escape) {
                 this.editMode = false;
-            } else {
-                controller.forward(this._entry);
             }
         });
         this._entry.add_controller(this.keyController);
