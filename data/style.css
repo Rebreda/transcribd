@@ -37,21 +37,10 @@ list row label.subtitle {
 list row {
   margin-top: 0;
   margin-bottom: 0;
-  border-radius: 0;
-}
-
-list row:first-child {
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-list row:last-child {
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
 }
 
 list row:first-child.expanded {
-  margin-top:0;
+  margin-top: 0;
 }
 
 list row:last-child.expanded {
