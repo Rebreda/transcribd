@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-<!-- interface-requires gtk+ 3.17 -->
   <object class="GtkShortcutsWindow" id="help_overlay">
-    <property name="modal">1</property>
+    <property name="modal">True</property>
     <child>
       <object class="GtkShortcutsSection">
         <property name="section-name">shortcuts</property>
         <property name="max-height">10</property>
         <child>
-
           <object class="GtkShortcutsGroup">
             <property name="title" translatable="yes" context="shortcut window">General</property>
             <child>
               <object class="GtkShortcutsShortcut">
-                <property name="visible">1</property>
                 <property name="accelerator">&lt;ctrl&gt;R</property>
                 <property name="title" translatable="yes" context="shortcut window">Record</property>
               </object>
