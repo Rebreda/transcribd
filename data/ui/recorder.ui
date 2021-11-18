@@ -18,10 +18,8 @@
                   <object class="GtkLabel" id="recorderTime">
                     <property name="margin_top">18</property>
                     <property name="use_markup">True</property>
-                    <attributes>
-                      <attribute name="font-features" value="tnum=1"/>
-                    </attributes>
                     <style>
+                      <class name="numeric"/>
                       <class name="recorder-time-label"/>
                     </style>
                   </object>
