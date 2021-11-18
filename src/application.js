@@ -18,7 +18,7 @@
 *
 */
 
-const { Gdk, Gio, GLib, GObject, Gst, Gtk, Adw } = imports.gi;
+const { Adw, Gio, GLib, GObject, Gst, Gtk } = imports.gi;
 
 var RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]));
 var CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
@@ -104,7 +104,7 @@ var Application = GObject.registerClass(class Application extends Adw.Applicatio
     vfunc_activate() {
         this.window = new Window({ application: this });
         if (pkg.name.endsWith('Devel'))
-            this.window.get_style_context().add_class('devel');
+            this.window.add_css_class('devel');
         this.window.show();
     }
 

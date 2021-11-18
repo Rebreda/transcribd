@@ -1,5 +1,5 @@
 /* exported RecorderState RecorderWidget */
-const { Gdk, Gio, GObject, Gtk } = imports.gi;
+const { Gio, GObject, Gtk } = imports.gi;
 const { formatTime } = imports.utils;
 const { WaveForm, WaveType } = imports.waveform;
 
@@ -98,7 +98,7 @@ var RecorderWidget = GObject.registerClass({
         dialog.set_default_response(Gtk.ResponseType.NO);
         dialog.add_button(_('Resume'), Gtk.ResponseType.NO);
         dialog.add_button(_('Delete'), Gtk.ResponseType.YES)
-            .get_style_context().add_class('destructive-action');
+            .add_css_class('destructive-action');
 
         dialog.set_transient_for(Gio.Application.get_default().get_active_window());
         dialog.connect('response', (_, response) => {
@@ -136,7 +136,7 @@ var RecorderWidget = GObject.registerClass({
             this.actionsGroup.lookup('pause').enabled = false;
             this.actionsGroup.lookup('resume').enabled = true;
             this._resumeBtn.grab_focus();
-            this._recorderTime.get_style_context().add_class('paused');
+            this._recorderTime.add_css_class('paused');
             break;
         case RecorderState.RECORDING:
             this.actionsGroup.lookup('start').enabled = false;
@@ -144,7 +144,7 @@ var RecorderWidget = GObject.registerClass({
             this.actionsGroup.lookup('resume').enabled = false;
             this.actionsGroup.lookup('pause').enabled = true;
             this._pauseBtn.grab_focus();
-            this._recorderTime.get_style_context().remove_class('paused');
+            this._recorderTime.remove_css_class('paused');
             break;
         case RecorderState.STOPPED:
             this.actionsGroup.lookup('start').enabled = true;

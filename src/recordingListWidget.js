@@ -124,18 +124,18 @@ var RecordingsListWidget = new GObject.registerClass({
 
         if (expanded) {
             if (current)
-                current.get_style_context().add_class('expanded');
+                current.add_css_class('expanded');
             if (before)
-                before.get_style_context().add_class('expanded-before');
+                before.add_css_class('expanded-before');
             if (after)
-                after.get_style_context().add_class('expanded-after');
+                after.add_css_class('expanded-after');
         } else {
             if (current)
-                current.get_style_context().remove_class('expanded');
+                current.remove_css_class('expanded');
             if (before)
-                before.get_style_context().remove_class('expanded-before');
+                before.remove_css_class('expanded-before');
             if (after)
-                after.get_style_context().remove_class('expanded-after');
+                after.remove_css_class('expanded-after');
         }
     }
 });

@@ -134,11 +134,10 @@ var Row = GObject.registerClass({
 
         this.keyController = Gtk.EventControllerKey.new();
         this.keyController.connect('key-pressed', (controller, key, _code, _state) => {
-            this._entry.get_style_context().remove_class('error');
+            this._entry.remove_css_class('error');
 
-            if (key === Gdk.KEY_Escape) {
+            if (key === Gdk.KEY_Escape)
                 this.editMode = false;
-            }
         });
         this._entry.add_controller(this.keyController);
 
@@ -173,9 +172,9 @@ var Row = GObject.registerClass({
 
             this.editMode = false;
             this.renameAction.enabled = true;
-            this._entry.get_style_context().remove_class('error');
+            this._entry.remove_css_class('error');
         } catch (e) {
-            this._entry.get_style_context().add_class('error');
+            this._entry.add_css_class('error');
         }
     }
 

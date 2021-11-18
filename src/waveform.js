@@ -23,7 +23,7 @@
 
 // based on code from Pitivi
 
-const { Gdk, Gio, GObject, Gtk } = imports.gi;
+const { Gio, GObject, Gtk } = imports.gi;
 const Cairo = imports.cairo;
 
 var WaveType = {
@@ -80,17 +80,17 @@ var WaveForm = GObject.registerClass({
         this.show();
     }
 
-    gesturePressed(n_press, x, y) {
+    gesturePressed(nPress, x) {
         this._startX = x;
         this.emit('gesture-pressed');
     }
 
-    onMotion(x, y) {
+    onMotion(x) {
         this._position = this._clamped(x - this._startX + this._lastX);
         this.queue_draw();
     }
 
-    gestureReleased(n_press, x, y) {
+    gestureReleased() {
         this._lastX = this._position;
         this.emit('position-changed', this.position);
     }
