@@ -30,7 +30,6 @@ var Application = GObject.registerClass(class Application extends Adw.Applicatio
     _init() {
         super._init({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
         GLib.set_application_name(_('Sound Recorder'));
-        GLib.set_prgname('gnome-sound-recorder');
         GLib.setenv('PULSE_PROP_media.role', 'production', 1);
         GLib.setenv('PULSE_PROP_application.icon_name', pkg.name, 1);
 
