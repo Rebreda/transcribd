@@ -13,7 +13,8 @@
         "--socket=fallback-x11",
         "--socket=wayland",
         "--socket=pulseaudio",
-        "--filesystem=~/Recordings"
+        "--filesystem=~/Recordings",
+        "--talk-name=org.a11y.Bus"
     ],
     "modules" : [
         {
