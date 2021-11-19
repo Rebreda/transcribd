@@ -2,6 +2,9 @@
 <interface>
   <template class="Gjs_Row" parent="GtkListBoxRow">
     <property name="selectable">False</property>
+    <style>
+      <class name="recording-row"/>
+    </style>
     <child>
       <object class="GtkBox">
         <property name="margin_top">12</property>
@@ -9,14 +12,14 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkStack" id="mainStack">
+            <property name="margin_start">14</property>
+            <property name="margin_end">14</property>
             <child>
               <object class="GtkStackPage">
                 <property name="name">display</property>
                 <property name="child">
                   <object class="GtkBox">
                     <property name="valign">center</property>
-                    <property name="margin_start">12</property>
-                    <property name="margin_end">12</property>
                     <property name="hexpand">True</property>
                     <child>
                       <object class="GtkBox">
@@ -61,8 +64,6 @@
                 <property name="name">edit</property>
                 <property name="child">
                   <object class="GtkEntry" id="entry">
-                    <property name="margin_start">12</property>
-                    <property name="margin_end">12</property>
                     <property name="activates_default">True</property>
                   </object>
                 </property>
@@ -94,8 +95,8 @@
                 </child>
                 <child>
                   <object class="GtkBox">
-                    <property name="margin_start">12</property>
-                    <property name="margin_end">12</property>
+                    <property name="margin_start">14</property>
+                    <property name="margin_end">14</property>
                     <property name="margin_top">18</property>
                     <child>
                       <object class="GtkBox" id="deleteBtnBox">

@@ -38,12 +38,8 @@ var Row = GObject.registerClass({
         super._init({});
 
         this.waveform = new WaveForm({
-            hexpand: true,
-            halign: Gtk.Align.FILL,
             margin_top: 18,
             height_request: 60,
-            margin_start: 12,
-            margin_end: 12,
         }, WaveType.PLAYER);
         this._waveformStack.add_named(this.waveform, 'wave');
 
