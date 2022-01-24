@@ -14,7 +14,6 @@ install_data(
 desktop_conf = configuration_data()
 desktop_conf.set('app-id', application_id)
 desktop_file = i18n.merge_file(
-  'desktop',
   input: configure_file(
   	input: 'org.gnome.SoundRecorder.desktop.in.in',
   	output: '@BASENAME@',

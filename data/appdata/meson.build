@@ -3,7 +3,6 @@ metainfo_conf.set('app-id', application_id)
 metainfo_conf.set('gettext-package', gettext_package)
 
 metainfo_file = i18n.merge_file(
-  'metainfo-file',
   input: configure_file(
   	input: 'org.gnome.SoundRecorder.metainfo.xml.in.in',
   	output: '@BASENAME@',
