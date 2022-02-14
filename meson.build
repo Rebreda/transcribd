@@ -1,6 +1,6 @@
 project(
   'gnome-sound-recorder',
-  version: '40.0',
+  version: '42.beta',
   license: 'GPL2+',
   meson_version: '>= 0.50.0'
 )
