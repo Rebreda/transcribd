@@ -1,7 +1,7 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in
 data/org.gnome.SoundRecorder.desktop.in.in
+data/org.gnome.SoundRecorder.metainfo.xml.in.in
 data/org.gnome.SoundRecorder.gschema.xml.in
 data/ui/help-overlay.ui
 data/ui/recorder.ui
