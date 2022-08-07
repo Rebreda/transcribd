@@ -109,25 +109,28 @@ var Application = GObject.registerClass(class Application extends Adw.Applicatio
     }
 
     _showAbout() {
-        let aboutDialog = new Gtk.AboutDialog({
-            artists: ['Reda Lazri <the.red.shortcut@gmail.com>',
+        let aboutDialog = new Adw.AboutWindow({
+            artists: [
+                'Reda Lazri <the.red.shortcut@gmail.com>',
                 'Garrett LeSage <garrettl@gmail.com>',
                 'Hylke Bons <hylkebons@gmail.com>',
-                'Sam Hewitt <hewittsamuel@gmail.com>'],
-            authors: ['Meg Ford <megford@gnome.org>',
+                'Sam Hewitt <hewittsamuel@gmail.com>',
+            ],
+            developers: [
+                'Meg Ford <megford@gnome.org>',
                 'Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>',
                 'Felipe Borges <felipeborges@gnome.org>',
-                'Kavan Mevada <kavanmevada@gmail.com>'],
+                'Kavan Mevada <kavanmevada@gmail.com>',
+            ],
             /* Translators: Replace "translator-credits" with your names, one name per line */
             translator_credits: _('translator-credits'),
-            program_name: GLib.get_application_name(),
+            application_name: GLib.get_application_name(),
             comments: _('A Sound Recording Application for GNOME'),
             license_type: Gtk.License.GPL_2_0,
-            logo_icon_name: pkg.name,
+            application_icon: pkg.name,
             version: pkg.version,
             website: 'https://wiki.gnome.org/Apps/SoundRecorder',
-            copyright: 'Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui & Felipe Borges',
-            wrap_license: true,
+            copyright: 'Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui &amp; Felipe Borges',
             modal: true,
             transient_for: this.window,
         });
