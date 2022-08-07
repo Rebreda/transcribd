@@ -35,6 +35,7 @@
   </kudos>
   <content_rating type="oars-1.0" />
   <releases>
+    <release version="43.beta" date="2022-08-07" />
     <release version="42.0" date="2022-03-19">
       <description>
         <p>42.0 is out!</p>
