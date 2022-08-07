@@ -17,10 +17,11 @@
  * Author: Meg Ford <megford@gnome.org>
  *
  */
-const Gettext = imports.gettext;
-const { GLib, Gst } = imports.gi;
+import Gettext from 'gettext'
+import GLib from 'gi://GLib'
+import Gst from 'gi://Gst'
 
-var formatTime = nanoSeconds => {
+export const formatTime = nanoSeconds => {
     const time = new Date(0, 0, 0, 0, 0, 0, parseInt(nanoSeconds / Gst.MSECOND));
 
     const miliseconds = parseInt(time.getMilliseconds() / 100).toString();
@@ -32,7 +33,7 @@ var formatTime = nanoSeconds => {
     return `${hours} ∶ ${minutes} ∶ ${seconds} . <small>${miliseconds}</small>`;
 };
 
-var displayDateTime = time => {
+export const displayDateTime = time => {
     const DAY = 86400000000;
     const now = GLib.DateTime.new_now_local();
     const difference = now.difference(time);

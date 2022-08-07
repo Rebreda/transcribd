@@ -18,15 +18,20 @@
 *
 */
 
-const { Adw, Gio, GLib, GObject, Gst, Gtk } = imports.gi;
+import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gst from 'gi://Gst';
+import Gtk from 'gi://Gtk?version=4.0';
 
-var RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]));
-var CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
-var Settings = new Gio.Settings({ schema: pkg.name });
+export const RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]));
+export const CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
+export const Settings = new Gio.Settings({ schema: pkg.name });
 
-const { Window } = imports.window;
+import { Window } from './window.js';
 
-var Application = GObject.registerClass(class Application extends Adw.Application {
+export const Application = GObject.registerClass(class Application extends Adw.Application {
     _init() {
         super._init({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
         GLib.set_application_name(_('Sound Recorder'));
@@ -95,7 +100,7 @@ var Application = GObject.registerClass(class Application extends Adw.Applicatio
             RecordingsDir.make_directory_with_parents(null);
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
-                error(`Failed to create directory ${e}`);
+                console.error(`Failed to create directory ${e}`);
 
         }
         this._initAppMenu();

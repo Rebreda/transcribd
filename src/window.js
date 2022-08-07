@@ -18,12 +18,18 @@
 *
 */
 
-const { Adw, Gio, GLib, GObject, Gst, GstPlayer } = imports.gi;
+import Adw from 'gi://Adw'
+import Gio from 'gi://Gio'
+import GLib from 'gi://GLib'
+import GObject from 'gi://GObject'
+import Gst from 'gi://Gst'
+import GstPlayer from 'gi://GstPlayer'
+import Gtk from 'gi://Gtk?version=4.0'
 
-const { Recorder } = imports.recorder;
-const { RecordingList } = imports.recordingList;
-const { RecordingsListWidget } = imports.recordingListWidget;
-const { RecorderWidget } = imports.recorderWidget;
+import { Recorder } from './recorder.js';
+import { RecordingList } from './recordingList.js';
+import { RecordingsListWidget } from './recordingListWidget.js';
+import { RecorderWidget } from './recorderWidget.js';
 
 var WindowState = {
     EMPTY: 0,
@@ -31,7 +37,7 @@ var WindowState = {
     RECORDER: 2,
 };
 
-var Window = GObject.registerClass({
+export const Window = GObject.registerClass({
     Template: 'resource:///org/gnome/SoundRecorder/ui/window.ui',
     InternalChildren: [
         'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay',

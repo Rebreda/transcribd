@@ -1,4 +1,5 @@
 app_conf = configuration_data()
+app_conf.set('profile', profile)
 app_conf.set('prefix', sound_recorder_prefix)
 app_conf.set('libdir', sound_recorder_libdir)
 app_conf.set('PACKAGE_VERSION', meson.project_version())

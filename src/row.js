@@ -1,14 +1,18 @@
 /* exported Row */
-const { Gdk, Gio, GObject, Gtk } = imports.gi;
-const { displayDateTime, formatTime } = imports.utils;
-const { WaveForm, WaveType } = imports.waveform;
+import Gdk from 'gi://Gdk?version=4.0'
+import Gio from 'gi://Gio'
+import GObject from 'gi://GObject'
+import Gtk from 'gi://Gtk?version=4.0'
 
-var RowState = {
+import { displayDateTime, formatTime } from './utils.js';
+import { WaveForm, WaveType } from './waveform.js';
+
+export const RowState = {
     PLAYING: 0,
     PAUSED: 1,
 };
 
-var Row = GObject.registerClass({
+export const Row = GObject.registerClass({
     Template: 'resource:///org/gnome/SoundRecorder/ui/row.ui',
     InternalChildren: [
         'playbackStack', 'mainStack', 'waveformStack', 'rightStack',

@@ -1,10 +1,14 @@
 /* exported Recording */
-const { Gio, GLib, GObject, Gst, GstPbutils } = imports.gi;
-const { CacheDir } = imports.application;
-const ByteArray = imports.byteArray;
-const Recorder = imports.recorder;
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gst from 'gi://Gst';
+import GstPbutils from 'gi://GstPbutils';
 
-var Recording = new GObject.registerClass({
+import { CacheDir } from './application.js';
+import { EncodingProfiles } from './recorder.js';
+
+export const Recording = new GObject.registerClass({
     Signals: {
         'peaks-updated': {},
         'peaks-loading': {},
@@ -31,7 +35,7 @@ var Recording = new GObject.registerClass({
         let info = file.query_info('time::created,time::modified,standard::content-type', 0, null);
         const contentType = info.get_attribute_string('standard::content-type');
 
-        for (let profile of Recorder.EncodingProfiles) {
+        for (let profile of EncodingProfiles) {
             if (profile.contentType === contentType) {
                 this._extension = profile.extension;
                 break;
@@ -131,7 +135,8 @@ var Recording = new GObject.registerClass({
             this.waveformCache.load_bytes_async(null, (obj, res) => {
                 const bytes = obj.load_bytes_finish(res)[0];
                 try {
-                    this._peaks = JSON.parse(ByteArray.toString(bytes.get_data()));
+                    let decoder = new TextDecoder('utf-8');
+                    this._peaks = JSON.parse(decoder.decode(bytes.get_data()));
                     this.emit('peaks-updated');
                 } catch (error) {
                     log(`Error reading waveform data file: ${this.name}_data`);

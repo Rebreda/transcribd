@@ -28,21 +28,9 @@
 
 pkg.initGettext();
 pkg.initFormat();
-pkg.require({
-    'Gdk': '4.0',
-    'GdkPixbuf': '2.0',
-    'GLib': '2.0',
-    'GObject': '2.0',
-    'Gtk': '4.0',
-    'Gst': '1.0',
-    'GstAudio': '1.0',
-    'GstPlayer': '1.0',
-    'GstPbutils': '1.0',
-    'Adw': '1',
-});
 
-const { Application } = imports.application;
+import { Application } from './application.js';
 
-function main(argv) {
+export function main(argv) {
     return new Application().run(argv);
 }

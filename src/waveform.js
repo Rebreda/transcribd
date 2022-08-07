@@ -23,17 +23,19 @@
 
 // based on code from Pitivi
 
-const { Adw, GObject, Gtk } = imports.gi;
-const Cairo = imports.cairo;
+import Adw from 'gi://Adw';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk?version=4.0';
+import Cairo from 'cairo';
 
-var WaveType = {
+export const WaveType = {
     RECORDER: 0,
     PLAYER: 1,
 };
 
 const GUTTER = 4;
 
-var WaveForm = GObject.registerClass({
+export const WaveForm = GObject.registerClass({
     Properties: {
         'position': GObject.ParamSpec.float(
             'position',

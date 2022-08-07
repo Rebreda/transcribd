@@ -1,8 +1,13 @@
 /* exported RecordingsListWidget */
-const { Adw, GObject, GstPlayer, Gtk, Gst } = imports.gi;
-const { Row, RowState } = imports.row;
+import Adw from 'gi://Adw'
+import GObject from 'gi://GObject'
+import Gst from 'gi://Gst'
+import GstPlayer from 'gi://GstPlayer'
+import Gtk from 'gi://Gtk?version=4.0'
 
-var RecordingsListWidget = new GObject.registerClass({
+import { Row, RowState } from './row.js';
+
+export const RecordingsListWidget = new GObject.registerClass({
     Signals: {
         'row-deleted': { param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT] },
     },

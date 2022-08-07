@@ -1,10 +1,12 @@
 /* exported RecordingList */
-const { Gio, GLib, GObject } = imports.gi;
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
 
-const { RecordingsDir } = imports.application;
-const { Recording } = imports.recording;
+import { RecordingsDir } from './application.js';
+import { Recording } from './recording.js';
 
-var RecordingList = new GObject.registerClass(class RecordingList extends Gio.ListStore {
+export const RecordingList = new GObject.registerClass(class RecordingList extends Gio.ListStore {
     _init() {
         super._init({ });
 
@@ -65,7 +67,7 @@ var RecordingList = new GObject.registerClass(class RecordingList extends Gio.Li
                                 this.dirMonitor.emit_event(dest, src, Gio.FileMonitorEvent.MOVED_IN);
                             } catch (e) {
                                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                                    error(`Failed to copy recording ${name} to the new location`);
+                                    console.error(`Failed to copy recording ${name} to the new location`);
                                     log(e);
                                 }
                                 allCopied = false;
@@ -89,7 +91,7 @@ var RecordingList = new GObject.registerClass(class RecordingList extends Gio.Li
                 }
             } catch (e) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                    error(`Failed to copy old  recordings ${e}`);
+                    console.error(`Failed to copy old  recordings ${e}`);
 
             }
         }.bind(this);
@@ -120,7 +122,7 @@ var RecordingList = new GObject.registerClass(class RecordingList extends Gio.Li
             }
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                error(`Failed to load recordings ${e}`);
+                console.error(`Failed to load recordings ${e}`);
 
         }
     }

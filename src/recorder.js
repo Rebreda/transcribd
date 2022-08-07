@@ -17,12 +17,17 @@
  *  Author: Meg Ford <megford@gnome.org>
  *
  */
-const { GLib, GObject, Gst, GstPbutils } = imports.gi;
-const { RecordingsDir, Settings } = imports.application;
-const { Recording } = imports.recording;
+
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gst from 'gi://Gst';
+import GstPbutils from 'gi://GstPbutils';
+
+import { RecordingsDir, Settings } from './application.js';
+import { Recording } from './recording.js';
 
 // All supported encoding profiles.
-var EncodingProfiles = [
+export const EncodingProfiles = [
     { name: 'VORBIS',
         containerCaps: 'application/ogg;audio/ogg;video/ogg',
         audioCaps: 'audio/x-vorbis',
@@ -59,7 +64,7 @@ var AudioChannels = {
     1: { name: 'mono', channels: 1 },
 };
 
-var Recorder = new GObject.registerClass({
+export const Recorder = new GObject.registerClass({
     Properties: {
         'duration': GObject.ParamSpec.int(
             'duration',

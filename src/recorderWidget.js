@@ -1,7 +1,10 @@
 /* exported RecorderState RecorderWidget */
-const { Gio, GObject, Gtk } = imports.gi;
-const { formatTime } = imports.utils;
-const { WaveForm, WaveType } = imports.waveform;
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk?version=4.0';
+
+import { formatTime } from './utils.js';
+import { WaveForm, WaveType } from  './waveform.js';
 
 var RecorderState = {
     RECORDING: 0,
@@ -9,7 +12,7 @@ var RecorderState = {
     STOPPED: 2,
 };
 
-var RecorderWidget = GObject.registerClass({
+export const RecorderWidget = GObject.registerClass({
     Template: 'resource:///org/gnome/SoundRecorder/ui/recorder.ui',
     InternalChildren: [
         'recorderBox', 'playbackStack', 'recorderTime',
