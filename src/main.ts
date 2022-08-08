@@ -28,6 +28,6 @@
 
 import { Application } from './application.js';
 
-export function main(argv) {
+export function main(argv: string[]): number {
     return new Application().run(argv);
 }

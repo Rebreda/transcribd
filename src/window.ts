@@ -18,8 +18,6 @@
 *
 */
 
-/// <reference path="../types/soundrecorder.d.ts" />
-
 import Adw from 'gi://Adw'
 import Gio from 'gi://Gio'
 import GLib from 'gi://GLib'
@@ -28,16 +26,20 @@ import Gst from 'gi://Gst'
 import GstPlayer from 'gi://GstPlayer'
 import Gtk from 'gi://Gtk?version=4.0'
 
-import { Recorder } from './recorder.js';
-import { RecordingList } from './recordingList.js';
-import { RecordingsListWidget } from './recordingListWidget.js';
-import { RecorderWidget } from './recorderWidget.js';
+import { Recorder, RecorderClass } from './recorder.js';
+import { RecordingList, RecordingListClass } from './recordingList.js';
+import { RecordingsListWidget, RecordingsListWidgetClass } from './recordingListWidget.js';
+import { RecorderWidget, RecorderWidgetClass } from './recorderWidget.js';
+import { RecordingClass } from './recording.js'
+import { RowClass } from './row.js'
 
-var WindowState = {
-    EMPTY: 0,
-    LIST: 1,
-    RECORDER: 2,
-};
+enum WindowState {
+    Empty,
+    List,
+    Recorder,
+}
+
+export type WindowClass = InstanceType<typeof Window>;
 
 export const Window = GObject.registerClass({
     Template: 'resource:///org/gnome/SoundRecorder/ui/window.ui',
@@ -45,19 +47,26 @@ export const Window = GObject.registerClass({
         'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay',
     ],
 }, class Window extends Adw.ApplicationWindow {
-    // We have to do this so that TypeScript knows that the field exists
-    // @ts-ignore
-    /** @type {Gtk.Stack} */ _mainStack = this._mainStack;
-    // @ts-ignore
-    /** @type {Adw.StatusPage} */ _emptyPage = this._emptyPage;
-    // @ts-ignore
-    /** @type {Adw.Clamp} */ _column = this._column;
-    // @ts-ignore
-    /** @type {Gtk.Revealer} */ _headerRevealer = this._headerRevealer;
-    // @ts-ignore
-    /** @type {Adw.ToastOverlay} */ _toastOverlay = this._toastOverlay;
+    _mainStack!: Gtk.Stack;
+    _emptyPage!: Adw.StatusPage;
+    _column!: Adw.Clamp;
+    _headerRevealer!: Gtk.Revealer;
+    _toastOverlay!: Adw.ToastOverlay;
 
-    _init(params) {
+    recorder: RecorderClass;
+    recorderWidget: RecorderWidgetClass;
+    player: GstPlayer.Player;
+    _recordingList: RecordingListClass;
+    itemsSignalId: number;
+    _recordingListWidget: RecordingsListWidgetClass;
+
+    toastUndo: boolean;
+    undoSignalID: number;
+    undoAction: Gio.SimpleAction;
+
+    _state: WindowState;
+
+    _init(params): void {
         super._init(Object.assign({
             icon_name: pkg.name,
         }, params));
@@ -73,19 +82,18 @@ export const Window = GObject.registerClass({
 
         this._recordingList = new RecordingList();
         this.itemsSignalId = this._recordingList.connect('items-changed', _ => {
-            if (this.state !== WindowState.RECORDER) {
+            if (this.state !== WindowState.Recorder) {
                 if (this._recordingList.get_n_items() === 0)
-                    this.state = WindowState.EMPTY;
+                    this.state = WindowState.Empty;
                 else
-                    this.state = WindowState.LIST;
+                    this.state = WindowState.List;
             }
         });
 
         this._recordingListWidget = new RecordingsListWidget(this._recordingList, this.player);
 
-        this._recordingListWidget.connect('row-deleted', (_listBox, recording, index) => {
+        this._recordingListWidget.connect('row-deleted', (_listBox: Gtk.ListBox, recording: RecordingClass, index: number) => {
             this._recordingList.remove(index);
-            // @ts-expect-error
             this.sendNotification(_('"%s" deleted').format(recording.name), recording, index);
         });
 
@@ -109,16 +117,14 @@ export const Window = GObject.registerClass({
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
     }
 
-    vfunc_close_request() {
+    vfunc_close_request(): boolean {
         this._recordingList.cancellable.cancel();
         if (this.itemsSignalId)
             this._recordingList.disconnect(this.itemsSignalId);
 
         for (let i = 0; i < this._recordingList.get_n_items(); i++) {
-            const recording = this._recordingList.get_item(i);
-            // @ts-expect-error
+            const recording = this._recordingList.get_item(i) as RecordingClass;
             if (recording.pipeline)
-                // @ts-expect-error
                 recording.pipeline.set_state(Gst.State.NULL);
         }
 
@@ -126,32 +132,31 @@ export const Window = GObject.registerClass({
         return false;
     }
 
-    onRecorderStarted() {
+    onRecorderStarted(): void {
         this.player.stop();
 
         const activeRow = this._recordingListWidget.activeRow;
         if (activeRow && activeRow.editMode)
             activeRow.editMode = false;
 
-        this.state = WindowState.RECORDER;
+        this.state = WindowState.Recorder;
     }
 
-    onRecorderCanceled() {
+    onRecorderCanceled(): void {
         if (this._recordingList.get_n_items() === 0)
-            this.state = WindowState.EMPTY;
+            this.state = WindowState.Empty;
         else
-            this.state = WindowState.LIST;
+            this.state = WindowState.List;
     }
 
-    // @ts-ignore
-    onRecorderStopped(widget, recording) {
+    onRecorderStopped(_widget: RecorderWidgetClass, recording: RecordingClass): void {
         this._recordingList.insert(0, recording);
-        // @ts-expect-error
-        this._recordingListWidget.list.get_row_at_index(0).editMode = true;
-        this.state = WindowState.LIST;
+        let row = this._recordingListWidget.list.get_row_at_index(0) as RowClass;
+        row.editMode = true;
+        this.state = WindowState.List;
     }
 
-    sendNotification(message, recording, index) {
+    sendNotification(message: string, recording: RecordingClass, index: number): void {
         const toast = Adw.Toast.new(message);
         toast.connect('dismissed', () => {
             if (!this.toastUndo)
@@ -173,22 +178,20 @@ export const Window = GObject.registerClass({
         this._toastOverlay.add_toast(toast);
     }
 
-    set state(state) {
-        let visibleChild;
-        let isHeaderVisible;
+    set state(state: WindowState) {
+        let visibleChild: string;
+        let isHeaderVisible = true;
 
         switch (state) {
-            case WindowState.RECORDER:
+            case WindowState.Recorder:
                 visibleChild = 'recorder';
                 isHeaderVisible = false;
                 break;
-            case WindowState.LIST:
+            case WindowState.List:
                 visibleChild = 'recordings';
-                isHeaderVisible = true;
                 break;
-            case WindowState.EMPTY:
+            case WindowState.Empty:
                 visibleChild = 'empty';
-                isHeaderVisible = true;
                 break;
         }
 
@@ -197,7 +200,7 @@ export const Window = GObject.registerClass({
         this._state = state;
     }
 
-    get state() {
+    get state(): WindowState {
         return this._state;
     }
 });

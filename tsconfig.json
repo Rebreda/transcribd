@@ -1,9 +1,7 @@
 {
     "compilerOptions": {
-        "allowJs": true,
-        "checkJs": true,
         "experimentalDecorators": true,
-        "noEmit": true,
+        "strict": true,
         "paths": {
             "*": [
                 "*",

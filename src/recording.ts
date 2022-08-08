@@ -5,8 +5,10 @@ import GObject from 'gi://GObject';
 import Gst from 'gi://Gst';
 import GstPbutils from 'gi://GstPbutils';
 
-import { CacheDir } from './application.js';
+import { CacheDir } from './application.js'
 import { EncodingProfiles } from './recorder.js';
+
+export type RecordingClass = InstanceType<typeof Recording>;
 
 export const Recording = GObject.registerClass({
     Signals: {
@@ -26,9 +28,19 @@ export const Recording = GObject.registerClass({
             null),
     },
 }, class Recording extends GObject.Object {
-    _init(file) {
+    _file: Gio.File;
+    _peaks: number[];
+    _loadedPeaks: number[];
+    _extension: string;
+    _timeModified: GLib.DateTime;
+    _timeCreated: GLib.DateTime;
+    _duration: number;
+
+    pipeline: Gst.Bin;
+
+    _init(file: Gio.File): void {
         this._file = file;
-        this._peaks = [];
+        this._peaks = []
         this._loadedPeaks = [];
         super._init({});
 
@@ -58,91 +70,88 @@ export const Recording = GObject.registerClass({
         discoverer.discover_uri_async(this.uri);
     }
 
-    get name() {
+    get name(): string {
         return this._file.get_basename();
     }
 
-    set name(filename) {
+    set name(filename: string) {
         if (filename && filename !== this.name) {
             this._file = this._file.set_display_name(filename, null);
             this.notify('name');
         }
     }
 
-    get extension() {
+    get extension(): string {
         return this._extension;
     }
 
-    get timeModified() {
+    get timeModified(): GLib.DateTime {
         return this._timeModified;
     }
 
-    get timeCreated() {
+    get timeCreated(): GLib.DateTime {
         return this._timeCreated;
     }
 
-    get duration() {
+    get duration(): number {
         if (this._duration)
             return this._duration;
         else
             return 0;
     }
 
-    get file() {
+    get file(): Gio.File {
         return this._file;
     }
 
-    get uri() {
+    get uri(): string {
         return this._file.get_uri();
     }
 
     // eslint-disable-next-line camelcase
-    set peaks(data) {
+    set peaks(data: number[]) {
         if (data.length > 0) {
             this._peaks = data;
             this.emit('peaks-updated');
-            // @ts-expect-error
-            const buffer = new GLib.Bytes(JSON.stringify(data));
-            this.waveformCache.replace_contents_bytes_async(buffer, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null, (obj, res) => {
+            let enc = new TextEncoder();
+            const buffer = new GLib.Bytes(enc.encode(JSON.stringify(data)));
+            this.waveformCache.replace_contents_bytes_async(buffer, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null, (obj: Gio.File, res: Gio.AsyncResult) => {
                 obj.replace_contents_finish(res);
             });
         }
     }
 
     // eslint-disable-next-line camelcase
-    get peaks() {
+    get peaks(): number[] {
         return this._peaks;
     }
 
-    delete() {
+    delete(): void {
         this._file.trash_async(GLib.PRIORITY_HIGH, null, null);
         this.waveformCache.trash_async(GLib.PRIORITY_DEFAULT, null, null);
     }
 
-    save(dest) {
-        this.file.copy_async(dest,
-            Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, null, (obj, res) => {
+    save(dest: Gio.File): void {
+        this.file.copy_async(dest, // @ts-expect-error
+            Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, null, (obj: Gio.File, res: Gio.AsyncResult) => {
                 if (obj.copy_finish(res))
-                    // @ts-expect-error
                     log('Exporting file: done');
             });
     }
 
-    get waveformCache() {
+    get waveformCache(): Gio.File {
         return CacheDir.get_child(`${this.name}_data`);
     }
 
-    loadPeaks() {
+    loadPeaks(): void {
         if (this.waveformCache.query_exists(null)) {
-            this.waveformCache.load_bytes_async(null, (obj, res) => {
+            this.waveformCache.load_bytes_async(null, (obj: Gio.File, res: Gio.AsyncResult) => {
                 const bytes = obj.load_bytes_finish(res)[0];
                 try {
-                    // @ts-expect-error
                     let decoder = new TextDecoder('utf-8');
                     this._peaks = JSON.parse(decoder.decode(bytes.get_data()));
                     this.emit('peaks-updated');
                 } catch (error) {
-                    // @ts-expect-error
                     log(`Error reading waveform data file: ${this.name}_data`);
                 }
             });
@@ -152,15 +161,13 @@ export const Recording = GObject.registerClass({
         }
     }
 
-    generatePeaks() {
-        this.pipeline = Gst.parse_launch('uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked');
+    generatePeaks(): void {
+        this.pipeline = Gst.parse_launch('uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked') as Gst.Bin;
 
 
-        // @ts-expect-error
         let uridecodebin = this.pipeline.get_by_name('uridecodebin');
         uridecodebin.set_property('uri', this.uri);
 
-        // @ts-expect-error
         let fakesink = this.pipeline.get_by_name('faked');
         fakesink.set_property('qos', false);
         fakesink.set_property('sync', true);
@@ -169,17 +176,16 @@ export const Recording = GObject.registerClass({
         this.pipeline.set_state(Gst.State.PLAYING);
         bus.add_signal_watch();
 
-        bus.connect('message', (_bus, message) => {
-            let s;
+        bus.connect('message', (_bus: Gst.Bus, message: Gst.Message) => {
+            let s: Gst.Structure;
             switch (message.type) {
             case Gst.MessageType.ELEMENT:
                 s = message.get_structure();
                 if (s && s.has_name('level')) {
-                    const peakVal = s.get_value('peak');
+                    const peakVal = s.get_value('peak') as unknown as GObject.ValueArray;
 
                     if (peakVal) {
-                        // @ts-expect-error
-                        const peak = peakVal.get_nth(0);
+                        const peak = peakVal.get_nth(0) as number;
                         this._loadedPeaks.push(Math.pow(10, peak / 20));
                     }
                 }

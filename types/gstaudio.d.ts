@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * GstAudio 1.0
  *

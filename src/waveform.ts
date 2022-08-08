@@ -25,15 +25,19 @@
 
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
+import Gdk from 'gi://Gdk?version=4.0';
 import Gtk from 'gi://Gtk?version=4.0';
-import * as Cairo from 'cairo';
+// @ts-expect-error
+import Cairo from 'cairo';
 
-export const WaveType = {
-    RECORDER: 0,
-    PLAYER: 1,
+export enum WaveType {
+    Recorder,
+    Player,
 };
 
 const GUTTER = 4;
+
+export type WaveFormClass = InstanceType<typeof WaveForm>;
 
 export const WaveForm = GObject.registerClass({
     Properties: {
@@ -53,14 +57,23 @@ export const WaveForm = GObject.registerClass({
         'gesture-pressed': {},
     },
 }, class WaveForm extends Gtk.DrawingArea {
-    _init(params, type) {
+    _peaks: number[];
+    _position: number;
+    _dragGesture: Gtk.GestureDrag;
+    _hcId: number;
+    _lastX: number;
+
+    lastPosition: number;
+    waveType: WaveType;
+
+    _init(params, type: WaveType): void {
         this._peaks = [];
         this._position = 0;
         this.lastPosition = 0;
         this.waveType = type;
         super._init(params);
 
-        if (this.waveType === WaveType.PLAYER) {
+        if (this.waveType === WaveType.Player) {
             this._dragGesture = Gtk.GestureDrag.new();
             this._dragGesture.connect('drag-begin', this.dragBegin.bind(this));
             this._dragGesture.connect('drag-update', this.dragUpdate.bind(this));
@@ -75,22 +88,22 @@ export const WaveForm = GObject.registerClass({
         this.set_draw_func(this.drawFunc);
     }
 
-    dragBegin(gesture, _) {
+    dragBegin(gesture: Gtk.GestureDrag): void {
         gesture.set_state(Gtk.EventSequenceState.CLAIMED);
         this.emit('gesture-pressed');
     }
 
-    dragUpdate(_, offsetX) {
+    dragUpdate(_gesture: Gtk.GestureDrag, offsetX: number): void {
         this._position = this._clamped(offsetX + this._lastX);
         this.queue_draw();
     }
 
-    dragEnd() {
+    dragEnd(): void {
         this._lastX = this._position;
         this.emit('position-changed', this.position);
     }
 
-    drawFunc(da, ctx) {
+    drawFunc(da: WaveFormClass, ctx: Cairo.Context) {
         const maxHeight = da.get_allocated_height();
         const vertiCenter = maxHeight / 2;
         const horizCenter = da.get_allocated_width() / 2;
@@ -102,7 +115,7 @@ export const WaveForm = GObject.registerClass({
 
         const [_, rightColor] = styleContext.lookup_color('dimmed_color');
 
-        const dividerName = da.waveType === WaveType.PLAYER ? 'accent_color' : 'destructive_color';
+        const dividerName = da.waveType === WaveType.Player ? 'accent_color' : 'destructive_color';
         let [ok, dividerColor] = styleContext.lookup_color(dividerName);
         if (!ok)
             dividerColor = styleContext.get_color();
@@ -119,7 +132,7 @@ export const WaveForm = GObject.registerClass({
         ctx.setLineWidth(1);
 
         da._peaks.forEach(peak => {
-            if (da.waveType === WaveType.PLAYER && pointer > horizCenter)
+            if (da.waveType === WaveType.Player && pointer > horizCenter)
                 da._setSourceRGBA(ctx, rightColor);
             else
                 da._setSourceRGBA(ctx, leftColor);
@@ -128,7 +141,7 @@ export const WaveForm = GObject.registerClass({
             ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
             ctx.stroke();
 
-            if (da.waveType === WaveType.PLAYER)
+            if (da.waveType === WaveType.Player)
                 pointer += GUTTER;
             else
                 pointer -= GUTTER;
@@ -143,23 +156,23 @@ export const WaveForm = GObject.registerClass({
         this.queue_draw();
     }
 
-    set peaks(p) {
+    set peaks(p: number[]) {
         this._peaks = p;
         this.queue_draw();
     }
 
-    set position(pos) {
+    set position(pos: number) {
         this._position = this._clamped(-pos * this._peaks.length * GUTTER);
         this._lastX = this._position;
         this.queue_draw();
         this.notify('position');
     }
 
-    get position() {
+    get position(): number {
         return -this._position / (this._peaks.length * GUTTER);
     }
 
-    _clamped(position) {
+    _clamped(position: number): number {
         if (position > 0)
             position = 0;
         else if (position < -this._peaks.length * GUTTER)
@@ -168,11 +181,11 @@ export const WaveForm = GObject.registerClass({
         return position;
     }
 
-    _setSourceRGBA(cr, rgba) {
+    _setSourceRGBA(cr: Cairo.Context, rgba: Gdk.RGBA): void {
         cr.setSourceRGBA(rgba.red, rgba.green, rgba.blue, rgba.alpha);
     }
 
-    destroy() {
+    destroy(): void {
         Adw.StyleManager.get_default().disconnect(this._hcId);
         this._peaks.length = 0;
         this.queue_draw();

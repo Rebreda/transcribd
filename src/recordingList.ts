@@ -4,10 +4,17 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 
 import { RecordingsDir } from './application.js';
-import { Recording } from './recording.js';
+import { Recording, RecordingClass } from './recording.js';
+
+export type RecordingListClass = InstanceType<typeof RecordingList>;
 
 export const RecordingList = GObject.registerClass(class RecordingList extends Gio.ListStore {
-    _init() {
+    _enumerator: Gio.FileEnumerator;
+
+    cancellable: Gio.Cancellable;
+    dirMonitor: Gio.FileMonitor;
+
+    _init(): void {
         super._init({ });
 
         this.cancellable = new Gio.Cancellable();
@@ -38,7 +45,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         this.copyOldFiles();
     }
 
-    copyOldFiles() {
+    copyOldFiles(): void {
         // Necessary code to move old recordings into the new location for few releases
         // FIXME: Remove by 3.40/3.42
         const oldDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_home_dir(), _('Recordings')]));
@@ -49,29 +56,26 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         const fileEnumerator = oldDir.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, this.cancellable);
         let allCopied = true;
 
-        const copyFiles = function (obj, res) {
+        const copyFiles = function (obj: Gio.FileEnumerator, res: Gio.AsyncResult) {
             try {
                 const fileInfos = obj.next_files_finish(res);
                 if (fileInfos.length) {
-                    fileInfos.forEach(info => {
+                    fileInfos.forEach((info: Gio.FileInfo) => {
                         const name = info.get_name();
                         const src = oldDir.get_child(name);
                         /* Translators: ""%s (Old)"" is the new name assigned to a file moved from
                             the old recordings location */
-                        // @ts-expect-error
                         const dest = RecordingsDir.get_child(_('%s (Old)').format(name));
 
                         // @ts-expect-error
-                        src.copy_async(dest, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_LOW, this.cancellable, null, (objCopy, resCopy) => {
+                        src.copy_async(dest, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_LOW, this.cancellable, null, (objCopy: Gio.File, resCopy: Gio.AsyncResult) => {
                             try {
                                 objCopy.copy_finish(resCopy);
                                 objCopy.trash_async(GLib.PRIORITY_LOW, this.cancellable, null);
                                 this.dirMonitor.emit_event(dest, src, Gio.FileMonitorEvent.MOVED_IN);
                             } catch (e) {
                                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                                    // @ts-expect-error
                                     console.error(`Failed to copy recording ${name} to the new location`);
-                                    // @ts-expect-error
                                     log(e);
                                 }
                                 allCopied = false;
@@ -83,13 +87,11 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                 } else {
                     fileEnumerator.close(this.cancellable);
                     if (allCopied) {
-                        oldDir.delete_async(GLib.PRIORITY_LOW, this.cancellable, (objDelete, resDelete) => {
+                        oldDir.delete_async(GLib.PRIORITY_LOW, this.cancellable, (objDelete: Gio.File, resDelete: Gio.AsyncResult) => {
                             try {
                                 objDelete.delete_finish(resDelete);
                             } catch (e) {
-                                // @ts-expect-error
                                 log('Failed to remove the old Recordings directory. Ignore if you\'re using flatpak');
-                                // @ts-expect-error
                                 log(e);
                             }
                         });
@@ -97,7 +99,6 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                 }
             } catch (e) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                    // @ts-expect-error
                     console.error(`Failed to copy old  recordings ${e}`);
 
             }
@@ -105,17 +106,16 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         fileEnumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, copyFiles);
     }
 
-    _enumerateDirectory(obj, res) {
+    _enumerateDirectory(obj: Gio.File, res: Gio.AsyncResult): void {
         this._enumerator = obj.enumerate_children_finish(res);
         if (this._enumerator === null) {
-            // @ts-expect-error
             log('The contents of the Recordings directory were not indexed.');
             return;
         }
         this._enumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this._onNextFiles.bind(this));
     }
 
-    _onNextFiles(obj, res) {
+    _onNextFiles(obj: Gio.FileEnumerator, res: Gio.AsyncResult): void {
         try {
             let fileInfos = obj.next_files_finish(res);
             if (fileInfos.length) {
@@ -130,27 +130,25 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
             }
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                // @ts-expect-error
                 console.error(`Failed to load recordings ${e}`);
 
         }
     }
 
-    getIndex(file) {
+    getIndex(file: Gio.File): number {
         for (let i = 0; i < this.get_n_items(); i++) {
-            // @ts-expect-error
-            if (this.get_item(i).uri === file.get_uri())
+            let item = this.get_item(i) as RecordingClass;
+            if (item.uri === file.get_uri())
                 return i;
         }
         return -1;
     }
 
-    sortedInsert(recording) {
+    sortedInsert(recording: RecordingClass): void {
         let added = false;
 
         for (let i = 0; i < this.get_n_items(); i++) {
-            const curr = this.get_item(i);
-            // @ts-expect-error
+            const curr = this.get_item(i) as RecordingClass;
             if (curr.timeModified.difference(recording.timeModified) <= 0) {
                 this.insert(i, recording);
                 added = true;

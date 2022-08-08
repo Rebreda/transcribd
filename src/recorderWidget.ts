@@ -4,13 +4,16 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=4.0';
 
 import { formatTime } from './utils.js';
-import { WaveForm, WaveType } from  './waveform.js';
+import { WaveForm, WaveFormClass, WaveType } from  './waveform.js';
+import { RecorderClass } from './recorder.js';
 
-var RecorderState = {
-    RECORDING: 0,
-    PAUSED: 1,
-    STOPPED: 2,
+enum RecorderState {
+    Recording,
+    Paused,
+    Stopped,
 };
+
+export type RecorderWidgetClass = InstanceType<typeof RecorderWidget>;
 
 export const RecorderWidget = GObject.registerClass({
     Template: 'resource:///org/gnome/SoundRecorder/ui/recorder.ui',
@@ -26,25 +29,24 @@ export const RecorderWidget = GObject.registerClass({
         'stopped': { param_types: [GObject.TYPE_OBJECT] },
     },
 }, class RecorderWidget extends Gtk.Box {
-    // @ts-ignore
-    /** @type {Gtk.Box} */ _recorderBox = this._recorderBox;
-    // @ts-ignore
-    /** @type {Gtk.Stack} */ _playbackStack = this._playbackStack;
-    // @ts-ignore
-    /** @type {Gtk.Label} */ _recorderTime = this._recorderTime;
-    // @ts-ignore
-    /** @type {Gtk.Button} */ _pauseBtn = this._pauseBtn;
-    // @ts-ignore
-    /** @type {Gtk.Button} */ _resumeBtn = this._resumeBtn;
+    _recorderBox!: Gtk.Box;
+    _playbackStack!: Gtk.Stack;
+    _recorderTime!: Gtk.Label;
+    _pauseBtn!: Gtk.Button;
+    _resumeBtn!: Gtk.Button;
 
-    _init(recorder) {
+    recorder: RecorderClass;
+    waveform: WaveFormClass;
+    actionsGroup: Gio.SimpleActionGroup;
+
+    _init(recorder: RecorderClass): void {
         super._init({});
         this.recorder = recorder;
 
         this.waveform = new WaveForm({
             vexpand: true,
             valign: Gtk.Align.FILL,
-        }, WaveType.RECORDER);
+        }, WaveType.Recorder);
         this._recorderBox.prepend(this.waveform);
 
         this.recorder.bind_property('current-peak', this.waveform, 'peak', GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT);
@@ -74,31 +76,31 @@ export const RecorderWidget = GObject.registerClass({
         startAction.bind_property('enabled', cancelAction, 'enabled', GObject.BindingFlags.INVERT_BOOLEAN);
     }
 
-    onPause() {
+    onPause(): void {
         this._playbackStack.visible_child_name = 'recorder-start';
-        this.state = RecorderState.PAUSED;
+        this.state = RecorderState.Paused;
 
         this.recorder.pause();
         this.emit('paused');
     }
 
-    onResume() {
+    onResume(): void {
         this._playbackStack.visible_child_name = 'recorder-pause';
-        this.state = RecorderState.RECORDING;
+        this.state = RecorderState.Recording;
 
         this.recorder.resume();
         this.emit('resumed');
     }
 
-    onStart() {
+    onStart(): void {
         this._playbackStack.visible_child_name = 'recorder-pause';
-        this.state = RecorderState.RECORDING;
+        this.state = RecorderState.Recording;
 
         this.recorder.start();
         this.emit('started');
     }
 
-    onCancel() {
+    onCancel(): void {
         this.onPause();
         let dialog = new Gtk.MessageDialog({
             modal: true,
@@ -114,14 +116,12 @@ export const RecorderWidget = GObject.registerClass({
         dialog.add_button(_('Delete'), Gtk.ResponseType.YES)
             .add_css_class('destructive-action');
         
-        // @ts-expect-error
-        dialog.set_transient_for(Gio.Application.get_default().get_active_window());
-        dialog.connect('response', (_, response) => {
+        dialog.set_transient_for(this.root as Gtk.Window);
+        dialog.connect('response', (_, response: number) => {
             switch (response) {
             case Gtk.ResponseType.YES: {
                 const recording = this.recorder.stop();
-                this.state = RecorderState.STOPPED;
-                this.waveform.destroy();
+                this.state = RecorderState.Stopped;
 
                 recording.delete();
                 this.emit('canceled');
@@ -138,45 +138,39 @@ export const RecorderWidget = GObject.registerClass({
         dialog.show();
     }
 
-    onStop() {
-        this.state = RecorderState.STOPPED;
+    onStop(): void {
+        this.state = RecorderState.Stopped;
         const recording = this.recorder.stop();
         this.waveform.destroy();
         this.emit('stopped', recording);
     }
 
-    // @ts-ignore
-    set state(recorderState) {
+    set state(recorderState: RecorderState) {
+        let pauseAction = this.actionsGroup.lookup('pause') as Gio.SimpleAction;
+        let resumeAction = this.actionsGroup.lookup('resume') as Gio.SimpleAction;
+        let startAction = this.actionsGroup.lookup('start') as Gio.SimpleAction;
+        let stopAction = this.actionsGroup.lookup('stop') as Gio.SimpleAction;
+
         switch (recorderState) {
-        case RecorderState.PAUSED:
-            // @ts-expect-error
-            this.actionsGroup.lookup('pause').enabled = false;
-            // @ts-expect-error
-            this.actionsGroup.lookup('resume').enabled = true;
+        case RecorderState.Paused:
+            pauseAction.enabled = false;
+            resumeAction.enabled = true;
             this._resumeBtn.grab_focus();
             this._recorderTime.add_css_class('paused');
             break;
-        case RecorderState.RECORDING:
-            // @ts-expect-error
-            this.actionsGroup.lookup('start').enabled = false;
-            // @ts-expect-error
-            this.actionsGroup.lookup('stop').enabled = true;
-            // @ts-expect-error
-            this.actionsGroup.lookup('resume').enabled = false;
-            // @ts-expect-error
-            this.actionsGroup.lookup('pause').enabled = true;
+        case RecorderState.Recording:
+            startAction.enabled = false;
+            stopAction.enabled = true;
+            resumeAction.enabled = false;
+            pauseAction.enabled = true;
             this._pauseBtn.grab_focus();
             this._recorderTime.remove_css_class('paused');
             break;
-        case RecorderState.STOPPED:
-            // @ts-expect-error
-            this.actionsGroup.lookup('start').enabled = true;
-            // @ts-expect-error
-            this.actionsGroup.lookup('stop').enabled = false;
-            // @ts-expect-error
-            this.actionsGroup.lookup('pause').enabled = false;
-            // @ts-expect-error
-            this.actionsGroup.lookup('resume').enabled = false;
+        case RecorderState.Stopped:
+            startAction.enabled = true;
+            stopAction.enabled = false;
+            pauseAction.enabled = false;
+            resumeAction.enabled = false;
             break;
         }
     }

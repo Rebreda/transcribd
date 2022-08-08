@@ -4,15 +4,24 @@ import GObject from 'gi://GObject'
 import Gst from 'gi://Gst'
 import GstPlayer from 'gi://GstPlayer'
 import Gtk from 'gi://Gtk?version=4.0'
+import Gio from 'gi://Gio';
 
-import { Row, RowState } from './row.js';
+import { Row, RowClass, RowState } from './row.js';
+import { RecordingClass } from './recording.js';
+
+export type RecordingsListWidgetClass = InstanceType<typeof RecordingsListWidget>;
 
 export const RecordingsListWidget = GObject.registerClass({
     Signals: {
         'row-deleted': { param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT] },
     },
 }, class RecordingsListWidget extends Adw.Bin {
-    _init(model, player) {
+    _player: GstPlayer.Player;
+    list: Gtk.ListBox;
+    activeRow: RowClass;
+    activePlayingRow: RowClass;
+
+    _init(model: Gio.ListModel, player: GstPlayer.Player): void {
         super._init();
         this.list = Gtk.ListBox.new();
         this.list.valign = Gtk.Align.START;
@@ -26,21 +35,23 @@ export const RecordingsListWidget = GObject.registerClass({
         this.set_child(this.list);
 
         this._player = player;
-        this._player.connect('state-changed', (_player, state) => {
+        this._player.connect('state-changed', (_player: GstPlayer.Player, state: GstPlayer.PlayerState) => {
             if (state === GstPlayer.PlayerState.STOPPED && this.activePlayingRow) {
-                this.activePlayingRow.state = RowState.PAUSED;
+                this.activePlayingRow.state = RowState.Paused;
                 this.activePlayingRow.waveform.position = 0.0;
             } else if (state === GstPlayer.PlayerState.PLAYING) {
-                this.activePlayingRow.state = RowState.PLAYING;
+                this.activePlayingRow.state = RowState.Playing;
             }
         });
 
-        this._player.connect('position-updated', (_player, pos) => {
-            const duration = this.activePlayingRow._recording.duration;
-            this.activePlayingRow.waveform.position = pos / duration;
+        this._player.connect('position-updated', (_player: GstPlayer.Player, pos: number) => {
+            if (this.activePlayingRow) {
+                const duration = this.activePlayingRow._recording.duration;
+                this.activePlayingRow.waveform.position = pos / duration;
+            }
         });
 
-        this.list.bind_model(model, recording => {
+        this.list.bind_model(model, (recording: RecordingClass) => {
             let row = new Row(recording);
 
             row.waveform.connect('gesture-pressed', _ => {
@@ -50,7 +61,6 @@ export const RecordingsListWidget = GObject.registerClass({
                         this.activePlayingRow.waveform.position = 0.0;
 
                     this.activePlayingRow = row;
-                    // @ts-expect-error
                     this._player.set_uri(recording.uri);
                 }
             });
@@ -59,16 +69,14 @@ export const RecordingsListWidget = GObject.registerClass({
                 this._player.seek(_position * row._recording.duration);
             });
 
-            row.connect('play', _row => {
+            row.connect('play', (_row: RowClass) => {
                 if (this.activePlayingRow) {
                     if (this.activePlayingRow !== _row) {
-                        this.activePlayingRow.state = RowState.PAUSED;
+                        this.activePlayingRow.state = RowState.Paused;
                         this.activePlayingRow.waveform.position = 0.0;
-                        // @ts-expect-error
                         this._player.set_uri(recording.uri);
                     }
                 } else {
-                    // @ts-expect-error
                     this._player.set_uri(recording.uri);
                 }
 
@@ -76,16 +84,16 @@ export const RecordingsListWidget = GObject.registerClass({
                 this._player.play();
             });
 
-            row.connect('pause', _row => {
+            row.connect('pause', (_row: RowClass) => {
                 this._player.pause();
             });
 
-            row.connect('seek-backward', _row => {
+            row.connect('seek-backward', (_row: RowClass) => {
                 let position = this._player.position - 10 * Gst.SECOND;
                 position = position < 0 || position > _row._recording.duration ? 0 : position;
                 this._player.seek(position);
             });
-            row.connect('seek-forward', _row => {
+            row.connect('seek-forward', (_row: RowClass) => {
                 let position = this._player.position + 10 * Gst.SECOND;
                 position = position < 0 || position > _row._recording.duration ? 0 : position;
                 this._player.seek(position);
@@ -111,7 +119,7 @@ export const RecordingsListWidget = GObject.registerClass({
         this.list.connect('row-activated', this.rowActivated.bind(this));
     }
 
-    rowActivated(list, row) {
+    rowActivated(_list: Gtk.ListBox, row: RowClass): void {
         if (row.editMode && row.expanded || this.activeRow && this.activeRow.editMode && this.activeRow.expanded)
             return;
 
@@ -125,7 +133,7 @@ export const RecordingsListWidget = GObject.registerClass({
         this.activeRow = row;
     }
 
-    isolateAt(index, expanded) {
+    isolateAt(index: number, expanded: boolean): void {
         const before = this.list.get_row_at_index(index - 1);
         const current = this.list.get_row_at_index(index);
         const after = this.list.get_row_at_index(index + 1);

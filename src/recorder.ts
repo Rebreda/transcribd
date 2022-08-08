@@ -20,11 +20,12 @@
 
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
 import Gst from 'gi://Gst';
 import GstPbutils from 'gi://GstPbutils';
 
 import { RecordingsDir, Settings } from './application.js';
-import { Recording } from './recording.js';
+import { Recording, RecordingClass } from './recording.js';
 
 // All supported encoding profiles.
 export const EncodingProfiles = [
@@ -64,6 +65,8 @@ var AudioChannels = {
     1: { name: 'mono', channels: 1 },
 };
 
+export type RecorderClass = InstanceType<typeof Recorder>;
+
 export const Recorder = GObject.registerClass({
     Properties: {
         'duration': GObject.ParamSpec.int(
@@ -78,11 +81,26 @@ export const Recorder = GObject.registerClass({
             0.0, 1.0, 0.0),
     },
 }, class Recorder extends GObject.Object {
-    _init() {
+    _peaks: number[];
+
+    _duration!: number;
+    _current_peak!: number;
+
+    pipeline: Gst.Pipeline;
+    level: Gst.Element;
+    ebin: Gst.Element;
+    filesink: Gst.Element;
+    recordBus: Gst.Bus;
+    handlerId: number;
+    file: Gio.File;
+    timeout: number;
+    _pipeState: Gst.State;
+
+    _init(): void {
         this._peaks = [];
         super._init({});
 
-        let srcElement, audioConvert, caps;
+        let srcElement: Gst.Element, audioConvert: Gst.Element, caps: Gst.Caps;
         try {
             this.pipeline = new Gst.Pipeline({ name: 'pipe' });
             srcElement = Gst.ElementFactory.make('pulsesrc', 'srcElement');
@@ -92,7 +110,6 @@ export const Recorder = GObject.registerClass({
             this.ebin = Gst.ElementFactory.make('encodebin', 'ebin');
             this.filesink = Gst.ElementFactory.make('filesink', 'filesink');
         } catch (error) {
-            // @ts-expect-error
             log(`Not all elements could be created.\n${error}`);
         }
 
@@ -103,7 +120,6 @@ export const Recorder = GObject.registerClass({
             this.pipeline.add(this.ebin);
             this.pipeline.add(this.filesink);
         } catch (error) {
-            // @ts-expect-error
             log(`Not all elements could be addded.\n${error}`);
         }
 
@@ -111,19 +127,18 @@ export const Recorder = GObject.registerClass({
         audioConvert.link_filtered(this.level, caps);
     }
 
-    start() {
+    start(): void {
         let index = 1;
 
         do {
             /* Translators: ""Recording %d"" is the default name assigned to a file created
             by the application (for example, "Recording 1"). */
-            // @ts-expect-error
             this.file = RecordingsDir.get_child_for_display_name(_('Recording %d').format(index++));
         } while (this.file.query_exists(null));
 
         this.recordBus = this.pipeline.get_bus();
         this.recordBus.add_signal_watch();
-        this.handlerId = this.recordBus.connect('message', (_, message) => {
+        this.handlerId = this.recordBus.connect('message', (_, message: Gst.Message) => {
             if (message !== null)
                 this._onMessageReceived(message);
         });
@@ -144,16 +159,16 @@ export const Recorder = GObject.registerClass({
         });
     }
 
-    pause() {
+    pause(): void {
         this.state = Gst.State.PAUSED;
     }
 
-    resume() {
+    resume(): void {
         if (this.state === Gst.State.PAUSED)
             this.state = Gst.State.PLAYING;
     }
 
-    stop() {
+    stop(): RecordingClass {
         this.state = Gst.State.NULL;
         this.duration = 0;
         if (this.timeout) {
@@ -178,23 +193,22 @@ export const Recorder = GObject.registerClass({
         return null;
     }
 
-    _onMessageReceived(message) {
+    _onMessageReceived(message: Gst.Message): void {
         switch (message.type) {
         case Gst.MessageType.ELEMENT: {
             if (GstPbutils.is_missing_plugin_message(message)) {
                 let detail = GstPbutils.missing_plugin_message_get_installer_detail(message);
                 let description = GstPbutils.missing_plugin_message_get_description(message);
-                // @ts-expect-error
                 log(`Detail: ${detail}\nDescription: ${description}`);
                 break;
             }
 
             let s = message.get_structure();
             if (s && s.has_name('level')) {
-                const peakVal = s.get_value('peak');
+                const peakVal = s.get_value('peak') as unknown as GObject.ValueArray;
 
                 if (peakVal)
-                    this.current_peak = peakVal.get_nth(0);
+                    this.current_peak = peakVal.get_nth(0) as number;
             }
             break;
         }
@@ -203,22 +217,20 @@ export const Recorder = GObject.registerClass({
             this.stop();
             break;
         case Gst.MessageType.WARNING:
-            // @ts-expect-error
             log(message.parse_warning()[0].toString());
             break;
         case Gst.MessageType.ERROR:
-            // @ts-expect-error
             log(message.parse_error().toString());
             break;
         }
     }
 
-    _getChannel() {
+    _getChannel(): number {
         let channelIndex = Settings.get_enum('audio-channel');
         return AudioChannels[channelIndex].channels;
     }
 
-    _getProfile() {
+    _getProfile(): GstPbutils.EncodingContainerProfile {
         let profileIndex = Settings.get_enum('audio-profile');
         const profile = EncodingProfiles[profileIndex];
 
@@ -233,17 +245,17 @@ export const Recorder = GObject.registerClass({
         return containerProfile;
     }
 
-    get duration() {
+    get duration(): number {
         return this._duration;
     }
 
     // eslint-disable-next-line camelcase
-    get current_peak() {
+    get current_peak(): number {
         return this._current_peak;
     }
 
     // eslint-disable-next-line camelcase
-    set current_peak(peak) {
+    set current_peak(peak: number) {
         if (peak > 0)
             peak = 0;
 
@@ -252,21 +264,20 @@ export const Recorder = GObject.registerClass({
         this.notify('current-peak');
     }
 
-    set duration(val) {
+    set duration(val: number) {
         this._duration = val;
         this.notify('duration');
     }
 
-    get state() {
+    get state(): Gst.State {
         return this._pipeState;
     }
 
-    set state(s) {
+    set state(s: Gst.State) {
         this._pipeState = s;
         const ret = this.pipeline.set_state(this._pipeState);
 
         if (ret === Gst.StateChangeReturn.FAILURE)
-            // @ts-expect-error
             log('Unable to update the recorder pipeline state');
     }
 

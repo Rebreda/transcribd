@@ -26,15 +26,18 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gst from 'gi://Gst';
 import Gtk from 'gi://Gtk?version=4.0';
+import { AboutWindow } from 'types/adw.js';
 
 export const RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]));
 export const CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
 export const Settings = new Gio.Settings({ schema: pkg.name });
 
-import { Window } from './window.js';
+import { Window, WindowClass } from './window.js';
 
 export const Application = GObject.registerClass(class Application extends Adw.Application {
-    _init() {
+    private window: WindowClass;
+
+    _init(): void {
         super._init({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
         GLib.set_application_name(_('Sound Recorder'));
         GLib.setenv('PULSE_PROP_media.role', 'production', true);
@@ -45,7 +48,6 @@ export const Application = GObject.registerClass(class Application extends Adw.A
 
         this.connect('handle-local-options', (app, options) => {
             if (options.contains('version')) {
-                // @ts-expect-error
                 print(pkg.version);
                 /* quit the invoked process after printing the version number
                  * leaving the running instance unaffected
@@ -56,7 +58,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         });
     }
 
-    _initAppMenu() {
+    _initAppMenu(): void {
         const profileAction = Settings.create_action('audio-profile');
         this.add_action(profileAction);
 
@@ -91,11 +93,9 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         this.set_accels_for_action('recording.export', ['<Primary>s']);
     }
 
-    vfunc_startup() {
+    vfunc_startup(): void {
         super.vfunc_startup();
-        // @ts-expect-error
         log('Sound Recorder (%s)'.format(pkg.name));
-        // @ts-expect-error
         log('Version: %s'.format(pkg.version));
 
         Gst.init(null);
@@ -105,14 +105,13 @@ export const Application = GObject.registerClass(class Application extends Adw.A
             RecordingsDir.make_directory_with_parents(null);
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
-                // @ts-expect-error
                 console.error(`Failed to create directory ${e}`);
 
         }
         this._initAppMenu();
     }
 
-    vfunc_activate() {
+    vfunc_activate(): void {
         if (!this.window) {
             this.window = new Window({ application: this });
             if (pkg.name.endsWith('Devel'))
@@ -121,7 +120,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         this.window.present();
     }
 
-    _showAbout() {
+    _showAbout(): void {
         let aboutDialog = new Adw.AboutWindow({
             artists: [
                 'Reda Lazri <the.red.shortcut@gmail.com>',

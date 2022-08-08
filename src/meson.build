@@ -14,6 +14,17 @@ app = configure_file(
   configuration: app_conf
 )
 
+tsc = find_program('tsc', required: true)
+tsc_out = meson.project_build_root() / 'tsc-out'
+
+typescript = custom_target(
+  'typescript-compile',
+  build_by_default: true,
+  build_always_stale: true,
+  command: [ tsc, '--outDir', tsc_out ],
+  output: ['tsc-output'],
+)
+
 source_res_conf = configuration_data()
 source_res_conf.set('profile', profile)
 src_res = gnome.compile_resources(
@@ -23,7 +34,8 @@ src_res = gnome.compile_resources(
   	output: '@BASENAME@',
   	configuration: source_res_conf
   ),
-  source_dir: '.',
+  dependencies: typescript,
+  source_dir: tsc_out,
   gresource_bundle: true,
   install: true,
   install_dir: sound_recorder_pkgdatadir
