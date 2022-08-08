@@ -26,7 +26,7 @@
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=4.0';
-import Cairo from 'cairo';
+import * as Cairo from 'cairo';
 
 export const WaveType = {
     RECORDER: 0,
@@ -49,7 +49,7 @@ export const WaveForm = GObject.registerClass({
             0.0, 1.0, 0.0),
     },
     Signals: {
-        'position-changed': {  param_types: [GObject.TYPE_FLOAT]  },
+        'position-changed': {  param_types: [GObject.TYPE_DOUBLE]  },
         'gesture-pressed': {},
     },
 }, class WaveForm extends Gtk.DrawingArea {

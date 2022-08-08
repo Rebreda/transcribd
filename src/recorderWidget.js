@@ -26,6 +26,17 @@ export const RecorderWidget = GObject.registerClass({
         'stopped': { param_types: [GObject.TYPE_OBJECT] },
     },
 }, class RecorderWidget extends Gtk.Box {
+    // @ts-ignore
+    /** @type {Gtk.Box} */ _recorderBox = this._recorderBox;
+    // @ts-ignore
+    /** @type {Gtk.Stack} */ _playbackStack = this._playbackStack;
+    // @ts-ignore
+    /** @type {Gtk.Label} */ _recorderTime = this._recorderTime;
+    // @ts-ignore
+    /** @type {Gtk.Button} */ _pauseBtn = this._pauseBtn;
+    // @ts-ignore
+    /** @type {Gtk.Button} */ _resumeBtn = this._resumeBtn;
+
     _init(recorder) {
         super._init({});
         this.recorder = recorder;
@@ -102,7 +113,8 @@ export const RecorderWidget = GObject.registerClass({
         dialog.add_button(_('Resume'), Gtk.ResponseType.NO);
         dialog.add_button(_('Delete'), Gtk.ResponseType.YES)
             .add_css_class('destructive-action');
-
+        
+        // @ts-expect-error
         dialog.set_transient_for(Gio.Application.get_default().get_active_window());
         dialog.connect('response', (_, response) => {
             switch (response) {
@@ -133,26 +145,37 @@ export const RecorderWidget = GObject.registerClass({
         this.emit('stopped', recording);
     }
 
+    // @ts-ignore
     set state(recorderState) {
         switch (recorderState) {
         case RecorderState.PAUSED:
+            // @ts-expect-error
             this.actionsGroup.lookup('pause').enabled = false;
+            // @ts-expect-error
             this.actionsGroup.lookup('resume').enabled = true;
             this._resumeBtn.grab_focus();
             this._recorderTime.add_css_class('paused');
             break;
         case RecorderState.RECORDING:
+            // @ts-expect-error
             this.actionsGroup.lookup('start').enabled = false;
+            // @ts-expect-error
             this.actionsGroup.lookup('stop').enabled = true;
+            // @ts-expect-error
             this.actionsGroup.lookup('resume').enabled = false;
+            // @ts-expect-error
             this.actionsGroup.lookup('pause').enabled = true;
             this._pauseBtn.grab_focus();
             this._recorderTime.remove_css_class('paused');
             break;
         case RecorderState.STOPPED:
+            // @ts-expect-error
             this.actionsGroup.lookup('start').enabled = true;
+            // @ts-expect-error
             this.actionsGroup.lookup('stop').enabled = false;
+            // @ts-expect-error
             this.actionsGroup.lookup('pause').enabled = false;
+            // @ts-expect-error
             this.actionsGroup.lookup('resume').enabled = false;
             break;
         }

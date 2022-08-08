@@ -6,7 +6,7 @@ import GObject from 'gi://GObject';
 import { RecordingsDir } from './application.js';
 import { Recording } from './recording.js';
 
-export const RecordingList = new GObject.registerClass(class RecordingList extends Gio.ListStore {
+export const RecordingList = GObject.registerClass(class RecordingList extends Gio.ListStore {
     _init() {
         super._init({ });
 
@@ -58,8 +58,10 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
                         const src = oldDir.get_child(name);
                         /* Translators: ""%s (Old)"" is the new name assigned to a file moved from
                             the old recordings location */
+                        // @ts-expect-error
                         const dest = RecordingsDir.get_child(_('%s (Old)').format(name));
 
+                        // @ts-expect-error
                         src.copy_async(dest, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_LOW, this.cancellable, null, (objCopy, resCopy) => {
                             try {
                                 objCopy.copy_finish(resCopy);
@@ -67,7 +69,9 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
                                 this.dirMonitor.emit_event(dest, src, Gio.FileMonitorEvent.MOVED_IN);
                             } catch (e) {
                                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+                                    // @ts-expect-error
                                     console.error(`Failed to copy recording ${name} to the new location`);
+                                    // @ts-expect-error
                                     log(e);
                                 }
                                 allCopied = false;
@@ -83,7 +87,9 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
                             try {
                                 objDelete.delete_finish(resDelete);
                             } catch (e) {
+                                // @ts-expect-error
                                 log('Failed to remove the old Recordings directory. Ignore if you\'re using flatpak');
+                                // @ts-expect-error
                                 log(e);
                             }
                         });
@@ -91,6 +97,7 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
                 }
             } catch (e) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    // @ts-expect-error
                     console.error(`Failed to copy old  recordings ${e}`);
 
             }
@@ -101,6 +108,7 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
     _enumerateDirectory(obj, res) {
         this._enumerator = obj.enumerate_children_finish(res);
         if (this._enumerator === null) {
+            // @ts-expect-error
             log('The contents of the Recordings directory were not indexed.');
             return;
         }
@@ -122,6 +130,7 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
             }
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                // @ts-expect-error
                 console.error(`Failed to load recordings ${e}`);
 
         }
@@ -129,6 +138,7 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
 
     getIndex(file) {
         for (let i = 0; i < this.get_n_items(); i++) {
+            // @ts-expect-error
             if (this.get_item(i).uri === file.get_uri())
                 return i;
         }
@@ -140,6 +150,7 @@ export const RecordingList = new GObject.registerClass(class RecordingList exten
 
         for (let i = 0; i < this.get_n_items(); i++) {
             const curr = this.get_item(i);
+            // @ts-expect-error
             if (curr.timeModified.difference(recording.timeModified) <= 0) {
                 this.insert(i, recording);
                 added = true;

@@ -17,13 +17,16 @@
  * Author: Meg Ford <megford@gnome.org>
  *
  */
+// @ts-expect-error
 import Gettext from 'gettext'
 import GLib from 'gi://GLib'
 import Gst from 'gi://Gst'
 
 export const formatTime = nanoSeconds => {
+    // @ts-expect-error
     const time = new Date(0, 0, 0, 0, 0, 0, parseInt(nanoSeconds / Gst.MSECOND));
 
+    // @ts-expect-error
     const miliseconds = parseInt(time.getMilliseconds() / 100).toString();
     const seconds = time.getSeconds().toString().padStart(2, '0');
     const minutes = time.getMinutes().toString().padStart(2, '0');

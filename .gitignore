@@ -3,3 +3,5 @@ _build
 **/*.*~
 **/tags.*
 .flatpak
+node_modules/
+.vscode/

@@ -7,7 +7,7 @@ import Gtk from 'gi://Gtk?version=4.0'
 
 import { Row, RowState } from './row.js';
 
-export const RecordingsListWidget = new GObject.registerClass({
+export const RecordingsListWidget = GObject.registerClass({
     Signals: {
         'row-deleted': { param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT] },
     },
@@ -50,6 +50,7 @@ export const RecordingsListWidget = new GObject.registerClass({
                         this.activePlayingRow.waveform.position = 0.0;
 
                     this.activePlayingRow = row;
+                    // @ts-expect-error
                     this._player.set_uri(recording.uri);
                 }
             });
@@ -63,9 +64,11 @@ export const RecordingsListWidget = new GObject.registerClass({
                     if (this.activePlayingRow !== _row) {
                         this.activePlayingRow.state = RowState.PAUSED;
                         this.activePlayingRow.waveform.position = 0.0;
+                        // @ts-expect-error
                         this._player.set_uri(recording.uri);
                     }
                 } else {
+                    // @ts-expect-error
                     this._player.set_uri(recording.uri);
                 }
 

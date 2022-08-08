@@ -8,7 +8,7 @@ import GstPbutils from 'gi://GstPbutils';
 import { CacheDir } from './application.js';
 import { EncodingProfiles } from './recorder.js';
 
-export const Recording = new GObject.registerClass({
+export const Recording = GObject.registerClass({
     Signals: {
         'peaks-updated': {},
         'peaks-loading': {},
@@ -101,6 +101,7 @@ export const Recording = new GObject.registerClass({
         if (data.length > 0) {
             this._peaks = data;
             this.emit('peaks-updated');
+            // @ts-expect-error
             const buffer = new GLib.Bytes(JSON.stringify(data));
             this.waveformCache.replace_contents_bytes_async(buffer, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null, (obj, res) => {
                 obj.replace_contents_finish(res);
@@ -122,6 +123,7 @@ export const Recording = new GObject.registerClass({
         this.file.copy_async(dest,
             Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, null, (obj, res) => {
                 if (obj.copy_finish(res))
+                    // @ts-expect-error
                     log('Exporting file: done');
             });
     }
@@ -135,10 +137,12 @@ export const Recording = new GObject.registerClass({
             this.waveformCache.load_bytes_async(null, (obj, res) => {
                 const bytes = obj.load_bytes_finish(res)[0];
                 try {
+                    // @ts-expect-error
                     let decoder = new TextDecoder('utf-8');
                     this._peaks = JSON.parse(decoder.decode(bytes.get_data()));
                     this.emit('peaks-updated');
                 } catch (error) {
+                    // @ts-expect-error
                     log(`Error reading waveform data file: ${this.name}_data`);
                 }
             });
@@ -152,9 +156,11 @@ export const Recording = new GObject.registerClass({
         this.pipeline = Gst.parse_launch('uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked');
 
 
+        // @ts-expect-error
         let uridecodebin = this.pipeline.get_by_name('uridecodebin');
         uridecodebin.set_property('uri', this.uri);
 
+        // @ts-expect-error
         let fakesink = this.pipeline.get_by_name('faked');
         fakesink.set_property('qos', false);
         fakesink.set_property('sync', true);
@@ -172,6 +178,7 @@ export const Recording = new GObject.registerClass({
                     const peakVal = s.get_value('peak');
 
                     if (peakVal) {
+                        // @ts-expect-error
                         const peak = peakVal.get_nth(0);
                         this._loadedPeaks.push(Math.pow(10, peak / 20));
                     }

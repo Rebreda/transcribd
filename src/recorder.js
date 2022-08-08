@@ -64,7 +64,7 @@ var AudioChannels = {
     1: { name: 'mono', channels: 1 },
 };
 
-export const Recorder = new GObject.registerClass({
+export const Recorder = GObject.registerClass({
     Properties: {
         'duration': GObject.ParamSpec.int(
             'duration',
@@ -92,6 +92,7 @@ export const Recorder = new GObject.registerClass({
             this.ebin = Gst.ElementFactory.make('encodebin', 'ebin');
             this.filesink = Gst.ElementFactory.make('filesink', 'filesink');
         } catch (error) {
+            // @ts-expect-error
             log(`Not all elements could be created.\n${error}`);
         }
 
@@ -102,6 +103,7 @@ export const Recorder = new GObject.registerClass({
             this.pipeline.add(this.ebin);
             this.pipeline.add(this.filesink);
         } catch (error) {
+            // @ts-expect-error
             log(`Not all elements could be addded.\n${error}`);
         }
 
@@ -115,6 +117,7 @@ export const Recorder = new GObject.registerClass({
         do {
             /* Translators: ""Recording %d"" is the default name assigned to a file created
             by the application (for example, "Recording 1"). */
+            // @ts-expect-error
             this.file = RecordingsDir.get_child_for_display_name(_('Recording %d').format(index++));
         } while (this.file.query_exists(null));
 
@@ -181,6 +184,7 @@ export const Recorder = new GObject.registerClass({
             if (GstPbutils.is_missing_plugin_message(message)) {
                 let detail = GstPbutils.missing_plugin_message_get_installer_detail(message);
                 let description = GstPbutils.missing_plugin_message_get_description(message);
+                // @ts-expect-error
                 log(`Detail: ${detail}\nDescription: ${description}`);
                 break;
             }
@@ -199,9 +203,11 @@ export const Recorder = new GObject.registerClass({
             this.stop();
             break;
         case Gst.MessageType.WARNING:
+            // @ts-expect-error
             log(message.parse_warning()[0].toString());
             break;
         case Gst.MessageType.ERROR:
+            // @ts-expect-error
             log(message.parse_error().toString());
             break;
         }
@@ -260,6 +266,7 @@ export const Recorder = new GObject.registerClass({
         const ret = this.pipeline.set_state(this._pipeState);
 
         if (ret === Gst.StateChangeReturn.FAILURE)
+            // @ts-expect-error
             log('Unable to update the recorder pipeline state');
     }
 

@@ -34,6 +34,33 @@ export const Row = GObject.registerClass({
             false),
     },
 }, class Row extends Gtk.ListBoxRow {
+    // @ts-ignore
+    /** @type {Gtk.Stack} */ _playbackStack = this._playbackStack;
+    // @ts-ignore
+    /** @type {Gtk.Stack} */ _mainStack = this._mainStack;
+    // @ts-ignore
+    /** @type {Gtk.Stack} */ _waveformStack = this._waveformStack;
+    // @ts-ignore
+    /** @type {Gtk.Stack} */ _rightStack = this._rightStack;
+    // @ts-ignore
+    /** @type {Gtk.Label} */ _name = this._name;
+    // @ts-ignore
+    /** @type {Gtk.Entry} */ _entry = this._entry;
+    // @ts-ignore
+    /** @type {Gtk.Label} */ _date = this._date;
+    // @ts-ignore
+    /** @type {Gtk.Label} */ _duration = this._duration;
+    // @ts-ignore
+    /** @type {Gtk.Revealer} */ _revealer = this._revealer;
+    // @ts-ignore
+    /** @type {Gtk.Box} */ _playbackControls = this._playbackControls;
+    // @ts-ignore
+    /** @type {Gtk.Button} */ _saveBtn = this._saveBtn;
+    // @ts-ignore
+    /** @type {Gtk.Button} */ _playBtn = this._playBtn;
+    // @ts-ignore
+    /** @type {Gtk.Button} */ _pauseBtn= this._pauseBtn;
+
     _init(recording) {
         this._recording = recording;
         this._expanded = false;
@@ -67,6 +94,7 @@ export const Row = GObject.registerClass({
 
         let exportAction = new Gio.SimpleAction({ name: 'export' });
         exportAction.connect('activate', () => {
+            // @ts-expect-error
             const window = Gio.Application.get_default().get_active_window();
             this.exportDialog = Gtk.FileChooserNative.new(_('Export Recording'), window, Gtk.FileChooserAction.SAVE, _('_Export'), _('_Cancel'));
             this.exportDialog.set_current_name(`${this._recording.name}.${this._recording.extension}`);
@@ -133,6 +161,7 @@ export const Row = GObject.registerClass({
         });
 
         this.keyController = Gtk.EventControllerKey.new();
+        // @ts-ignore
         this.keyController.connect('key-pressed', (controller, key, _code, _state) => {
             this._entry.remove_css_class('error');
 
@@ -155,11 +184,11 @@ export const Row = GObject.registerClass({
         });
 
         // Force LTR, we don't want forward/play/backward
-        this._playbackControls.direction = Gtk.TextDirection.LTR;
+        this._playbackControls.set_direction(Gtk.TextDirection.LTR);
 
         // Force LTR, we don't want reverse hh:mm::ss
-        this._duration.direction = Gtk.TextDirection.LTR;
-        this._duration.markup = formatTime(recording.duration);
+        this._duration.set_direction(Gtk.TextDirection.LTR);
+        this._duration.set_markup(formatTime(recording.duration));
         recording.connect('notify::duration', () => {
             this._duration.label = formatTime(recording.duration);
         });
@@ -195,6 +224,7 @@ export const Row = GObject.registerClass({
 
         for (const action of this.actionGroup.list_actions()) {
             if (action !== 'save')
+                // @ts-expect-error
                 this.actionGroup.lookup(action).enabled = !state;
         }
     }
@@ -217,13 +247,17 @@ export const Row = GObject.registerClass({
 
         switch (rowState) {
         case RowState.PLAYING:
+            // @ts-expect-error
             this.actionGroup.lookup('play').enabled = false;
+            // @ts-expect-error
             this.actionGroup.lookup('pause').enabled = true;
             this._playbackStack.visible_child_name = 'pause';
             this._pauseBtn.grab_focus();
             break;
         case RowState.PAUSED:
+            // @ts-expect-error
             this.actionGroup.lookup('play').enabled = true;
+            // @ts-expect-error
             this.actionGroup.lookup('pause').enabled = false;
             this._playbackStack.visible_child_name = 'play';
             this._playBtn.grab_focus();

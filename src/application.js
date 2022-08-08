@@ -18,6 +18,8 @@
 *
 */
 
+/// <reference path="../types/ambient.d.ts" />
+
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -35,14 +37,15 @@ export const Application = GObject.registerClass(class Application extends Adw.A
     _init() {
         super._init({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
         GLib.set_application_name(_('Sound Recorder'));
-        GLib.setenv('PULSE_PROP_media.role', 'production', 1);
-        GLib.setenv('PULSE_PROP_application.icon_name', pkg.name, 1);
+        GLib.setenv('PULSE_PROP_media.role', 'production', true);
+        GLib.setenv('PULSE_PROP_application.icon_name', pkg.name, true);
 
         this.add_main_option('version', 'v'.charCodeAt(0), GLib.OptionFlags.NONE, GLib.OptionArg.NONE,
             'Print version information and exit', null);
 
         this.connect('handle-local-options', (app, options) => {
             if (options.contains('version')) {
+                // @ts-expect-error
                 print(pkg.version);
                 /* quit the invoked process after printing the version number
                  * leaving the running instance unaffected
@@ -90,7 +93,9 @@ export const Application = GObject.registerClass(class Application extends Adw.A
 
     vfunc_startup() {
         super.vfunc_startup();
+        // @ts-expect-error
         log('Sound Recorder (%s)'.format(pkg.name));
+        // @ts-expect-error
         log('Version: %s'.format(pkg.version));
 
         Gst.init(null);
@@ -100,6 +105,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
             RecordingsDir.make_directory_with_parents(null);
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
+                // @ts-expect-error
                 console.error(`Failed to create directory ${e}`);
 
         }
@@ -128,6 +134,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
                 'Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>',
                 'Felipe Borges <felipeborges@gnome.org>',
                 'Kavan Mevada <kavanmevada@gmail.com>',
+                'Christopher Davis <christopherdavis@gnome.org>',
             ],
             /* Translators: Replace "translator-credits" with your names, one name per line */
             translator_credits: _('translator-credits'),

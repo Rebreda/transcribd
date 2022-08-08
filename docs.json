@@ -1,0 +1,50 @@
+{
+    "options": {
+        "inferGenerics": true,
+        "promisify": false,
+        "propertyCase": "both",
+        "versionedOutput": false,
+        "versionedImports": false
+    },
+    "libraries": {
+        "GObject": [
+            "2.0"
+        ],
+        "GLib": [
+            "2.0"
+        ],
+        "Gio": [
+            "2.0"
+        ],
+        "Gdk": [
+            "4.0"
+        ],
+        "Gtk": [
+            "4.0"
+        ],
+        "Adw": [
+            "1"
+        ],
+        "Gst": [
+            "1.0"
+        ],
+        "GstAudio": [
+            "1.0"
+        ],
+        "GstPlayer": [
+            "1.0"
+        ],
+        "GstPbutils": [
+            "1.0"
+        ],
+        "HarfBuzz": [
+            "0.0"
+        ],
+        "Pango": [
+            "1.0"
+        ],
+        "cairo": [
+            "1.0"
+        ]
+    }
+}

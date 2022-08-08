@@ -9,6 +9,9 @@ imports.package.init({
     libdir: "@libdir@"
 });
 
+pkg.initGettext();
+pkg.initFormat();
+
 const loop = new GLib.MainLoop(null, false);
 const main = await import('resource:///org/gnome/SoundRecorder@profile@/js/main.js');
 GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {

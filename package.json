@@ -1,0 +1,25 @@
+{
+  "name": "gnome-sound-recorder",
+  "version": "43.beta",
+  "main": "src/main.ts",
+  "repository": "git@gitlab.gnome.org:GNOME/gnome-sound-recorder.git",
+  "contributors": [
+    "Meg Ford <medford@gnome.org>",
+    "Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>",
+    "Felipe Borges <felipeborges@gnome.org>",
+    "Kavan Mevada <kavanmevada@gmail.com>",
+    "Christopher Davis <christopherdavis@gnome.org>"
+  ],
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "typescript": "^4.1.0"
+  },
+  "devDependencies": {
+    "@gi.ts/cli": "^1.5.5"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "generate-types": "gi-ts generate",
+    "config": "gi-ts config"
+  }
+}

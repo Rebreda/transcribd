@@ -26,9 +26,6 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* exported main */
 
-pkg.initGettext();
-pkg.initFormat();
-
 import { Application } from './application.js';
 
 export function main(argv) {
