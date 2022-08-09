@@ -78,11 +78,12 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                             objCopy.copy_finish(resCopy);
                             objCopy.trash_async(GLib.PRIORITY_LOW, this.cancellable, null);
                             this.dirMonitor.emit_event(dest, src, Gio.FileMonitorEvent.MOVED_IN);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        } catch (e: any) {
-                            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                                console.error(`Failed to copy recording ${name} to the new location`);
-                                log(e);
+                        } catch (e: unknown) {
+                            if (e instanceof GLib.Error) {
+                                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+                                    console.error(`Failed to copy recording ${name} to the new location`);
+                                    log(e);
+                                }
                             }
                             allCopied = false;
                         }
@@ -98,19 +99,20 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                     oldDir?.delete_async(GLib.PRIORITY_LOW, this.cancellable, (objDelete: Gio.File | null, resDelete: Gio.AsyncResult) => {
                         try {
                             objDelete?.delete_finish(resDelete);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        } catch (e: any) {
-                            log('Failed to remove the old Recordings directory. Ignore if you\'re using flatpak');
-                            log(e);
+                        } catch (e: unknown) {
+                            if (e instanceof GLib.Error) {
+                                log('Failed to remove the old Recordings directory. Ignore if you\'re using flatpak');
+                                log(e);
+                            }
                         }
                     });
                 }
             }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                console.error(`Failed to copy old  recordings ${e}`);
-
+        } catch (e: unknown) {
+            if (e instanceof GLib.Error) {
+                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    console.error(`Failed to copy old  recordings ${e}`);
+            }
         }
     }
 
@@ -136,11 +138,11 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
             } else {
                 this._enumerator?.close(this.cancellable);
             }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                console.error(`Failed to load recordings ${e}`);
-
+        } catch (e: unknown) {
+            if (e instanceof GLib.Error) {
+                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    console.error(`Failed to load recordings ${e}`);
+            }
         }
     }
 

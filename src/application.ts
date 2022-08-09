@@ -105,11 +105,11 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         try {
             CacheDir.make_directory_with_parents(null);
             RecordingsDir.make_directory_with_parents(null);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
-                console.error(`Failed to create directory ${e}`);
-
+        } catch (e: unknown) {
+            if (e instanceof GLib.Error) {
+                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
+                    console.error(`Failed to create directory ${e}`);
+            }
         }
         this._initAppMenu();
     }
