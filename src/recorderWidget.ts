@@ -11,7 +11,7 @@ enum RecorderState {
     Recording,
     Paused,
     Stopped,
-};
+}
 
 export type RecorderWidgetClass = InstanceType<typeof RecorderWidget>;
 
@@ -65,7 +65,7 @@ export const RecorderWidget = GObject.registerClass({
 
         this.actionsGroup = new Gio.SimpleActionGroup();
 
-        for (let { name, callback, enabled } of actions) {
+        for (const { name, callback, enabled } of actions) {
             const action = new Gio.SimpleAction({ name, enabled });
             action.connect('activate', callback);
             this.actionsGroup.add_action(action);
@@ -102,7 +102,7 @@ export const RecorderWidget = GObject.registerClass({
 
     onCancel(): void {
         this.onPause();
-        let dialog = new Gtk.MessageDialog({
+        const dialog = new Gtk.MessageDialog({
             modal: true,
             destroy_with_parent: true,
             buttons: Gtk.ButtonsType.NONE,
@@ -147,10 +147,10 @@ export const RecorderWidget = GObject.registerClass({
     }
 
     set state(recorderState: RecorderState) {
-        let pauseAction = this.actionsGroup.lookup('pause') as Gio.SimpleAction;
-        let resumeAction = this.actionsGroup.lookup('resume') as Gio.SimpleAction;
-        let startAction = this.actionsGroup.lookup('start') as Gio.SimpleAction;
-        let stopAction = this.actionsGroup.lookup('stop') as Gio.SimpleAction;
+        const pauseAction = this.actionsGroup.lookup('pause') as Gio.SimpleAction;
+        const resumeAction = this.actionsGroup.lookup('resume') as Gio.SimpleAction;
+        const startAction = this.actionsGroup.lookup('start') as Gio.SimpleAction;
+        const stopAction = this.actionsGroup.lookup('stop') as Gio.SimpleAction;
 
         switch (recorderState) {
         case RecorderState.Paused:

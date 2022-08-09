@@ -45,22 +45,22 @@ export const Recording = GObject.registerClass({
         this._peaks = []
         this._loadedPeaks = [];
 
-        let info = file.query_info('time::created,time::modified,standard::content-type', 0, null);
+        const info = file.query_info('time::created,time::modified,standard::content-type', 0, null);
         const contentType = info.get_attribute_string('standard::content-type');
 
-        for (let profile of EncodingProfiles) {
+        for (const profile of EncodingProfiles) {
             if (profile.contentType === contentType) {
                 this._extension = profile.extension;
                 break;
             }
         }
 
-        let timeModified = info.get_attribute_uint64('time::modified');
-        let timeCreated = info.get_attribute_uint64('time::created');
+        const timeModified = info.get_attribute_uint64('time::modified');
+        const timeCreated = info.get_attribute_uint64('time::created');
         this._timeModified = GLib.DateTime.new_from_unix_local(timeModified);
         this._timeCreated = GLib.DateTime.new_from_unix_local(timeCreated);
 
-        var discoverer = new GstPbutils.Discoverer();
+        const discoverer = new GstPbutils.Discoverer();
         discoverer.start();
         discoverer.connect('discovered', (_discoverer, audioInfo) => {
             this._duration = audioInfo.get_duration();
@@ -114,7 +114,7 @@ export const Recording = GObject.registerClass({
         if (data.length > 0) {
             this._peaks = data;
             this.emit('peaks-updated');
-            let enc = new TextEncoder();
+            const enc = new TextEncoder();
             const buffer = new GLib.Bytes(enc.encode(JSON.stringify(data)));
             this.waveformCache.replace_contents_bytes_async(buffer, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null, (obj: Gio.File | null, res: Gio.AsyncResult) => {
                 if (obj)
@@ -134,7 +134,7 @@ export const Recording = GObject.registerClass({
     }
 
     save(dest: Gio.File): void {
-        this.file.copy_async(dest, // @ts-expect-error
+        this.file.copy_async(dest, // @ts-expect-error TypeScript isn't reading async function params correctly
             Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, null, (obj: Gio.File, res: Gio.AsyncResult) => {
                 if (obj.copy_finish(res))
                     log('Exporting file: done');
@@ -150,9 +150,14 @@ export const Recording = GObject.registerClass({
             this.waveformCache.load_bytes_async(null, (obj: Gio.File | null, res: Gio.AsyncResult) => {
                 const bytes = obj?.load_bytes_finish(res)[0];
                 try {
-                    let decoder = new TextDecoder('utf-8');
-                    this._peaks = JSON.parse(decoder.decode(bytes?.get_data()!));
-                    this.emit('peaks-updated');
+                    const decoder = new TextDecoder('utf-8');
+                    if (bytes) {
+                        const data = bytes.get_data();
+                        if (data) {
+                            this._peaks = JSON.parse(decoder.decode(data));
+                            this.emit('peaks-updated');
+                        }
+                    }
                 } catch (error) {
                     log(`Error reading waveform data file: ${this.name}_data`);
                 }
@@ -167,10 +172,10 @@ export const Recording = GObject.registerClass({
         this.pipeline = Gst.parse_launch('uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked') as Gst.Bin;
 
 
-        let uridecodebin = this.pipeline.get_by_name('uridecodebin');
+        const uridecodebin = this.pipeline.get_by_name('uridecodebin');
         uridecodebin?.set_property('uri', this.uri);
 
-        let fakesink = this.pipeline.get_by_name('faked');
+        const fakesink = this.pipeline.get_by_name('faked');
         fakesink?.set_property('qos', false);
         fakesink?.set_property('sync', true);
 
@@ -180,22 +185,23 @@ export const Recording = GObject.registerClass({
 
         bus?.connect('message', (_bus: Gst.Bus, message: Gst.Message) => {
             switch (message.type) {
-            case Gst.MessageType.ELEMENT:
-                let s = message.get_structure();
-                if (s && s.has_name('level')) {
-                    const peakVal = s.get_value('peak') as unknown as GObject.ValueArray;
+                case Gst.MessageType.ELEMENT: {
+                    const s = message.get_structure();
+                    if (s && s.has_name('level')) {
+                        const peakVal = s.get_value('peak') as unknown as GObject.ValueArray;
 
-                    if (peakVal) {
-                        const peak = peakVal.get_nth(0) as number;
-                        this._loadedPeaks.push(Math.pow(10, peak / 20));
+                        if (peakVal) {
+                            const peak = peakVal.get_nth(0) as number;
+                            this._loadedPeaks.push(Math.pow(10, peak / 20));
+                        }
                     }
+                    break;
                 }
-                break;
-            case Gst.MessageType.EOS:
-                this.peaks = this._loadedPeaks;
-                this.pipeline?.set_state(Gst.State.NULL);
-                this.pipeline = null;
-                break;
+                case Gst.MessageType.EOS:
+                    this.peaks = this._loadedPeaks;
+                    this.pipeline?.set_state(Gst.State.NULL);
+                    this.pipeline = null;
+                    break;
             }
         });
     }

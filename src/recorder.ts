@@ -60,7 +60,7 @@ export const EncodingProfiles = [
         extension: 'm4a' },
 ];
 
-var AudioChannels = [
+const AudioChannels = [
     { name: 'stereo', channels: 2 },
     { name: 'mono', channels: 1 },
 ];
@@ -102,34 +102,28 @@ export const Recorder = GObject.registerClass({
 
         let srcElement: Gst.Element;
         let audioConvert: Gst.Element;
-        let caps: Gst.Caps;
+        const caps = Gst.Caps.from_string('audio/x-raw');
 
         this.pipeline = new Gst.Pipeline({ name: 'pipe' });
 
-        try {
-            srcElement = Gst.ElementFactory.make('pulsesrc', 'srcElement')!;
-            audioConvert = Gst.ElementFactory.make('audioconvert', 'audioConvert')!;
-            caps = Gst.Caps.from_string('audio/x-raw')!;
-            this.level = Gst.ElementFactory.make('level', 'level')!;
-            this.ebin = Gst.ElementFactory.make('encodebin', 'ebin')!;
-            this.filesink = Gst.ElementFactory.make('filesink', 'filesink')!;
-        } catch (error) {
-            log(`Not all elements could be created.\n${error}`);
-        }
+        const elements = [
+            ['pulsesrc', 'srcElement'],
+            ['audioconvert', 'audioConvert'],
+            ['level', 'level'],
+            ['encodebin', 'ebin'],
+            ['filesink', 'filesink']
+        ].map(([fac, name]) => {
+            const element = Gst.ElementFactory.make(fac, name);
+            if (!element)
+                throw new Error('Not all elements could be created.');
+            this.pipeline.add(element);
+            return element;
+        });
 
-        try {
-            this.pipeline.add(srcElement!);
-            this.pipeline.add(audioConvert!);
-            this.pipeline.add(this.level!);
-            this.pipeline.add(this.ebin!);
-            this.pipeline.add(this.filesink!);
-        } catch (error) {
-            log(`Not all elements could be addded.\n${error}`);
-        }
+        [srcElement, audioConvert, this.level, this.ebin, this.filesink]  = elements;
 
-        srcElement!.link(audioConvert!);
-        audioConvert!.link_filtered(this.level!, caps!);
-
+        srcElement.link(audioConvert);
+        audioConvert.link_filtered(this.level, caps);
     }
 
     start(): void {
@@ -149,10 +143,12 @@ export const Recorder = GObject.registerClass({
         });
 
 
-        this.ebin!.set_property('profile', this._getProfile());
-        this.filesink!.set_property('location', this.file.get_path());
-        this.level!.link(this.ebin!);
-        this.ebin!.link(this.filesink!);
+        if (this.ebin && this.level && this.filesink) {
+            this.ebin.set_property('profile', this._getProfile());
+            this.filesink.set_property('location', this.file.get_path());
+            this.level.link(this.ebin);
+            this.ebin.link(this.filesink);
+        }
 
         this.state = Gst.State.PLAYING;
 
@@ -190,7 +186,7 @@ export const Recorder = GObject.registerClass({
 
 
         if (this.file && this.file.query_exists(null) && this._peaks.length > 0) {
-            let recording = new Recording(this.file);
+            const recording = new Recording(this.file);
             recording.peaks = this._peaks.slice();
             this._peaks.length = 0;
             return recording;
@@ -201,56 +197,57 @@ export const Recorder = GObject.registerClass({
 
     _onMessageReceived(message: Gst.Message): void {
         switch (message.type) {
-        case Gst.MessageType.ELEMENT: {
-            if (GstPbutils.is_missing_plugin_message(message)) {
-                let detail = GstPbutils.missing_plugin_message_get_installer_detail(message);
-                let description = GstPbutils.missing_plugin_message_get_description(message);
-                log(`Detail: ${detail}\nDescription: ${description}`);
+            case Gst.MessageType.ELEMENT: {
+                if (GstPbutils.is_missing_plugin_message(message)) {
+                    const detail = GstPbutils.missing_plugin_message_get_installer_detail(message);
+                    const description = GstPbutils.missing_plugin_message_get_description(message);
+                    log(`Detail: ${detail}\nDescription: ${description}`);
+                    break;
+                }
+
+                const s = message.get_structure();
+                if (s && s.has_name('level')) {
+                    const peakVal = s.get_value('peak') as unknown as GObject.ValueArray;
+
+                    if (peakVal)
+                        this.current_peak = peakVal.get_nth(0) as number;
+                }
                 break;
             }
 
-            let s = message.get_structure();
-            if (s && s.has_name('level')) {
-                const peakVal = s.get_value('peak') as unknown as GObject.ValueArray;
-
-                if (peakVal)
-                    this.current_peak = peakVal.get_nth(0) as number;
+            case Gst.MessageType.EOS:
+                this.stop();
+                break;
+            case Gst.MessageType.WARNING: {
+                const warning = message.parse_warning()[0];
+                if (warning) {
+                    log(warning.toString());
+                }
+                break;
             }
-            break;
-        }
-
-        case Gst.MessageType.EOS:
-            this.stop();
-            break;
-        case Gst.MessageType.WARNING:
-            let warning = message.parse_warning()[0];
-            if (warning) {
-                log(warning.toString());
-            }
-            break;
-        case Gst.MessageType.ERROR:
-            log(message.parse_error().toString());
-            break;
+            case Gst.MessageType.ERROR:
+                log(message.parse_error().toString());
+                break;
         }
     }
 
     _getChannel(): number {
-        let channelIndex = Settings.get_enum('audio-channel');
+        const channelIndex = Settings.get_enum('audio-channel');
         return AudioChannels[channelIndex].channels;
     }
 
     _getProfile(): GstPbutils.EncodingContainerProfile | undefined {
-        let profileIndex = Settings.get_enum('audio-profile');
+        const profileIndex = Settings.get_enum('audio-profile');
         const profile = EncodingProfiles[profileIndex];
 
-        let audioCaps = Gst.Caps.from_string(profile.audioCaps);
+        const audioCaps = Gst.Caps.from_string(profile.audioCaps);
         audioCaps?.set_value('channels', this._getChannel());
 
         if (audioCaps) {
-            let encodingProfile = GstPbutils.EncodingAudioProfile.new(audioCaps, null, null, 1);
-            let containerCaps = Gst.Caps.from_string(profile.containerCaps);
+            const encodingProfile = GstPbutils.EncodingAudioProfile.new(audioCaps, null, null, 1);
+            const containerCaps = Gst.Caps.from_string(profile.containerCaps);
             if (containerCaps) {
-                let containerProfile = GstPbutils.EncodingContainerProfile.new('record', null, containerCaps, null);
+                const containerProfile = GstPbutils.EncodingContainerProfile.new('record', null, containerCaps, null);
                 containerProfile.add_profile(encodingProfile);
                 return containerProfile;
             }
@@ -261,6 +258,11 @@ export const Recorder = GObject.registerClass({
 
     get duration(): number {
         return this._duration;
+    }
+
+    set duration(val: number) {
+        this._duration = val;
+        this.notify('duration');
     }
 
     // eslint-disable-next-line camelcase
@@ -278,11 +280,6 @@ export const Recorder = GObject.registerClass({
             this._peaks.push(this._current_peak);
             this.notify('current-peak');
         }
-    }
-
-    set duration(val: number) {
-        this._duration = val;
-        this.notify('duration');
     }
 
     get state(): Gst.State | undefined {

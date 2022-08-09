@@ -11,7 +11,7 @@ import { WaveForm, WaveFormClass, WaveType } from './waveform.js';
 export enum RowState {
     Playing,
     Paused,
-};
+}
 
 export type RowClass = InstanceType<typeof Row>;
 
@@ -98,7 +98,7 @@ export const Row = GObject.registerClass({
 
         this.actionGroup = new Gio.SimpleActionGroup();
 
-        let exportAction = new Gio.SimpleAction({ name: 'export' });
+        const exportAction = new Gio.SimpleAction({ name: 'export' });
         exportAction.connect('activate', () => {
             const window = this.root as Gtk.Window;
             this.exportDialog = Gtk.FileChooserNative.new(_('Export Recording'), window, Gtk.FileChooserAction.SAVE, _('_Export'), _('_Cancel'));
@@ -142,18 +142,18 @@ export const Row = GObject.registerClass({
         });
         this.actionGroup.add_action(this.playAction);
 
-        let deleteAction = new Gio.SimpleAction({ name: 'delete' });
+        const deleteAction = new Gio.SimpleAction({ name: 'delete' });
         deleteAction.connect('activate', () => {
             this.emit('deleted');
         });
         this.actionGroup.add_action(deleteAction);
 
-        let seekBackAction = new Gio.SimpleAction({ name: 'seek-backward' });
-        seekBackAction.connect('activate', () => {    _state: RowState;
+        const seekBackAction = new Gio.SimpleAction({ name: 'seek-backward' });
+        seekBackAction.connect('activate', () => {    RowState;
         });
         this.actionGroup.add_action(seekBackAction);
 
-        let seekForwardAction = new Gio.SimpleAction({ name: 'seek-forward' });
+        const seekForwardAction = new Gio.SimpleAction({ name: 'seek-forward' });
         seekForwardAction.connect('activate', () => {
             this.emit('seek-forward');
         });
@@ -161,12 +161,12 @@ export const Row = GObject.registerClass({
 
         this.insert_action_group('recording', this.actionGroup);
 
-        this.waveform.connect('gesture-pressed', _ => {
+        this.waveform.connect('gesture-pressed', () => {
             this.pauseAction.activate(null);
         });
 
         this.keyController = Gtk.EventControllerKey.new();
-        this.keyController.connect('key-pressed', (_controller: Gtk.EventControllerKey, key: number, _code: number, _state: Gdk.ModifierType) => {
+        this.keyController.connect('key-pressed', (_controller: Gtk.EventControllerKey, key: number) => {
             this._entry.remove_css_class('error');
 
             if (key === Gdk.KEY_Escape)
@@ -174,7 +174,7 @@ export const Row = GObject.registerClass({
         });
         this._entry.add_controller(this.keyController);
 
-        this._entry.connect('activate', _ => {
+        this._entry.connect('activate', () => {
             this.saveRenameAction.activate(null);
         });
 
@@ -183,7 +183,7 @@ export const Row = GObject.registerClass({
             this.waveform.peaks = _recording.peaks;
         });
 
-        this._recording.connect('peaks-loading', _ => {
+        this._recording.connect('peaks-loading', () => {
             this._waveformStack.visible_child_name = 'loading';
         });
 
@@ -228,7 +228,7 @@ export const Row = GObject.registerClass({
 
         for (const action of this.actionGroup.list_actions()) {
             if (action !== 'save') {
-                let someAction = this.actionGroup.lookup(action) as Gio.SimpleAction;
+                const someAction = this.actionGroup.lookup(action) as Gio.SimpleAction;
                 someAction.enabled = !state;
             }
         }

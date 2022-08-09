@@ -78,11 +78,11 @@ export const Window = GObject.registerClass({
 
         const dispatcher = GstPlayer.PlayerGMainContextSignalDispatcher.new(null);
         this.player = GstPlayer.Player.new(null, dispatcher);
-        this.player.connect('end-of-stream', _p => this.player.stop());
+        this.player.connect('end-of-stream', () => this.player.stop());
 
 
         this._recordingList = new RecordingList();
-        this.itemsSignalId = this._recordingList.connect('items-changed', _ => {
+        this.itemsSignalId = this._recordingList.connect('items-changed', () => {
             if (this.state !== WindowState.Recorder) {
                 if (this._recordingList.get_n_items() === 0)
                     this.state = WindowState.Empty;
@@ -109,7 +109,7 @@ export const Window = GObject.registerClass({
         this.undoAction = new Gio.SimpleAction({ name: 'undo' });
         this.add_action(this.undoAction);
 
-        let openMenuAction = new Gio.SimpleAction({ name: 'open-primary-menu', state: new GLib.Variant('b', true) });
+        const openMenuAction = new Gio.SimpleAction({ name: 'open-primary-menu', state: new GLib.Variant('b', true) });
         openMenuAction.connect('activate', action => {
             const state = action.get_state()?.get_boolean();
             action.state = new GLib.Variant('b', !state);
@@ -158,7 +158,7 @@ export const Window = GObject.registerClass({
 
     onRecorderStopped(_widget: RecorderWidgetClass, recording: RecordingClass): void {
         this._recordingList.insert(0, recording);
-        let row = this._recordingListWidget.list.get_row_at_index(0) as RowClass;
+        const row = this._recordingListWidget.list.get_row_at_index(0) as RowClass;
         row.editMode = true;
         this.state = WindowState.List;
     }

@@ -17,7 +17,7 @@
  * Author: Meg Ford <megford@gnome.org>
  *
  */
-// @ts-expect-error
+// @ts-expect-error This module doesn't import nicely
 import Gettext from 'gettext'
 import GLib from 'gi://GLib'
 import Gst from 'gi://Gst'

@@ -18,6 +18,7 @@
 *
 */
 
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../types/ambient.d.ts" />
 
 import Adw from 'gi://Adw';
@@ -64,11 +65,11 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         const channelAction = Settings.create_action('audio-channel');
         this.add_action(channelAction);
 
-        let aboutAction = new Gio.SimpleAction({ name: 'about' });
+        const aboutAction = new Gio.SimpleAction({ name: 'about' });
         aboutAction.connect('activate', this._showAbout.bind(this));
         this.add_action(aboutAction);
 
-        let quitAction = new Gio.SimpleAction({ name: 'quit' });
+        const quitAction = new Gio.SimpleAction({ name: 'quit' });
         quitAction.connect('activate', () => {
             if (this.window) {
                 this.window.close();
@@ -104,6 +105,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         try {
             CacheDir.make_directory_with_parents(null);
             RecordingsDir.make_directory_with_parents(null);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
                 console.error(`Failed to create directory ${e}`);
@@ -126,7 +128,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         if (!appName)
             appName = _('Sound Recorder');
 
-        let aboutDialog = new Adw.AboutWindow({
+        const aboutDialog = new Adw.AboutWindow({
             artists: [
                 'Reda Lazri <the.red.shortcut@gmail.com>',
                 'Garrett LeSage <garrettl@gmail.com>',

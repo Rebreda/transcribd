@@ -27,13 +27,13 @@ import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 import Gdk from 'gi://Gdk?version=4.0';
 import Gtk from 'gi://Gtk?version=4.0';
-// @ts-expect-error
+// @ts-expect-error This module doesn't import nicely
 import Cairo from 'cairo';
 
 export enum WaveType {
     Recorder,
     Player,
-};
+}
 
 const GUTTER = 4;
 
@@ -81,7 +81,7 @@ export const WaveForm = GObject.registerClass({
             this.add_controller(this._dragGesture);
         }
 
-        this._hcId = Adw.StyleManager.get_default().connect('notify::high-contrast', _ => {
+        this._hcId = Adw.StyleManager.get_default().connect('notify::high-contrast', () => {
             this.queue_draw();
         });
 
@@ -106,7 +106,7 @@ export const WaveForm = GObject.registerClass({
     }
 
     drawFunc(superDa: Gtk.DrawingArea, ctx: Cairo.Context) {
-        let da = superDa as WaveFormClass;
+        const da = superDa as WaveFormClass;
         const maxHeight = da.get_allocated_height();
         const vertiCenter = maxHeight / 2;
         const horizCenter = da.get_allocated_width() / 2;
@@ -116,10 +116,12 @@ export const WaveForm = GObject.registerClass({
         const styleContext = da.get_style_context();
         const leftColor = styleContext.get_color();
 
-        const [_, rightColor] = styleContext.lookup_color('dimmed_color');
+        const rightColor = styleContext.lookup_color('dimmed_color')[1];
 
         const dividerName = da.waveType === WaveType.Player ? 'accent_color' : 'destructive_color';
-        let [ok, dividerColor] = styleContext.lookup_color(dividerName);
+        const lookupColor = styleContext.lookup_color(dividerName);
+        const ok = lookupColor[0];
+        let dividerColor = lookupColor[1];
         if (!ok)
             dividerColor = styleContext.get_color();
 

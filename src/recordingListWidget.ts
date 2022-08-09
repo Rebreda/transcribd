@@ -52,13 +52,13 @@ export const RecordingsListWidget = GObject.registerClass({
             }
         });
 
-        // @ts-expect-error
+        // @ts-expect-error TypeScript gets `bind_model()` wrong
         this.list.bind_model(model, (recording: RecordingClass) => {
             // This is weird - does using `constructor()` break how it's recognized?
-            // @ts-expect-error
-            let row = new Row(recording);
+            // @ts-expect-error TypeScript gets the type here wrong too
+            const row = new Row(recording);
 
-            row.waveform.connect('gesture-pressed', _ => {
+            row.waveform.connect('gesture-pressed', () => {
                 if (!this.activePlayingRow || this.activePlayingRow !== row) {
 
                     if (this.activePlayingRow)
@@ -88,7 +88,7 @@ export const RecordingsListWidget = GObject.registerClass({
                 this._player.play();
             });
 
-            row.connect('pause', (_row: RowClass) => {
+            row.connect('pause', () => {
                 this._player.pause();
             });
 

@@ -53,7 +53,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
             return;
 
         const fileEnumerator = oldDir.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, this.cancellable);
-        let allCopied = true;
+        const allCopied = true;
 
         fileEnumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, (obj, res) => {
             this._copyFiles(obj, res, allCopied);
@@ -61,7 +61,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
     }
 
     _copyFiles(fileEnumerator: Gio.FileEnumerator | null, res: Gio.AsyncResult, allCopied: boolean) {
-        let oldDir = fileEnumerator?.container;
+        const oldDir = fileEnumerator?.container;
         try {
             const fileInfos = fileEnumerator?.next_files_finish(res);
             if (fileInfos && fileInfos.length) {
@@ -72,12 +72,13 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                         the old recordings location */
                     const dest = RecordingsDir.get_child(_('%s (Old)').format(name));
 
-                    // @ts-expect-error
+                    // @ts-expect-error TypeScript doesn't read async function arguments correctly
                     src?.copy_async(dest, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_LOW, this.cancellable, null, (objCopy: Gio.File, resCopy: Gio.AsyncResult) => {
                         try {
                             objCopy.copy_finish(resCopy);
                             objCopy.trash_async(GLib.PRIORITY_LOW, this.cancellable, null);
                             this.dirMonitor.emit_event(dest, src, Gio.FileMonitorEvent.MOVED_IN);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } catch (e: any) {
                             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
                                 console.error(`Failed to copy recording ${name} to the new location`);
@@ -97,6 +98,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                     oldDir?.delete_async(GLib.PRIORITY_LOW, this.cancellable, (objDelete: Gio.File | null, resDelete: Gio.AsyncResult) => {
                         try {
                             objDelete?.delete_finish(resDelete);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } catch (e: any) {
                             log('Failed to remove the old Recordings directory. Ignore if you\'re using flatpak');
                             log(e);
@@ -104,6 +106,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                     });
                 }
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 console.error(`Failed to copy old  recordings ${e}`);
@@ -122,7 +125,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
 
     _onNextFiles(obj: Gio.FileEnumerator | null, res: Gio.AsyncResult): void {
         try {
-            let fileInfos = obj?.next_files_finish(res);
+            const fileInfos = obj?.next_files_finish(res);
             if (fileInfos && fileInfos.length) {
                 fileInfos.forEach(info => {
                     const file = RecordingsDir.get_child(info.get_name());
@@ -133,6 +136,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
             } else {
                 this._enumerator?.close(this.cancellable);
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 console.error(`Failed to load recordings ${e}`);
@@ -142,7 +146,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
 
     getIndex(file: Gio.File): number {
         for (let i = 0; i < this.get_n_items(); i++) {
-            let item = this.get_item(i) as RecordingClass;
+            const item = this.get_item(i) as RecordingClass;
             if (item.uri === file.get_uri())
                 return i;
         }
