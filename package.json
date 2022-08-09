@@ -18,7 +18,7 @@
     "@gi.ts/cli": "^1.5.5"
   },
   "scripts": {
-    "typecheck": "tsc",
+    "typecheck": "tsc --strict",
     "generate-types": "gi-ts generate",
     "config": "gi-ts config"
   }

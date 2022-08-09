@@ -9,14 +9,13 @@ import { Recording, RecordingClass } from './recording.js';
 export type RecordingListClass = InstanceType<typeof RecordingList>;
 
 export const RecordingList = GObject.registerClass(class RecordingList extends Gio.ListStore {
-    _enumerator: Gio.FileEnumerator;
+    _enumerator?: Gio.FileEnumerator;
 
     cancellable: Gio.Cancellable;
     dirMonitor: Gio.FileMonitor;
 
-    _init(): void {
-        super._init({ });
-
+    constructor() {
+        super();
         this.cancellable = new Gio.Cancellable();
         // Monitor Direcotry actions
         this.dirMonitor = RecordingsDir.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, this.cancellable);
@@ -56,79 +55,85 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         const fileEnumerator = oldDir.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, this.cancellable);
         let allCopied = true;
 
-        const copyFiles = function (obj: Gio.FileEnumerator, res: Gio.AsyncResult) {
-            try {
-                const fileInfos = obj.next_files_finish(res);
-                if (fileInfos.length) {
-                    fileInfos.forEach((info: Gio.FileInfo) => {
-                        const name = info.get_name();
-                        const src = oldDir.get_child(name);
-                        /* Translators: ""%s (Old)"" is the new name assigned to a file moved from
-                            the old recordings location */
-                        const dest = RecordingsDir.get_child(_('%s (Old)').format(name));
-
-                        // @ts-expect-error
-                        src.copy_async(dest, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_LOW, this.cancellable, null, (objCopy: Gio.File, resCopy: Gio.AsyncResult) => {
-                            try {
-                                objCopy.copy_finish(resCopy);
-                                objCopy.trash_async(GLib.PRIORITY_LOW, this.cancellable, null);
-                                this.dirMonitor.emit_event(dest, src, Gio.FileMonitorEvent.MOVED_IN);
-                            } catch (e) {
-                                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                                    console.error(`Failed to copy recording ${name} to the new location`);
-                                    log(e);
-                                }
-                                allCopied = false;
-                            }
-                        });
-
-                    });
-                    fileEnumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, copyFiles);
-                } else {
-                    fileEnumerator.close(this.cancellable);
-                    if (allCopied) {
-                        oldDir.delete_async(GLib.PRIORITY_LOW, this.cancellable, (objDelete: Gio.File, resDelete: Gio.AsyncResult) => {
-                            try {
-                                objDelete.delete_finish(resDelete);
-                            } catch (e) {
-                                log('Failed to remove the old Recordings directory. Ignore if you\'re using flatpak');
-                                log(e);
-                            }
-                        });
-                    }
-                }
-            } catch (e) {
-                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                    console.error(`Failed to copy old  recordings ${e}`);
-
-            }
-        }.bind(this);
-        fileEnumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, copyFiles);
+        fileEnumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, (obj, res) => {
+            this._copyFiles(obj, res, allCopied);
+        });
     }
 
-    _enumerateDirectory(obj: Gio.File, res: Gio.AsyncResult): void {
-        this._enumerator = obj.enumerate_children_finish(res);
+    _copyFiles(fileEnumerator: Gio.FileEnumerator | null, res: Gio.AsyncResult, allCopied: boolean) {
+        let oldDir = fileEnumerator?.container;
+        try {
+            const fileInfos = fileEnumerator?.next_files_finish(res);
+            if (fileInfos && fileInfos.length) {
+                fileInfos.forEach((info: Gio.FileInfo) => {
+                    const name = info.get_name();
+                    const src = oldDir?.get_child(name);
+                    /* Translators: ""%s (Old)"" is the new name assigned to a file moved from
+                        the old recordings location */
+                    const dest = RecordingsDir.get_child(_('%s (Old)').format(name));
+
+                    // @ts-expect-error
+                    src?.copy_async(dest, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_LOW, this.cancellable, null, (objCopy: Gio.File, resCopy: Gio.AsyncResult) => {
+                        try {
+                            objCopy.copy_finish(resCopy);
+                            objCopy.trash_async(GLib.PRIORITY_LOW, this.cancellable, null);
+                            this.dirMonitor.emit_event(dest, src, Gio.FileMonitorEvent.MOVED_IN);
+                        } catch (e: any) {
+                            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+                                console.error(`Failed to copy recording ${name} to the new location`);
+                                log(e);
+                            }
+                            allCopied = false;
+                        }
+                    });
+
+                });
+                fileEnumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, (obj, res) => {
+                    this._copyFiles(obj, res, allCopied);
+                });
+            } else {
+                fileEnumerator?.close(this.cancellable);
+                if (allCopied) {
+                    oldDir?.delete_async(GLib.PRIORITY_LOW, this.cancellable, (objDelete: Gio.File | null, resDelete: Gio.AsyncResult) => {
+                        try {
+                            objDelete?.delete_finish(resDelete);
+                        } catch (e: any) {
+                            log('Failed to remove the old Recordings directory. Ignore if you\'re using flatpak');
+                            log(e);
+                        }
+                    });
+                }
+            }
+        } catch (e: any) {
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                console.error(`Failed to copy old  recordings ${e}`);
+
+        }
+    }
+
+    _enumerateDirectory(obj: Gio.File | null, res: Gio.AsyncResult): void {
+        this._enumerator = obj?.enumerate_children_finish(res);
         if (this._enumerator === null) {
             log('The contents of the Recordings directory were not indexed.');
             return;
         }
-        this._enumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this._onNextFiles.bind(this));
+        this._enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this._onNextFiles.bind(this));
     }
 
-    _onNextFiles(obj: Gio.FileEnumerator, res: Gio.AsyncResult): void {
+    _onNextFiles(obj: Gio.FileEnumerator | null, res: Gio.AsyncResult): void {
         try {
-            let fileInfos = obj.next_files_finish(res);
-            if (fileInfos.length) {
+            let fileInfos = obj?.next_files_finish(res);
+            if (fileInfos && fileInfos.length) {
                 fileInfos.forEach(info => {
                     const file = RecordingsDir.get_child(info.get_name());
                     const recording = new Recording(file);
                     this.sortedInsert(recording);
                 });
-                this._enumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this._onNextFiles.bind(this));
+                this._enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this._onNextFiles.bind(this));
             } else {
-                this._enumerator.close(this.cancellable);
+                this._enumerator?.close(this.cancellable);
             }
-        } catch (e) {
+        } catch (e: any) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 console.error(`Failed to load recordings ${e}`);
 

@@ -26,7 +26,6 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gst from 'gi://Gst';
 import Gtk from 'gi://Gtk?version=4.0';
-import { AboutWindow } from 'types/adw.js';
 
 export const RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]));
 export const CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
@@ -35,10 +34,10 @@ export const Settings = new Gio.Settings({ schema: pkg.name });
 import { Window, WindowClass } from './window.js';
 
 export const Application = GObject.registerClass(class Application extends Adw.Application {
-    private window: WindowClass;
+    private window?: WindowClass;
 
-    _init(): void {
-        super._init({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
+    constructor() {
+        super({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
         GLib.set_application_name(_('Sound Recorder'));
         GLib.setenv('PULSE_PROP_media.role', 'production', true);
         GLib.setenv('PULSE_PROP_application.icon_name', pkg.name, true);
@@ -71,7 +70,9 @@ export const Application = GObject.registerClass(class Application extends Adw.A
 
         let quitAction = new Gio.SimpleAction({ name: 'quit' });
         quitAction.connect('activate', () => {
-            this.get_active_window().close();
+            if (this.window) {
+                this.window.close();
+            }
         });
         this.add_action(quitAction);
 
@@ -103,7 +104,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         try {
             CacheDir.make_directory_with_parents(null);
             RecordingsDir.make_directory_with_parents(null);
-        } catch (e) {
+        } catch (e: any) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
                 console.error(`Failed to create directory ${e}`);
 
@@ -121,6 +122,10 @@ export const Application = GObject.registerClass(class Application extends Adw.A
     }
 
     _showAbout(): void {
+        let appName = GLib.get_application_name();
+        if (!appName)
+            appName = _('Sound Recorder');
+
         let aboutDialog = new Adw.AboutWindow({
             artists: [
                 'Reda Lazri <the.red.shortcut@gmail.com>',
@@ -137,7 +142,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
             ],
             /* Translators: Replace "translator-credits" with your names, one name per line */
             translator_credits: _('translator-credits'),
-            application_name: GLib.get_application_name(),
+            application_name: appName,
             comments: _('A Sound Recording Application for GNOME'),
             license_type: Gtk.License.GPL_2_0,
             application_icon: pkg.name,

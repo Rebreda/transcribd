@@ -59,19 +59,19 @@ export const WaveForm = GObject.registerClass({
 }, class WaveForm extends Gtk.DrawingArea {
     _peaks: number[];
     _position: number;
-    _dragGesture: Gtk.GestureDrag;
+    _dragGesture?: Gtk.GestureDrag;
     _hcId: number;
-    _lastX: number;
+    _lastX?: number;
 
     lastPosition: number;
     waveType: WaveType;
 
-    _init(params, type: WaveType): void {
+    constructor(params: Partial<Gtk.DrawingArea.ConstructorProperties> | undefined, type: WaveType) {
+        super(params);
         this._peaks = [];
         this._position = 0;
         this.lastPosition = 0;
         this.waveType = type;
-        super._init(params);
 
         if (this.waveType === WaveType.Player) {
             this._dragGesture = Gtk.GestureDrag.new();
@@ -94,8 +94,10 @@ export const WaveForm = GObject.registerClass({
     }
 
     dragUpdate(_gesture: Gtk.GestureDrag, offsetX: number): void {
-        this._position = this._clamped(offsetX + this._lastX);
-        this.queue_draw();
+        if (this._lastX) {
+            this._position = this._clamped(offsetX + this._lastX);
+            this.queue_draw();
+        }
     }
 
     dragEnd(): void {
@@ -103,7 +105,8 @@ export const WaveForm = GObject.registerClass({
         this.emit('position-changed', this.position);
     }
 
-    drawFunc(da: WaveFormClass, ctx: Cairo.Context) {
+    drawFunc(superDa: Gtk.DrawingArea, ctx: Cairo.Context) {
+        let da = superDa as WaveFormClass;
         const maxHeight = da.get_allocated_height();
         const vertiCenter = maxHeight / 2;
         const horizCenter = da.get_allocated_width() / 2;
@@ -148,12 +151,14 @@ export const WaveForm = GObject.registerClass({
         });
     }
 
-    set peak(p) {
-        if (this._peaks.length > this.get_allocated_width() / (2 * GUTTER))
-            this._peaks.pop();
+    set peak(p: number) {
+        if (this._peaks) {
+            if (this._peaks.length > this.get_allocated_width() / (2 * GUTTER))
+                this._peaks.pop();
 
-        this._peaks.unshift(p.toFixed(2));
-        this.queue_draw();
+            this._peaks.unshift(p.toFixed(2));
+            this.queue_draw();
+        }
     }
 
     set peaks(p: number[]) {
@@ -162,10 +167,12 @@ export const WaveForm = GObject.registerClass({
     }
 
     set position(pos: number) {
-        this._position = this._clamped(-pos * this._peaks.length * GUTTER);
-        this._lastX = this._position;
-        this.queue_draw();
-        this.notify('position');
+        if (this._peaks) {
+            this._position = this._clamped(-pos * this._peaks.length * GUTTER);
+            this._lastX = this._position;
+            this.queue_draw();
+            this.notify('position');
+        }
     }
 
     get position(): number {

@@ -18,11 +18,11 @@ export const RecordingsListWidget = GObject.registerClass({
 }, class RecordingsListWidget extends Adw.Bin {
     _player: GstPlayer.Player;
     list: Gtk.ListBox;
-    activeRow: RowClass;
-    activePlayingRow: RowClass;
+    activeRow?: RowClass | null;
+    activePlayingRow?: RowClass | null;
 
-    _init(model: Gio.ListModel, player: GstPlayer.Player): void {
-        super._init();
+    constructor(model: Gio.ListModel, player: GstPlayer.Player) {
+        super();
         this.list = Gtk.ListBox.new();
         this.list.valign = Gtk.Align.START;
         this.list.margin_start = 8;
@@ -40,7 +40,8 @@ export const RecordingsListWidget = GObject.registerClass({
                 this.activePlayingRow.state = RowState.Paused;
                 this.activePlayingRow.waveform.position = 0.0;
             } else if (state === GstPlayer.PlayerState.PLAYING) {
-                this.activePlayingRow.state = RowState.Playing;
+                if (this.activePlayingRow)
+                    this.activePlayingRow.state = RowState.Playing;
             }
         });
 
@@ -51,7 +52,10 @@ export const RecordingsListWidget = GObject.registerClass({
             }
         });
 
+        // @ts-expect-error
         this.list.bind_model(model, (recording: RecordingClass) => {
+            // This is weird - does using `constructor()` break how it's recognized?
+            // @ts-expect-error
             let row = new Row(recording);
 
             row.waveform.connect('gesture-pressed', _ => {

@@ -43,13 +43,13 @@ export const Row = GObject.registerClass({
     _rightStack!: Gtk.Stack;
     _name!: Gtk.Label;
     _entry!: Gtk.Entry;
-    _date: Gtk.Label;
-    _duration: Gtk.Label;
-    _revealer: Gtk.Revealer;
-    _playbackControls: Gtk.Box;
-    _saveBtn: Gtk.Button;
-    _playBtn: Gtk.Button;
-    _pauseBtn: Gtk.Button;
+    _date!: Gtk.Label;
+    _duration!: Gtk.Label;
+    _revealer!: Gtk.Revealer;
+    _playbackControls!: Gtk.Box;
+    _saveBtn!: Gtk.Button;
+    _playBtn!: Gtk.Button;
+    _pauseBtn!: Gtk.Button;
 
     _recording: RecordingClass;
     _expanded: boolean;
@@ -58,7 +58,7 @@ export const Row = GObject.registerClass({
 
     waveform: WaveFormClass;
     actionGroup: Gio.SimpleActionGroup;
-    exportDialog: Gtk.FileChooserNative;
+    exportDialog?: Gtk.FileChooserNative | null;
 
     saveRenameAction: Gio.SimpleAction;
     renameAction: Gio.SimpleAction;
@@ -66,12 +66,13 @@ export const Row = GObject.registerClass({
     playAction: Gio.SimpleAction;
     keyController: Gtk.EventControllerKey;
 
-    _init(recording: RecordingClass): void {
+    constructor(recording: RecordingClass) {
+        super();
+
         this._recording = recording;
         this._expanded = false;
         this._editMode = false;
-
-        super._init({});
+        this._state = RowState.Paused;
 
         this.waveform = new WaveForm({
             margin_top: 18,
@@ -86,7 +87,7 @@ export const Row = GObject.registerClass({
             this._recording.loadPeaks();
         }
 
-        if (recording.timeModified !== null && !recording.timeModified.equal(recording.timeCreated))
+        if (recording.timeModified)
             this._date.label = displayDateTime(recording.timeModified);
         else
             this._date.label = displayDateTime(recording.timeCreated);
@@ -104,10 +105,11 @@ export const Row = GObject.registerClass({
             this.exportDialog.set_current_name(`${this._recording.name}.${this._recording.extension}`);
             this.exportDialog.connect('response', (_dialog: Gtk.FileChooserNative, response: number) => {
                 if (response === Gtk.ResponseType.ACCEPT) {
-                    const dest = this.exportDialog.get_file();
-                    this._recording.save(dest);
+                    const dest = this.exportDialog?.get_file();
+                    if (dest)
+                        this._recording.save(dest);
                 }
-                this.exportDialog.destroy();
+                this.exportDialog?.destroy();
                 this.exportDialog = null;
             });
             this.exportDialog.show();

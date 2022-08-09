@@ -60,10 +60,10 @@ export const EncodingProfiles = [
         extension: 'm4a' },
 ];
 
-var AudioChannels = {
-    0: { name: 'stereo', channels: 2 },
-    1: { name: 'mono', channels: 1 },
-};
+var AudioChannels = [
+    { name: 'stereo', channels: 2 },
+    { name: 'mono', channels: 1 },
+];
 
 export type RecorderClass = InstanceType<typeof Recorder>;
 
@@ -87,44 +87,49 @@ export const Recorder = GObject.registerClass({
     _current_peak!: number;
 
     pipeline: Gst.Pipeline;
-    level: Gst.Element;
-    ebin: Gst.Element;
-    filesink: Gst.Element;
-    recordBus: Gst.Bus;
-    handlerId: number;
-    file: Gio.File;
-    timeout: number;
-    _pipeState: Gst.State;
+    level?: Gst.Element;
+    ebin?: Gst.Element;
+    filesink?: Gst.Element;
+    recordBus?: Gst.Bus | null;
+    handlerId?: number | null;
+    file?: Gio.File;
+    timeout?: number | null;
+    _pipeState?: Gst.State;
 
-    _init(): void {
+    constructor() {
+        super();
         this._peaks = [];
-        super._init({});
 
-        let srcElement: Gst.Element, audioConvert: Gst.Element, caps: Gst.Caps;
+        let srcElement: Gst.Element;
+        let audioConvert: Gst.Element;
+        let caps: Gst.Caps;
+
+        this.pipeline = new Gst.Pipeline({ name: 'pipe' });
+
         try {
-            this.pipeline = new Gst.Pipeline({ name: 'pipe' });
-            srcElement = Gst.ElementFactory.make('pulsesrc', 'srcElement');
-            audioConvert = Gst.ElementFactory.make('audioconvert', 'audioConvert');
-            caps = Gst.Caps.from_string('audio/x-raw');
-            this.level = Gst.ElementFactory.make('level', 'level');
-            this.ebin = Gst.ElementFactory.make('encodebin', 'ebin');
-            this.filesink = Gst.ElementFactory.make('filesink', 'filesink');
+            srcElement = Gst.ElementFactory.make('pulsesrc', 'srcElement')!;
+            audioConvert = Gst.ElementFactory.make('audioconvert', 'audioConvert')!;
+            caps = Gst.Caps.from_string('audio/x-raw')!;
+            this.level = Gst.ElementFactory.make('level', 'level')!;
+            this.ebin = Gst.ElementFactory.make('encodebin', 'ebin')!;
+            this.filesink = Gst.ElementFactory.make('filesink', 'filesink')!;
         } catch (error) {
             log(`Not all elements could be created.\n${error}`);
         }
 
         try {
-            this.pipeline.add(srcElement);
-            this.pipeline.add(audioConvert);
-            this.pipeline.add(this.level);
-            this.pipeline.add(this.ebin);
-            this.pipeline.add(this.filesink);
+            this.pipeline.add(srcElement!);
+            this.pipeline.add(audioConvert!);
+            this.pipeline.add(this.level!);
+            this.pipeline.add(this.ebin!);
+            this.pipeline.add(this.filesink!);
         } catch (error) {
             log(`Not all elements could be addded.\n${error}`);
         }
 
-        srcElement.link(audioConvert);
-        audioConvert.link_filtered(this.level, caps);
+        srcElement!.link(audioConvert!);
+        audioConvert!.link_filtered(this.level!, caps!);
+
     }
 
     start(): void {
@@ -139,15 +144,15 @@ export const Recorder = GObject.registerClass({
         this.recordBus = this.pipeline.get_bus();
         this.recordBus.add_signal_watch();
         this.handlerId = this.recordBus.connect('message', (_, message: Gst.Message) => {
-            if (message !== null)
+            if (message)
                 this._onMessageReceived(message);
         });
 
 
-        this.ebin.set_property('profile', this._getProfile());
-        this.filesink.set_property('location', this.file.get_path());
-        this.level.link(this.ebin);
-        this.ebin.link(this.filesink);
+        this.ebin!.set_property('profile', this._getProfile());
+        this.filesink!.set_property('location', this.file.get_path());
+        this.level!.link(this.ebin!);
+        this.ebin!.link(this.filesink!);
 
         this.state = Gst.State.PLAYING;
 
@@ -168,7 +173,7 @@ export const Recorder = GObject.registerClass({
             this.state = Gst.State.PLAYING;
     }
 
-    stop(): RecordingClass {
+    stop(): RecordingClass | undefined {
         this.state = Gst.State.NULL;
         this.duration = 0;
         if (this.timeout) {
@@ -176,10 +181,11 @@ export const Recorder = GObject.registerClass({
             this.timeout = null;
         }
 
-        if (this.recordBus) {
+        if (this.recordBus && this.handlerId) {
             this.recordBus.remove_watch();
             this.recordBus.disconnect(this.handlerId);
             this.recordBus = null;
+            this.handlerId = null;
         }
 
 
@@ -190,7 +196,7 @@ export const Recorder = GObject.registerClass({
             return recording;
         }
 
-        return null;
+        return undefined;
     }
 
     _onMessageReceived(message: Gst.Message): void {
@@ -217,7 +223,10 @@ export const Recorder = GObject.registerClass({
             this.stop();
             break;
         case Gst.MessageType.WARNING:
-            log(message.parse_warning()[0].toString());
+            let warning = message.parse_warning()[0];
+            if (warning) {
+                log(warning.toString());
+            }
             break;
         case Gst.MessageType.ERROR:
             log(message.parse_error().toString());
@@ -230,19 +239,24 @@ export const Recorder = GObject.registerClass({
         return AudioChannels[channelIndex].channels;
     }
 
-    _getProfile(): GstPbutils.EncodingContainerProfile {
+    _getProfile(): GstPbutils.EncodingContainerProfile | undefined {
         let profileIndex = Settings.get_enum('audio-profile');
         const profile = EncodingProfiles[profileIndex];
 
         let audioCaps = Gst.Caps.from_string(profile.audioCaps);
-        audioCaps.set_value('channels', this._getChannel());
+        audioCaps?.set_value('channels', this._getChannel());
 
-        let encodingProfile = GstPbutils.EncodingAudioProfile.new(audioCaps, null, null, 1);
-        let containerCaps = Gst.Caps.from_string(profile.containerCaps);
-        let containerProfile = GstPbutils.EncodingContainerProfile.new('record', null, containerCaps, null);
-        containerProfile.add_profile(encodingProfile);
+        if (audioCaps) {
+            let encodingProfile = GstPbutils.EncodingAudioProfile.new(audioCaps, null, null, 1);
+            let containerCaps = Gst.Caps.from_string(profile.containerCaps);
+            if (containerCaps) {
+                let containerProfile = GstPbutils.EncodingContainerProfile.new('record', null, containerCaps, null);
+                containerProfile.add_profile(encodingProfile);
+                return containerProfile;
+            }
+        }
 
-        return containerProfile;
+        return undefined;
     }
 
     get duration(): number {
@@ -256,12 +270,14 @@ export const Recorder = GObject.registerClass({
 
     // eslint-disable-next-line camelcase
     set current_peak(peak: number) {
-        if (peak > 0)
-            peak = 0;
+        if (this._peaks) {
+            if (peak > 0)
+                peak = 0;
 
-        this._current_peak = Math.pow(10, peak / 20);
-        this._peaks.push(this._current_peak);
-        this.notify('current-peak');
+            this._current_peak = Math.pow(10, peak / 20);
+            this._peaks.push(this._current_peak);
+            this.notify('current-peak');
+        }
     }
 
     set duration(val: number) {
@@ -269,16 +285,18 @@ export const Recorder = GObject.registerClass({
         this.notify('duration');
     }
 
-    get state(): Gst.State {
+    get state(): Gst.State | undefined {
         return this._pipeState;
     }
 
-    set state(s: Gst.State) {
+    set state(s: Gst.State | undefined) {
         this._pipeState = s;
-        const ret = this.pipeline.set_state(this._pipeState);
+        if (this._pipeState) {
+            const ret = this.pipeline.set_state(this._pipeState);
 
-        if (ret === Gst.StateChangeReturn.FAILURE)
-            log('Unable to update the recorder pipeline state');
+            if (ret === Gst.StateChangeReturn.FAILURE)
+                log('Unable to update the recorder pipeline state');
+        }
     }
 
 });

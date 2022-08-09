@@ -61,15 +61,16 @@ export const Window = GObject.registerClass({
     _recordingListWidget: RecordingsListWidgetClass;
 
     toastUndo: boolean;
-    undoSignalID: number;
+    undoSignalID: number | null;
     undoAction: Gio.SimpleAction;
 
     _state: WindowState;
 
-    _init(params): void {
-        super._init(Object.assign({
-            icon_name: pkg.name,
-        }, params));
+    constructor(params: Partial<Adw.Application.ConstructorProperties>) {
+        super(params);
+
+        this.iconName = pkg.name;
+        this._state = WindowState.Empty;
 
         this.recorder = new Recorder();
         this.recorderWidget = new RecorderWidget(this.recorder);
@@ -94,7 +95,13 @@ export const Window = GObject.registerClass({
 
         this._recordingListWidget.connect('row-deleted', (_listBox: Gtk.ListBox, recording: RecordingClass, index: number) => {
             this._recordingList.remove(index);
-            this.sendNotification(_('"%s" deleted').format(recording.name), recording, index);
+            let message: string;
+            if (recording.name) {
+                message = _('"%s" deleted').format(recording.name);
+            } else {
+                message = _('Recording deleted');
+            }
+            this.sendNotification(message, recording, index);
         });
 
         this.toastUndo = false;
@@ -104,7 +111,7 @@ export const Window = GObject.registerClass({
 
         let openMenuAction = new Gio.SimpleAction({ name: 'open-primary-menu', state: new GLib.Variant('b', true) });
         openMenuAction.connect('activate', action => {
-            const state = action.get_state().get_boolean();
+            const state = action.get_state()?.get_boolean();
             action.state = new GLib.Variant('b', !state);
         });
         this.add_action(openMenuAction);

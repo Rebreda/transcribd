@@ -39,8 +39,8 @@ export const RecorderWidget = GObject.registerClass({
     waveform: WaveFormClass;
     actionsGroup: Gio.SimpleActionGroup;
 
-    _init(recorder: RecorderClass): void {
-        super._init({});
+    constructor(recorder: RecorderClass) {
+        super();
         this.recorder = recorder;
 
         this.waveform = new WaveForm({
@@ -122,8 +122,9 @@ export const RecorderWidget = GObject.registerClass({
             case Gtk.ResponseType.YES: {
                 const recording = this.recorder.stop();
                 this.state = RecorderState.Stopped;
-
-                recording.delete();
+                if (recording) {
+                    recording.delete();
+                }
                 this.emit('canceled');
                 break;
             }
