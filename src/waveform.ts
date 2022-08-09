@@ -57,55 +57,53 @@ export const WaveForm = GObject.registerClass({
         'gesture-pressed': {},
     },
 }, class WaveForm extends Gtk.DrawingArea {
-    _peaks: number[];
-    _position: number;
-    _dragGesture?: Gtk.GestureDrag;
-    _hcId: number;
-    _lastX?: number;
+    private _peaks: number[];
+    private _position: number;
+    private dragGesture?: Gtk.GestureDrag;
+    private hcId: number;
+    private lastX?: number;
 
-    lastPosition: number;
-    waveType: WaveType;
+    private waveType: WaveType;
 
     constructor(params: Partial<Gtk.DrawingArea.ConstructorProperties> | undefined, type: WaveType) {
         super(params);
         this._peaks = [];
         this._position = 0;
-        this.lastPosition = 0;
         this.waveType = type;
 
         if (this.waveType === WaveType.Player) {
-            this._dragGesture = Gtk.GestureDrag.new();
-            this._dragGesture.connect('drag-begin', this.dragBegin.bind(this));
-            this._dragGesture.connect('drag-update', this.dragUpdate.bind(this));
-            this._dragGesture.connect('drag-end', this.dragEnd.bind(this));
-            this.add_controller(this._dragGesture);
+            this.dragGesture = Gtk.GestureDrag.new();
+            this.dragGesture.connect('drag-begin', this.dragBegin.bind(this));
+            this.dragGesture.connect('drag-update', this.dragUpdate.bind(this));
+            this.dragGesture.connect('drag-end', this.dragEnd.bind(this));
+            this.add_controller(this.dragGesture);
         }
 
-        this._hcId = Adw.StyleManager.get_default().connect('notify::high-contrast', () => {
+        this.hcId = Adw.StyleManager.get_default().connect('notify::high-contrast', () => {
             this.queue_draw();
         });
 
         this.set_draw_func(this.drawFunc);
     }
 
-    dragBegin(gesture: Gtk.GestureDrag): void {
+    private dragBegin(gesture: Gtk.GestureDrag): void {
         gesture.set_state(Gtk.EventSequenceState.CLAIMED);
         this.emit('gesture-pressed');
     }
 
-    dragUpdate(_gesture: Gtk.GestureDrag, offsetX: number): void {
-        if (this._lastX) {
-            this._position = this._clamped(offsetX + this._lastX);
+    private dragUpdate(_gesture: Gtk.GestureDrag, offsetX: number): void {
+        if (this.lastX) {
+            this._position = this.clamped(offsetX + this.lastX);
             this.queue_draw();
         }
     }
 
-    dragEnd(): void {
-        this._lastX = this._position;
+    private dragEnd(): void {
+        this.lastX = this._position;
         this.emit('position-changed', this.position);
     }
 
-    drawFunc(superDa: Gtk.DrawingArea, ctx: Cairo.Context) {
+    private drawFunc(superDa: Gtk.DrawingArea, ctx: Cairo.Context) {
         const da = superDa as WaveFormClass;
         const maxHeight = da.get_allocated_height();
         const vertiCenter = maxHeight / 2;
@@ -128,7 +126,7 @@ export const WaveForm = GObject.registerClass({
         ctx.setLineCap(Cairo.LineCap.ROUND);
         ctx.setLineWidth(2);
 
-        da._setSourceRGBA(ctx, dividerColor);
+        da.setSourceRGBA(ctx, dividerColor);
 
         ctx.moveTo(horizCenter, vertiCenter - maxHeight);
         ctx.lineTo(horizCenter, vertiCenter + maxHeight);
@@ -138,9 +136,9 @@ export const WaveForm = GObject.registerClass({
 
         da._peaks.forEach(peak => {
             if (da.waveType === WaveType.Player && pointer > horizCenter)
-                da._setSourceRGBA(ctx, rightColor);
+                da.setSourceRGBA(ctx, rightColor);
             else
-                da._setSourceRGBA(ctx, leftColor);
+                da.setSourceRGBA(ctx, leftColor);
 
             ctx.moveTo(pointer, vertiCenter + peak * maxHeight);
             ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
@@ -153,7 +151,7 @@ export const WaveForm = GObject.registerClass({
         });
     }
 
-    set peak(p: number) {
+    public set peak(p: number) {
         if (this._peaks) {
             if (this._peaks.length > this.get_allocated_width() / (2 * GUTTER))
                 this._peaks.pop();
@@ -163,25 +161,25 @@ export const WaveForm = GObject.registerClass({
         }
     }
 
-    set peaks(p: number[]) {
+    public set peaks(p: number[]) {
         this._peaks = p;
         this.queue_draw();
     }
 
-    set position(pos: number) {
+    public set position(pos: number) {
         if (this._peaks) {
-            this._position = this._clamped(-pos * this._peaks.length * GUTTER);
-            this._lastX = this._position;
+            this._position = this.clamped(-pos * this._peaks.length * GUTTER);
+            this.lastX = this._position;
             this.queue_draw();
             this.notify('position');
         }
     }
 
-    get position(): number {
+    public get position(): number {
         return -this._position / (this._peaks.length * GUTTER);
     }
 
-    _clamped(position: number): number {
+    private clamped(position: number): number {
         if (position > 0)
             position = 0;
         else if (position < -this._peaks.length * GUTTER)
@@ -190,12 +188,12 @@ export const WaveForm = GObject.registerClass({
         return position;
     }
 
-    _setSourceRGBA(cr: Cairo.Context, rgba: Gdk.RGBA): void {
+    private setSourceRGBA(cr: Cairo.Context, rgba: Gdk.RGBA): void {
         cr.setSourceRGBA(rgba.red, rgba.green, rgba.blue, rgba.alpha);
     }
 
-    destroy(): void {
-        Adw.StyleManager.get_default().disconnect(this._hcId);
+    public destroy(): void {
+        Adw.StyleManager.get_default().disconnect(this.hcId);
         this._peaks.length = 0;
         this.queue_draw();
     }

@@ -28,22 +28,22 @@ export const Recording = GObject.registerClass({
             ''),
     },
 }, class Recording extends GObject.Object {
-    _file: Gio.File;
-    _peaks: number[];
-    _loadedPeaks: number[];
-    _extension?: string;
-    _timeModified: GLib.DateTime;
-    _timeCreated: GLib.DateTime;
-    _duration?: number;
+    private _file: Gio.File;
+    private _peaks: number[];
+    private loadedPeaks: number[];
+    private _extension?: string;
+    private _timeModified: GLib.DateTime;
+    private _timeCreated: GLib.DateTime;
+    private _duration?: number;
 
-    pipeline?: Gst.Bin | null;
+    public pipeline?: Gst.Bin | null;
 
     constructor(file: Gio.File) {
         super();
 
         this._file = file;
         this._peaks = []
-        this._loadedPeaks = [];
+        this.loadedPeaks = [];
 
         const info = file.query_info('time::created,time::modified,standard::content-type', 0, null);
         const contentType = info.get_attribute_string('standard::content-type');
@@ -71,46 +71,46 @@ export const Recording = GObject.registerClass({
         discoverer.discover_uri_async(this.uri);
     }
 
-    get name(): string | null  {
+    public get name(): string | null  {
         return this._file.get_basename();
     }
 
-    set name(filename: string | null) {
+    public set name(filename: string | null) {
         if (filename && filename !== this.name) {
             this._file = this._file.set_display_name(filename, null);
             this.notify('name');
         }
     }
 
-    get extension(): string | undefined {
+    public get extension(): string | undefined {
         return this._extension;
     }
 
-    get timeModified(): GLib.DateTime {
+    public get timeModified(): GLib.DateTime {
         return this._timeModified;
     }
 
-    get timeCreated(): GLib.DateTime {
+    public get timeCreated(): GLib.DateTime {
         return this._timeCreated;
     }
 
-    get duration(): number {
+    public get duration(): number {
         if (this._duration)
             return this._duration;
         else
             return 0;
     }
 
-    get file(): Gio.File {
+    public get file(): Gio.File {
         return this._file;
     }
 
-    get uri(): string {
+    public get uri(): string {
         return this._file.get_uri();
     }
 
     // eslint-disable-next-line camelcase
-    set peaks(data: number[]) {
+    public set peaks(data: number[]) {
         if (data.length > 0) {
             this._peaks = data;
             this.emit('peaks-updated');
@@ -124,16 +124,16 @@ export const Recording = GObject.registerClass({
     }
 
     // eslint-disable-next-line camelcase
-    get peaks(): number[] {
+    public get peaks(): number[] {
         return this._peaks;
     }
 
-    delete(): void {
+    public delete(): void {
         this._file.trash_async(GLib.PRIORITY_HIGH, null, null);
         this.waveformCache.trash_async(GLib.PRIORITY_DEFAULT, null, null);
     }
 
-    save(dest: Gio.File): void {
+    public save(dest: Gio.File): void {
         this.file.copy_async(dest, // @ts-expect-error TypeScript isn't reading async function params correctly
             Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, null, (obj: Gio.File, res: Gio.AsyncResult) => {
                 if (obj.copy_finish(res))
@@ -141,11 +141,11 @@ export const Recording = GObject.registerClass({
             });
     }
 
-    get waveformCache(): Gio.File {
+    public get waveformCache(): Gio.File {
         return CacheDir.get_child(`${this.name}_data`);
     }
 
-    loadPeaks(): void {
+    public loadPeaks(): void {
         if (this.waveformCache.query_exists(null)) {
             this.waveformCache.load_bytes_async(null, (obj: Gio.File | null, res: Gio.AsyncResult) => {
                 const bytes = obj?.load_bytes_finish(res)[0];
@@ -168,7 +168,7 @@ export const Recording = GObject.registerClass({
         }
     }
 
-    generatePeaks(): void {
+    private generatePeaks(): void {
         this.pipeline = Gst.parse_launch('uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked') as Gst.Bin;
 
 
@@ -192,13 +192,13 @@ export const Recording = GObject.registerClass({
 
                         if (peakVal) {
                             const peak = peakVal.get_nth(0) as number;
-                            this._loadedPeaks.push(Math.pow(10, peak / 20));
+                            this.loadedPeaks.push(Math.pow(10, peak / 20));
                         }
                     }
                     break;
                 }
                 case Gst.MessageType.EOS:
-                    this.peaks = this._loadedPeaks;
+                    this.peaks = this.loadedPeaks;
                     this.pipeline?.set_state(Gst.State.NULL);
                     this.pipeline = null;
                     break;

@@ -47,24 +47,24 @@ export const Window = GObject.registerClass({
         'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay',
     ],
 }, class Window extends Adw.ApplicationWindow {
-    _mainStack!: Gtk.Stack;
-    _emptyPage!: Adw.StatusPage;
-    _column!: Adw.Clamp;
-    _headerRevealer!: Gtk.Revealer;
-    _toastOverlay!: Adw.ToastOverlay;
+    private _mainStack!: Gtk.Stack;
+    private _emptyPage!: Adw.StatusPage;
+    private _column!: Adw.Clamp;
+    private _headerRevealer!: Gtk.Revealer;
+    private _toastOverlay!: Adw.ToastOverlay;
 
-    recorder: RecorderClass;
-    recorderWidget: RecorderWidgetClass;
-    player: GstPlayer.Player;
-    _recordingList: RecordingListClass;
-    itemsSignalId: number;
-    _recordingListWidget: RecordingsListWidgetClass;
+    private recorder: RecorderClass;
+    private recorderWidget: RecorderWidgetClass;
+    private player: GstPlayer.Player;
+    private recordingList: RecordingListClass;
+    private itemsSignalId: number;
+    private recordingListWidget: RecordingsListWidgetClass;
 
-    toastUndo: boolean;
-    undoSignalID: number | null;
-    undoAction: Gio.SimpleAction;
+    private toastUndo: boolean;
+    private undoSignalID: number | null;
+    private undoAction: Gio.SimpleAction;
 
-    _state: WindowState;
+    private _state: WindowState;
 
     constructor(params: Partial<Adw.Application.ConstructorProperties>) {
         super(params);
@@ -81,20 +81,20 @@ export const Window = GObject.registerClass({
         this.player.connect('end-of-stream', () => this.player.stop());
 
 
-        this._recordingList = new RecordingList();
-        this.itemsSignalId = this._recordingList.connect('items-changed', () => {
+        this.recordingList = new RecordingList();
+        this.itemsSignalId = this.recordingList.connect('items-changed', () => {
             if (this.state !== WindowState.Recorder) {
-                if (this._recordingList.get_n_items() === 0)
+                if (this.recordingList.get_n_items() === 0)
                     this.state = WindowState.Empty;
                 else
                     this.state = WindowState.List;
             }
         });
 
-        this._recordingListWidget = new RecordingsListWidget(this._recordingList, this.player);
+        this.recordingListWidget = new RecordingsListWidget(this.recordingList, this.player);
 
-        this._recordingListWidget.connect('row-deleted', (_listBox: Gtk.ListBox, recording: RecordingClass, index: number) => {
-            this._recordingList.remove(index);
+        this.recordingListWidget.connect('row-deleted', (_listBox: Gtk.ListBox, recording: RecordingClass, index: number) => {
+            this.recordingList.remove(index);
             let message: string;
             if (recording.name) {
                 message = _('"%s" deleted').format(recording.name);
@@ -115,7 +115,7 @@ export const Window = GObject.registerClass({
             action.state = new GLib.Variant('b', !state);
         });
         this.add_action(openMenuAction);
-        this._column.set_child(this._recordingListWidget);
+        this._column.set_child(this.recordingListWidget);
 
         this.recorderWidget.connect('started', this.onRecorderStarted.bind(this));
         this.recorderWidget.connect('canceled', this.onRecorderCanceled.bind(this));
@@ -124,13 +124,13 @@ export const Window = GObject.registerClass({
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
     }
 
-    vfunc_close_request(): boolean {
-        this._recordingList.cancellable.cancel();
+    public vfunc_close_request(): boolean {
+        this.recordingList.cancellable.cancel();
         if (this.itemsSignalId)
-            this._recordingList.disconnect(this.itemsSignalId);
+            this.recordingList.disconnect(this.itemsSignalId);
 
-        for (let i = 0; i < this._recordingList.get_n_items(); i++) {
-            const recording = this._recordingList.get_item(i) as RecordingClass;
+        for (let i = 0; i < this.recordingList.get_n_items(); i++) {
+            const recording = this.recordingList.get_item(i) as RecordingClass;
             if (recording.pipeline)
                 recording.pipeline.set_state(Gst.State.NULL);
         }
@@ -139,31 +139,31 @@ export const Window = GObject.registerClass({
         return false;
     }
 
-    onRecorderStarted(): void {
+    private onRecorderStarted(): void {
         this.player.stop();
 
-        const activeRow = this._recordingListWidget.activeRow;
+        const activeRow = this.recordingListWidget.activeRow;
         if (activeRow && activeRow.editMode)
             activeRow.editMode = false;
 
         this.state = WindowState.Recorder;
     }
 
-    onRecorderCanceled(): void {
-        if (this._recordingList.get_n_items() === 0)
+    private onRecorderCanceled(): void {
+        if (this.recordingList.get_n_items() === 0)
             this.state = WindowState.Empty;
         else
             this.state = WindowState.List;
     }
 
-    onRecorderStopped(_widget: RecorderWidgetClass, recording: RecordingClass): void {
-        this._recordingList.insert(0, recording);
-        const row = this._recordingListWidget.list.get_row_at_index(0) as RowClass;
+    private onRecorderStopped(_widget: RecorderWidgetClass, recording: RecordingClass): void {
+        this.recordingList.insert(0, recording);
+        const row = this.recordingListWidget.list.get_row_at_index(0) as RowClass;
         row.editMode = true;
         this.state = WindowState.List;
     }
 
-    sendNotification(message: string, recording: RecordingClass, index: number): void {
+    private sendNotification(message: string, recording: RecordingClass, index: number): void {
         const toast = Adw.Toast.new(message);
         toast.connect('dismissed', () => {
             if (!this.toastUndo)
@@ -176,7 +176,7 @@ export const Window = GObject.registerClass({
             this.undoAction.disconnect(this.undoSignalID);
 
         this.undoSignalID = this.undoAction.connect('activate', () => {
-            this._recordingList.insert(index, recording);
+            this.recordingList.insert(index, recording);
             this.toastUndo = true;
         });
 
@@ -185,7 +185,7 @@ export const Window = GObject.registerClass({
         this._toastOverlay.add_toast(toast);
     }
 
-    set state(state: WindowState) {
+    public set state(state: WindowState) {
         let visibleChild: string;
         let isHeaderVisible = true;
 
@@ -207,7 +207,7 @@ export const Window = GObject.registerClass({
         this._state = state;
     }
 
-    get state(): WindowState {
+    public get state(): WindowState {
         return this._state;
     }
 });

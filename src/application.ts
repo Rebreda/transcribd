@@ -58,7 +58,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         });
     }
 
-    _initAppMenu(): void {
+    private initAppMenu(): void {
         const profileAction = Settings.create_action('audio-profile');
         this.add_action(profileAction);
 
@@ -66,7 +66,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         this.add_action(channelAction);
 
         const aboutAction = new Gio.SimpleAction({ name: 'about' });
-        aboutAction.connect('activate', this._showAbout.bind(this));
+        aboutAction.connect('activate', this.showAbout.bind(this));
         this.add_action(aboutAction);
 
         const quitAction = new Gio.SimpleAction({ name: 'quit' });
@@ -95,7 +95,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         this.set_accels_for_action('recording.export', ['<Primary>s']);
     }
 
-    vfunc_startup(): void {
+    public vfunc_startup(): void {
         super.vfunc_startup();
         log('Sound Recorder (%s)'.format(pkg.name));
         log('Version: %s'.format(pkg.version));
@@ -111,10 +111,10 @@ export const Application = GObject.registerClass(class Application extends Adw.A
                     console.error(`Failed to create directory ${e}`);
             }
         }
-        this._initAppMenu();
+        this.initAppMenu();
     }
 
-    vfunc_activate(): void {
+    public vfunc_activate(): void {
         if (!this.window) {
             this.window = new Window({ application: this });
             if (pkg.name.endsWith('Devel'))
@@ -123,7 +123,7 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         this.window.present();
     }
 
-    _showAbout(): void {
+    private showAbout(): void {
         let appName = GLib.get_application_name();
         if (!appName)
             appName = _('Sound Recorder');

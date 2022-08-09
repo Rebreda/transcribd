@@ -37,39 +37,38 @@ export const Row = GObject.registerClass({
             false),
     },
 }, class Row extends Gtk.ListBoxRow {
-    _playbackStack!: Gtk.Stack;
-    _mainStack!: Gtk.Stack;
-    _waveformStack!: Gtk.Stack;
-    _rightStack!: Gtk.Stack;
-    _name!: Gtk.Label;
-    _entry!: Gtk.Entry;
-    _date!: Gtk.Label;
-    _duration!: Gtk.Label;
-    _revealer!: Gtk.Revealer;
-    _playbackControls!: Gtk.Box;
-    _saveBtn!: Gtk.Button;
-    _playBtn!: Gtk.Button;
-    _pauseBtn!: Gtk.Button;
+    private _playbackStack!: Gtk.Stack;
+    private _mainStack!: Gtk.Stack;
+    private _waveformStack!: Gtk.Stack;
+    private _rightStack!: Gtk.Stack;
+    private _name!: Gtk.Label;
+    private _entry!: Gtk.Entry;
+    private _date!: Gtk.Label;
+    private _duration!: Gtk.Label;
+    private _revealer!: Gtk.Revealer;
+    private _playbackControls!: Gtk.Box;
+    private _playBtn!: Gtk.Button;
+    private _pauseBtn!: Gtk.Button;
 
-    _recording: RecordingClass;
-    _expanded: boolean;
-    _editMode: boolean;
-    _state: RowState;
+    public recording: RecordingClass;
+    private _expanded: boolean;
+    private _editMode: boolean;
+    private _state: RowState;
 
-    waveform: WaveFormClass;
-    actionGroup: Gio.SimpleActionGroup;
-    exportDialog?: Gtk.FileChooserNative | null;
+    public waveform: WaveFormClass;
+    private actionGroup: Gio.SimpleActionGroup;
+    private exportDialog?: Gtk.FileChooserNative | null;
 
-    saveRenameAction: Gio.SimpleAction;
-    renameAction: Gio.SimpleAction;
-    pauseAction: Gio.SimpleAction;
-    playAction: Gio.SimpleAction;
-    keyController: Gtk.EventControllerKey;
+    private saveRenameAction: Gio.SimpleAction;
+    private renameAction: Gio.SimpleAction;
+    private pauseAction: Gio.SimpleAction;
+    private playAction: Gio.SimpleAction;
+    private keyController: Gtk.EventControllerKey;
 
     constructor(recording: RecordingClass) {
         super();
 
-        this._recording = recording;
+        this.recording = recording;
         this._expanded = false;
         this._editMode = false;
         this._state = RowState.Paused;
@@ -80,11 +79,11 @@ export const Row = GObject.registerClass({
         }, WaveType.Player);
         this._waveformStack.add_named(this.waveform, 'wave');
 
-        if (this._recording._peaks.length > 0) {
-            this.waveform.peaks = this._recording.peaks;
+        if (this.recording.peaks.length > 0) {
+            this.waveform.peaks = this.recording.peaks;
             this._waveformStack.visible_child_name = 'wave';
         } else {
-            this._recording.loadPeaks();
+            this.recording.loadPeaks();
         }
 
         if (recording.timeModified)
@@ -102,12 +101,12 @@ export const Row = GObject.registerClass({
         exportAction.connect('activate', () => {
             const window = this.root as Gtk.Window;
             this.exportDialog = Gtk.FileChooserNative.new(_('Export Recording'), window, Gtk.FileChooserAction.SAVE, _('_Export'), _('_Cancel'));
-            this.exportDialog.set_current_name(`${this._recording.name}.${this._recording.extension}`);
+            this.exportDialog.set_current_name(`${this.recording.name}.${this.recording.extension}`);
             this.exportDialog.connect('response', (_dialog: Gtk.FileChooserNative, response: number) => {
                 if (response === Gtk.ResponseType.ACCEPT) {
                     const dest = this.exportDialog?.get_file();
                     if (dest)
-                        this._recording.save(dest);
+                        this.recording.save(dest);
                 }
                 this.exportDialog?.destroy();
                 this.exportDialog = null;
@@ -137,7 +136,7 @@ export const Row = GObject.registerClass({
 
         this.playAction = new Gio.SimpleAction({ name: 'play', enabled: true });
         this.playAction.connect('activate', () => {
-            this.emit('play', this._recording.uri);
+            this.emit('play', this.recording.uri);
             this.state = RowState.Playing;
         });
         this.actionGroup.add_action(this.playAction);
@@ -178,12 +177,12 @@ export const Row = GObject.registerClass({
             this.saveRenameAction.activate(null);
         });
 
-        this._recording.connect('peaks-updated', (_recording: RecordingClass) => {
+        this.recording.connect('peaks-updated', (_recording: RecordingClass) => {
             this._waveformStack.visible_child_name = 'wave';
             this.waveform.peaks = _recording.peaks;
         });
 
-        this._recording.connect('peaks-loading', () => {
+        this.recording.connect('peaks-loading', () => {
             this._waveformStack.visible_child_name = 'loading';
         });
 
@@ -198,10 +197,10 @@ export const Row = GObject.registerClass({
         });
     }
 
-    onRenameRecording(): void {
+    private onRenameRecording(): void {
         try {
             if (this._name.label !== this._entry.text)
-                this._recording.name = this._entry.text;
+                this.recording.name = this._entry.text;
 
             this.editMode = false;
             this.renameAction.enabled = true;
@@ -211,7 +210,7 @@ export const Row = GObject.registerClass({
         }
     }
 
-    set editMode(state: boolean) {
+    public set editMode(state: boolean) {
         this._mainStack.visible_child_name = state ? 'edit' : 'display';
         this._editMode = state;
 
@@ -234,20 +233,20 @@ export const Row = GObject.registerClass({
         }
     }
 
-    get editMode(): boolean {
+    public get editMode(): boolean {
         return this._editMode;
     }
 
-    set expanded(state: boolean) {
+    public set expanded(state: boolean) {
         this._expanded = state;
         this.notify('expanded');
     }
 
-    get expanded(): boolean {
+    public get expanded(): boolean {
         return this._expanded;
     }
 
-    set state(rowState: RowState) {
+    public set state(rowState: RowState) {
         this._state = rowState;
 
         switch (rowState) {
@@ -266,7 +265,7 @@ export const Row = GObject.registerClass({
         }
     }
 
-    get state(): RowState {
+    public get state(): RowState {
         return this._state;
     }
 });

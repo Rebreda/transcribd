@@ -29,15 +29,15 @@ export const RecorderWidget = GObject.registerClass({
         'stopped': { param_types: [GObject.TYPE_OBJECT] },
     },
 }, class RecorderWidget extends Gtk.Box {
-    _recorderBox!: Gtk.Box;
-    _playbackStack!: Gtk.Stack;
-    _recorderTime!: Gtk.Label;
-    _pauseBtn!: Gtk.Button;
-    _resumeBtn!: Gtk.Button;
+    private _recorderBox!: Gtk.Box;
+    private _playbackStack!: Gtk.Stack;
+    private _recorderTime!: Gtk.Label;
+    private _pauseBtn!: Gtk.Button;
+    private _resumeBtn!: Gtk.Button;
 
-    recorder: RecorderClass;
-    waveform: WaveFormClass;
-    actionsGroup: Gio.SimpleActionGroup;
+    private recorder: RecorderClass;
+    private waveform: WaveFormClass;
+    public actionsGroup: Gio.SimpleActionGroup;
 
     constructor(recorder: RecorderClass) {
         super();
@@ -76,7 +76,7 @@ export const RecorderWidget = GObject.registerClass({
         startAction.bind_property('enabled', cancelAction, 'enabled', GObject.BindingFlags.INVERT_BOOLEAN);
     }
 
-    onPause(): void {
+    private onPause(): void {
         this._playbackStack.visible_child_name = 'recorder-start';
         this.state = RecorderState.Paused;
 
@@ -84,7 +84,7 @@ export const RecorderWidget = GObject.registerClass({
         this.emit('paused');
     }
 
-    onResume(): void {
+    private onResume(): void {
         this._playbackStack.visible_child_name = 'recorder-pause';
         this.state = RecorderState.Recording;
 
@@ -92,7 +92,7 @@ export const RecorderWidget = GObject.registerClass({
         this.emit('resumed');
     }
 
-    onStart(): void {
+    private onStart(): void {
         this._playbackStack.visible_child_name = 'recorder-pause';
         this.state = RecorderState.Recording;
 
@@ -100,7 +100,7 @@ export const RecorderWidget = GObject.registerClass({
         this.emit('started');
     }
 
-    onCancel(): void {
+    private onCancel(): void {
         this.onPause();
         const dialog = new Gtk.MessageDialog({
             modal: true,
@@ -139,14 +139,14 @@ export const RecorderWidget = GObject.registerClass({
         dialog.show();
     }
 
-    onStop(): void {
+    private onStop(): void {
         this.state = RecorderState.Stopped;
         const recording = this.recorder.stop();
         this.waveform.destroy();
         this.emit('stopped', recording);
     }
 
-    set state(recorderState: RecorderState) {
+    public set state(recorderState: RecorderState) {
         const pauseAction = this.actionsGroup.lookup('pause') as Gio.SimpleAction;
         const resumeAction = this.actionsGroup.lookup('resume') as Gio.SimpleAction;
         const startAction = this.actionsGroup.lookup('start') as Gio.SimpleAction;

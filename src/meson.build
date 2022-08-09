@@ -14,11 +14,26 @@ app = configure_file(
   configuration: app_conf
 )
 
+sources = files(
+  'application.ts',
+  'main.ts',
+  'recorder.ts',
+  'recorderWidget.ts',
+  'recording.ts',
+  'recordingList.ts',
+  'recordingListWidget.ts',
+  'row.ts',
+  'utils.ts',
+  'waveform.ts',
+  'window.ts',
+)
+
 tsc = find_program('tsc', required: true)
 tsc_out = meson.project_build_root() / 'tsc-out'
 
 typescript = custom_target(
   'typescript-compile',
+  input: sources,
   build_by_default: true,
   build_always_stale: true,
   command: [ tsc, '--outDir', tsc_out ],

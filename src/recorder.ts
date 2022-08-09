@@ -81,24 +81,24 @@ export const Recorder = GObject.registerClass({
             0.0, 1.0, 0.0),
     },
 }, class Recorder extends GObject.Object {
-    _peaks: number[];
+    private peaks: number[];
 
-    _duration!: number;
-    _current_peak!: number;
+    private _duration!: number;
+    private _current_peak!: number;
 
-    pipeline: Gst.Pipeline;
-    level?: Gst.Element;
-    ebin?: Gst.Element;
-    filesink?: Gst.Element;
-    recordBus?: Gst.Bus | null;
-    handlerId?: number | null;
-    file?: Gio.File;
-    timeout?: number | null;
-    _pipeState?: Gst.State;
+    private pipeline: Gst.Pipeline;
+    private level?: Gst.Element;
+    private ebin?: Gst.Element;
+    private filesink?: Gst.Element;
+    private recordBus?: Gst.Bus | null;
+    private handlerId?: number | null;
+    private file?: Gio.File;
+    private timeout?: number | null;
+    private pipeState?: Gst.State;
 
     constructor() {
         super();
-        this._peaks = [];
+        this.peaks = [];
 
         let srcElement: Gst.Element;
         let audioConvert: Gst.Element;
@@ -126,7 +126,7 @@ export const Recorder = GObject.registerClass({
         audioConvert.link_filtered(this.level, caps);
     }
 
-    start(): void {
+    public start(): void {
         let index = 1;
 
         do {
@@ -139,12 +139,12 @@ export const Recorder = GObject.registerClass({
         this.recordBus.add_signal_watch();
         this.handlerId = this.recordBus.connect('message', (_, message: Gst.Message) => {
             if (message)
-                this._onMessageReceived(message);
+                this.onMessageReceived(message);
         });
 
 
         if (this.ebin && this.level && this.filesink) {
-            this.ebin.set_property('profile', this._getProfile());
+            this.ebin.set_property('profile', this.getProfile());
             this.filesink.set_property('location', this.file.get_path());
             this.level.link(this.ebin);
             this.ebin.link(this.filesink);
@@ -160,16 +160,16 @@ export const Recorder = GObject.registerClass({
         });
     }
 
-    pause(): void {
+    public pause(): void {
         this.state = Gst.State.PAUSED;
     }
 
-    resume(): void {
+    public resume(): void {
         if (this.state === Gst.State.PAUSED)
             this.state = Gst.State.PLAYING;
     }
 
-    stop(): RecordingClass | undefined {
+    public stop(): RecordingClass | undefined {
         this.state = Gst.State.NULL;
         this.duration = 0;
         if (this.timeout) {
@@ -185,17 +185,17 @@ export const Recorder = GObject.registerClass({
         }
 
 
-        if (this.file && this.file.query_exists(null) && this._peaks.length > 0) {
+        if (this.file && this.file.query_exists(null) && this.peaks.length > 0) {
             const recording = new Recording(this.file);
-            recording.peaks = this._peaks.slice();
-            this._peaks.length = 0;
+            recording.peaks = this.peaks.slice();
+            this.peaks.length = 0;
             return recording;
         }
 
         return undefined;
     }
 
-    _onMessageReceived(message: Gst.Message): void {
+    private onMessageReceived(message: Gst.Message): void {
         switch (message.type) {
             case Gst.MessageType.ELEMENT: {
                 if (GstPbutils.is_missing_plugin_message(message)) {
@@ -231,17 +231,17 @@ export const Recorder = GObject.registerClass({
         }
     }
 
-    _getChannel(): number {
+    private getChannel(): number {
         const channelIndex = Settings.get_enum('audio-channel');
         return AudioChannels[channelIndex].channels;
     }
 
-    _getProfile(): GstPbutils.EncodingContainerProfile | undefined {
+    private getProfile(): GstPbutils.EncodingContainerProfile | undefined {
         const profileIndex = Settings.get_enum('audio-profile');
         const profile = EncodingProfiles[profileIndex];
 
         const audioCaps = Gst.Caps.from_string(profile.audioCaps);
-        audioCaps?.set_value('channels', this._getChannel());
+        audioCaps?.set_value('channels', this.getChannel());
 
         if (audioCaps) {
             const encodingProfile = GstPbutils.EncodingAudioProfile.new(audioCaps, null, null, 1);
@@ -256,40 +256,40 @@ export const Recorder = GObject.registerClass({
         return undefined;
     }
 
-    get duration(): number {
+    public get duration(): number {
         return this._duration;
     }
 
-    set duration(val: number) {
+    public set duration(val: number) {
         this._duration = val;
         this.notify('duration');
     }
 
     // eslint-disable-next-line camelcase
-    get current_peak(): number {
+    public get current_peak(): number {
         return this._current_peak;
     }
 
     // eslint-disable-next-line camelcase
-    set current_peak(peak: number) {
-        if (this._peaks) {
+    public set current_peak(peak: number) {
+        if (this.peaks) {
             if (peak > 0)
                 peak = 0;
 
             this._current_peak = Math.pow(10, peak / 20);
-            this._peaks.push(this._current_peak);
+            this.peaks.push(this._current_peak);
             this.notify('current-peak');
         }
     }
 
-    get state(): Gst.State | undefined {
-        return this._pipeState;
+    public get state(): Gst.State | undefined {
+        return this.pipeState;
     }
 
-    set state(s: Gst.State | undefined) {
-        this._pipeState = s;
-        if (this._pipeState) {
-            const ret = this.pipeline.set_state(this._pipeState);
+    public set state(s: Gst.State | undefined) {
+        this.pipeState = s;
+        if (this.pipeState) {
+            const ret = this.pipeline.set_state(this.pipeState);
 
             if (ret === Gst.StateChangeReturn.FAILURE)
                 log('Unable to update the recorder pipeline state');

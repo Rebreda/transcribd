@@ -9,10 +9,10 @@ import { Recording, RecordingClass } from './recording.js';
 export type RecordingListClass = InstanceType<typeof RecordingList>;
 
 export const RecordingList = GObject.registerClass(class RecordingList extends Gio.ListStore {
-    _enumerator?: Gio.FileEnumerator;
+    private enumerator?: Gio.FileEnumerator;
 
-    cancellable: Gio.Cancellable;
-    dirMonitor: Gio.FileMonitor;
+    public cancellable: Gio.Cancellable;
+    public dirMonitor: Gio.FileMonitor;
 
     constructor() {
         super();
@@ -39,12 +39,12 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
             Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
             GLib.PRIORITY_LOW,
             this.cancellable,
-            this._enumerateDirectory.bind(this));
+            this.enumerateDirectory.bind(this));
 
         this.copyOldFiles();
     }
 
-    copyOldFiles(): void {
+    private copyOldFiles(): void {
         // Necessary code to move old recordings into the new location for few releases
         // FIXME: Remove by 3.40/3.42
         const oldDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_home_dir(), _('Recordings')]));
@@ -56,11 +56,11 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         const allCopied = true;
 
         fileEnumerator.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, (obj, res) => {
-            this._copyFiles(obj, res, allCopied);
+            this.copyFiles(obj, res, allCopied);
         });
     }
 
-    _copyFiles(fileEnumerator: Gio.FileEnumerator | null, res: Gio.AsyncResult, allCopied: boolean) {
+    private copyFiles(fileEnumerator: Gio.FileEnumerator | null, res: Gio.AsyncResult, allCopied: boolean) {
         const oldDir = fileEnumerator?.container;
         try {
             const fileInfos = fileEnumerator?.next_files_finish(res);
@@ -91,7 +91,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
 
                 });
                 fileEnumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, (obj, res) => {
-                    this._copyFiles(obj, res, allCopied);
+                    this.copyFiles(obj, res, allCopied);
                 });
             } else {
                 fileEnumerator?.close(this.cancellable);
@@ -116,16 +116,16 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         }
     }
 
-    _enumerateDirectory(obj: Gio.File | null, res: Gio.AsyncResult): void {
-        this._enumerator = obj?.enumerate_children_finish(res);
-        if (this._enumerator === null) {
+    private enumerateDirectory(obj: Gio.File | null, res: Gio.AsyncResult): void {
+        this.enumerator = obj?.enumerate_children_finish(res);
+        if (this.enumerator === null) {
             log('The contents of the Recordings directory were not indexed.');
             return;
         }
-        this._enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this._onNextFiles.bind(this));
+        this.enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this.onNextFiles.bind(this));
     }
 
-    _onNextFiles(obj: Gio.FileEnumerator | null, res: Gio.AsyncResult): void {
+    private onNextFiles(obj: Gio.FileEnumerator | null, res: Gio.AsyncResult): void {
         try {
             const fileInfos = obj?.next_files_finish(res);
             if (fileInfos && fileInfos.length) {
@@ -134,9 +134,9 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
                     const recording = new Recording(file);
                     this.sortedInsert(recording);
                 });
-                this._enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this._onNextFiles.bind(this));
+                this.enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this.onNextFiles.bind(this));
             } else {
-                this._enumerator?.close(this.cancellable);
+                this.enumerator?.close(this.cancellable);
             }
         } catch (e: unknown) {
             if (e instanceof GLib.Error) {
@@ -146,7 +146,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         }
     }
 
-    getIndex(file: Gio.File): number {
+    private getIndex(file: Gio.File): number {
         for (let i = 0; i < this.get_n_items(); i++) {
             const item = this.get_item(i) as RecordingClass;
             if (item.uri === file.get_uri())
@@ -155,7 +155,7 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         return -1;
     }
 
-    sortedInsert(recording: RecordingClass): void {
+    private sortedInsert(recording: RecordingClass): void {
         let added = false;
 
         for (let i = 0; i < this.get_n_items(); i++) {
