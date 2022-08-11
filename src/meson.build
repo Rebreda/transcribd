@@ -28,7 +28,6 @@ sources = files(
   'window.ts',
 )
 
-tsc = find_program('tsc', required: true)
 tsc_out = meson.project_build_root() / 'tsc-out'
 
 typescript = custom_target(
@@ -36,7 +35,8 @@ typescript = custom_target(
   input: sources,
   build_by_default: true,
   build_always_stale: true,
-  command: [ tsc, '--outDir', tsc_out ],
+  command: [ yarn, yarn_args, 'run', 'typecheck', '--outDir', tsc_out ],
+  depends: yarn_deps,
   output: ['tsc-output'],
 )
 
