@@ -17,12 +17,14 @@ nightly:
   extends: ".publish_nightly"
 
 eslint:
-  image: registry.gitlab.gnome.org/gnome/gnome-shell/fedora/33:2020-11-17.0
+  image: quay.io/fedora/fedora:latest
 
   variables:
     LINT_LOG: "eslint-report.txt"
   script:
-    - eslint -o $LINT_LOG --no-color src || { cat $LINT_LOG; false; }
+    - sudo dnf install -y yarnpkg
+    - yarn install
+    - yarn run eslint -o $LINT_LOG --no-color src || { cat $LINT_LOG; false; }
   artifacts:
     paths:
       - ${LINT_LOG}
