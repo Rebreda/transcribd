@@ -18,7 +18,7 @@
 *
 */
 
-const { Adw, Gio, GLib, GObject, Gst, GstPlayer, Gtk } = imports.gi;
+const { Adw, Gio, GLib, GObject, Gst, GstPlayer } = imports.gi;
 
 const { Recorder } = imports.recorder;
 const { RecordingList } = imports.recordingList;
@@ -68,10 +68,6 @@ var Window = GObject.registerClass({
             this._recordingList.remove(index);
             this.sendNotification(_('"%s" deleted').format(recording.name), recording, index);
         });
-
-        const builder = Gtk.Builder.new_from_resource('/org/gnome/SoundRecorder/gtk/help-overlay.ui');
-        const dialog = builder.get_object('help_overlay');
-        this.set_help_overlay(dialog);
 
         this.toastUndo = false;
         this.undoSignalID = null;
