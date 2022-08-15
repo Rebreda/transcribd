@@ -102,10 +102,12 @@ var Application = GObject.registerClass(class Application extends Adw.Applicatio
     }
 
     vfunc_activate() {
-        this.window = new Window({ application: this });
-        if (pkg.name.endsWith('Devel'))
-            this.window.add_css_class('devel');
-        this.window.show();
+        if (!this.window) {
+            this.window = new Window({ application: this });
+            if (pkg.name.endsWith('Devel'))
+                this.window.add_css_class('devel');
+        }
+        this.window.present();
     }
 
     _showAbout() {
