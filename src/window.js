@@ -101,7 +101,7 @@ var Window = GObject.registerClass({
         }
 
         this.recorder.stop();
-        this.application.quit();
+        return false;
     }
 
     onRecorderStarted() {
