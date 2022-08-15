@@ -16,13 +16,3 @@ if not os.path.exists(bindir):
 src = os.path.join(pkgdatadir, application_id)
 dest = os.path.join(bindir, 'gnome-sound-recorder')
 subprocess.call(['ln', '-s', '-f', src, dest])
-
-if not os.environ.get('DESTDIR'):
-    print('Compiling gsettings schemas...')
-    subprocess.call(['glib-compile-schemas', os.path.join(datadir, 'glib-2.0', 'schemas')])
-
-    print('Updating icon cache...')
-    subprocess.call(['gtk-update-icon-cache', '-qtf', os.path.join(datadir, 'icons', 'hicolor')])
-
-    print('Updating desktop database...')
-    subprocess.call(['update-desktop-database', '-q', os.path.join(datadir, 'applications')])

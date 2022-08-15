@@ -2,7 +2,7 @@ project(
   'gnome-sound-recorder',
   version: '43.beta',
   license: 'GPL2+',
-  meson_version: '>= 0.56.0'
+  meson_version: '>= 0.59.0',
 )
 
 if get_option('profile') == 'development'
@@ -53,10 +53,16 @@ subdir('data')
 subdir('src')
 subdir('po')
 
+gnome.post_install(
+  glib_compile_schemas: true,
+  gtk_update_icon_cache: true,
+  update_desktop_database: true,
+)
+
 meson.add_install_script(
   'build-aux' / 'meson_post_install.py',
   sound_recorder_datadir,
   sound_recorder_bindir,
   sound_recorder_pkgdatadir,
-  application_id
+  application_id,
 )
