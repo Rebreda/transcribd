@@ -2,7 +2,7 @@ project(
   'gnome-sound-recorder',
   version: '43.beta',
   license: 'GPL2+',
-  meson_version: '>= 0.50.0'
+  meson_version: '>= 0.56.0'
 )
 
 if get_option('profile') == 'development'
