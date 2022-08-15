@@ -32,7 +32,7 @@ sound_recorder_pkgdatadir = sound_recorder_datadir / application_id
 sound_recorder_schemadir = sound_recorder_datadir / 'glib-2.0' / 'schemas'
 
 gjs_dep = dependency('gjs-1.0', version: '>= 1.54.0')
-gjs_console = gjs_dep.get_pkgconfig_variable('gjs_console')
+gjs_console = gjs_dep.get_variable(pkgconfig: 'gjs_console')
 
 # Lets check whether the dependencies exist
 dependency('gio-2.0', version: '>= 2.43.4')
