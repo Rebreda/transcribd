@@ -47,7 +47,7 @@ dependency('gstreamer-pbutils-1.0')
 gnome = import('gnome')
 i18n = import('i18n')
 
-po_dir = meson.source_root() / 'po'
+po_dir = meson.project_source_root() / 'po'
 
 subdir('data')
 subdir('src')
