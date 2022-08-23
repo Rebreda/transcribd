@@ -26,12 +26,12 @@ import Gst from 'gi://Gst'
 import GstPlayer from 'gi://GstPlayer'
 import Gtk from 'gi://Gtk?version=4.0'
 
-import { Recorder, RecorderClass } from './recorder.js';
-import { RecordingList, RecordingListClass } from './recordingList.js';
-import { RecordingsListWidget, RecordingsListWidgetClass } from './recordingListWidget.js';
-import { RecorderWidget, RecorderWidgetClass } from './recorderWidget.js';
-import { RecordingClass } from './recording.js'
-import { RowClass } from './row.js'
+import { Recorder } from './recorder.js';
+import { RecordingList } from './recordingList.js';
+import { RecordingsListWidget } from './recordingListWidget.js';
+import { RecorderWidget } from './recorderWidget.js';
+import { Recording } from './recording.js'
+import { Row } from './row.js'
 
 enum WindowState {
     Empty,
@@ -39,32 +39,37 @@ enum WindowState {
     Recorder,
 }
 
-export type WindowClass = InstanceType<typeof Window>;
-
-export const Window = GObject.registerClass({
-    Template: 'resource:///org/gnome/SoundRecorder/ui/window.ui',
-    InternalChildren: [
-        'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay',
-    ],
-}, class Window extends Adw.ApplicationWindow {
+export class Window extends Adw.ApplicationWindow {
     private _mainStack!: Gtk.Stack;
     private _emptyPage!: Adw.StatusPage;
     private _column!: Adw.Clamp;
     private _headerRevealer!: Gtk.Revealer;
     private _toastOverlay!: Adw.ToastOverlay;
 
-    private recorder: RecorderClass;
-    private recorderWidget: RecorderWidgetClass;
+    private recorder: Recorder;
+    private recorderWidget: RecorderWidget;
     private player: GstPlayer.Player;
-    private recordingList: RecordingListClass;
+    private recordingList: RecordingList;
     private itemsSignalId: number;
-    private recordingListWidget: RecordingsListWidgetClass;
+    private recordingListWidget: RecordingsListWidget;
 
     private toastUndo: boolean;
     private undoSignalID: number | null;
     private undoAction: Gio.SimpleAction;
 
     private _state: WindowState;
+
+    static {
+        GObject.registerClass(
+            {
+                Template: 'resource:///org/gnome/SoundRecorder/ui/window.ui',
+                InternalChildren: [
+                    'mainStack', 'emptyPage', 'column', 'headerRevealer', 'toastOverlay',
+                ],
+            },
+            this
+        );
+    }
 
     constructor(params: Partial<Adw.Application.ConstructorProperties>) {
         super(params);
@@ -93,7 +98,7 @@ export const Window = GObject.registerClass({
 
         this.recordingListWidget = new RecordingsListWidget(this.recordingList, this.player);
 
-        this.recordingListWidget.connect('row-deleted', (_listBox: Gtk.ListBox, recording: RecordingClass, index: number) => {
+        this.recordingListWidget.connect('row-deleted', (_listBox: Gtk.ListBox, recording: Recording, index: number) => {
             this.recordingList.remove(index);
             let message: string;
             if (recording.name) {
@@ -130,7 +135,7 @@ export const Window = GObject.registerClass({
             this.recordingList.disconnect(this.itemsSignalId);
 
         for (let i = 0; i < this.recordingList.get_n_items(); i++) {
-            const recording = this.recordingList.get_item(i) as RecordingClass;
+            const recording = this.recordingList.get_item(i) as Recording;
             if (recording.pipeline)
                 recording.pipeline.set_state(Gst.State.NULL);
         }
@@ -156,14 +161,14 @@ export const Window = GObject.registerClass({
             this.state = WindowState.List;
     }
 
-    private onRecorderStopped(_widget: RecorderWidgetClass, recording: RecordingClass): void {
+    private onRecorderStopped(_widget: RecorderWidget, recording: Recording): void {
         this.recordingList.insert(0, recording);
-        const row = this.recordingListWidget.list.get_row_at_index(0) as RowClass;
+        const row = this.recordingListWidget.list.get_row_at_index(0) as Row;
         row.editMode = true;
         this.state = WindowState.List;
     }
 
-    private sendNotification(message: string, recording: RecordingClass, index: number): void {
+    private sendNotification(message: string, recording: Recording, index: number): void {
         const toast = Adw.Toast.new(message);
         toast.connect('dismissed', () => {
             if (!this.toastUndo)
@@ -210,4 +215,4 @@ export const Window = GObject.registerClass({
     public get state(): WindowState {
         return this._state;
     }
-});
+}

@@ -6,20 +6,26 @@ import GstPlayer from 'gi://GstPlayer'
 import Gtk from 'gi://Gtk?version=4.0'
 import Gio from 'gi://Gio';
 
-import { Row, RowClass, RowState } from './row.js';
-import { RecordingClass } from './recording.js';
+import { Row, RowState } from './row.js';
+import { Recording } from './recording.js';
+import { WaveForm } from './waveform.js'
 
-export type RecordingsListWidgetClass = InstanceType<typeof RecordingsListWidget>;
-
-export const RecordingsListWidget = GObject.registerClass({
-    Signals: {
-        'row-deleted': { param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT] },
-    },
-}, class RecordingsListWidget extends Adw.Bin {
+export class RecordingsListWidget extends Adw.Bin {
     private player: GstPlayer.Player;
     public list: Gtk.ListBox;
-    public activeRow?: RowClass | null;
-    public activePlayingRow?: RowClass | null;
+    public activeRow?: Row | null;
+    public activePlayingRow?: Row | null;
+
+    static {
+        GObject.registerClass(
+            {
+                Signals: {
+                    'row-deleted': { param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT] },
+                },
+            },
+            this
+        );
+    }
 
     constructor(model: Gio.ListModel, player: GstPlayer.Player) {
         super();
@@ -53,9 +59,7 @@ export const RecordingsListWidget = GObject.registerClass({
         });
 
         // @ts-expect-error TypeScript gets `bind_model()` wrong
-        this.list.bind_model(model, (recording: RecordingClass) => {
-            // This is weird - does using `constructor()` break how it's recognized?
-            // @ts-expect-error TypeScript gets the type here wrong too
+        this.list.bind_model(model, (recording: Recording) => {
             const row = new Row(recording);
 
             row.waveform.connect('gesture-pressed', () => {
@@ -69,11 +73,11 @@ export const RecordingsListWidget = GObject.registerClass({
                 }
             });
 
-            row.waveform.connect('position-changed', (_wave, _position) => {
-                this.player.seek(_position * row.recording.duration);
+            row.waveform.connect('position-changed', (_wave: WaveForm, position: number) => {
+                this.player.seek(position * row.recording.duration);
             });
 
-            row.connect('play', (_row: RowClass) => {
+            row.connect('play', (_row: Row) => {
                 if (this.activePlayingRow) {
                     if (this.activePlayingRow !== _row) {
                         this.activePlayingRow.state = RowState.Paused;
@@ -92,12 +96,12 @@ export const RecordingsListWidget = GObject.registerClass({
                 this.player.pause();
             });
 
-            row.connect('seek-backward', (row: RowClass) => {
+            row.connect('seek-backward', (row: Row) => {
                 let position = this.player.position - 10 * Gst.SECOND;
                 position = position < 0 || position > row.recording.duration ? 0 : position;
                 this.player.seek(position);
             });
-            row.connect('seek-forward', (_row: RowClass) => {
+            row.connect('seek-forward', (_row: Row) => {
                 let position = this.player.position + 10 * Gst.SECOND;
                 position = position < 0 || position > _row.recording.duration ? 0 : position;
                 this.player.seek(position);
@@ -123,7 +127,7 @@ export const RecordingsListWidget = GObject.registerClass({
         this.list.connect('row-activated', this.rowActivated.bind(this));
     }
 
-    private rowActivated(_list: Gtk.ListBox, row: RowClass): void {
+    private rowActivated(_list: Gtk.ListBox, row: Row): void {
         if (row.editMode && row.expanded || this.activeRow && this.activeRow.editMode && this.activeRow.expanded)
             return;
 
@@ -158,4 +162,4 @@ export const RecordingsListWidget = GObject.registerClass({
                 after.remove_css_class('expanded-after');
         }
     }
-});
+}

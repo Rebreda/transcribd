@@ -32,10 +32,14 @@ export const RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.ge
 export const CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
 export const Settings = new Gio.Settings({ schema: pkg.name });
 
-import { Window, WindowClass } from './window.js';
+import { Window } from './window.js';
 
-export const Application = GObject.registerClass(class Application extends Adw.Application {
-    private window?: WindowClass;
+export class Application extends Adw.Application {
+    private window?: Window;
+
+    static {
+        GObject.registerClass(this);
+    }
 
     constructor() {
         super({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
@@ -156,4 +160,4 @@ export const Application = GObject.registerClass(class Application extends Adw.A
         });
         aboutDialog.show();
     }
-});
+}

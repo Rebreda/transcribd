@@ -8,26 +8,7 @@ import GstPbutils from 'gi://GstPbutils';
 import { CacheDir } from './application.js'
 import { EncodingProfiles } from './recorder.js';
 
-export type RecordingClass = InstanceType<typeof Recording>;
-
-export const Recording = GObject.registerClass({
-    Signals: {
-        'peaks-updated': {},
-        'peaks-loading': {},
-    },
-    Properties: {
-        'duration': GObject.ParamSpec.int(
-            'duration',
-            'Recording Duration', 'Recording duration in nanoseconds',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            0, GLib.MAXINT16, 0),
-        'name': GObject.ParamSpec.string(
-            'name',
-            'Recording Name', 'Recording name in string',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            ''),
-    },
-}, class Recording extends GObject.Object {
+export class Recording extends GObject.Object {
     private _file: Gio.File;
     private _peaks: number[];
     private loadedPeaks: number[];
@@ -37,6 +18,30 @@ export const Recording = GObject.registerClass({
     private _duration?: number;
 
     public pipeline?: Gst.Bin | null;
+
+    static {
+        GObject.registerClass(
+            {
+                Signals: {
+                    'peaks-updated': {},
+                    'peaks-loading': {},
+                },
+                Properties: {
+                    'duration': GObject.ParamSpec.int(
+                        'duration',
+                        'Recording Duration', 'Recording duration in nanoseconds',
+                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                        0, GLib.MAXINT16, 0),
+                    'name': GObject.ParamSpec.string(
+                        'name',
+                        'Recording Name', 'Recording name in string',
+                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                        ''),
+                },
+            },
+            this
+        );
+    }
 
     constructor(file: Gio.File) {
         super();
@@ -205,5 +210,5 @@ export const Recording = GObject.registerClass({
             }
         });
     }
-});
+}
 

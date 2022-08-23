@@ -25,7 +25,7 @@ import Gst from 'gi://Gst';
 import GstPbutils from 'gi://GstPbutils';
 
 import { RecordingsDir, Settings } from './application.js';
-import { Recording, RecordingClass } from './recording.js';
+import { Recording } from './recording.js';
 
 // All supported encoding profiles.
 export const EncodingProfiles = [
@@ -65,22 +65,7 @@ const AudioChannels = [
     { name: 'mono', channels: 1 },
 ];
 
-export type RecorderClass = InstanceType<typeof Recorder>;
-
-export const Recorder = GObject.registerClass({
-    Properties: {
-        'duration': GObject.ParamSpec.int(
-            'duration',
-            'Recording Duration', 'Recording duration in nanoseconds',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            0, GLib.MAXINT16, 0),
-        'current-peak': GObject.ParamSpec.float(
-            'current-peak',
-            'Waveform current peak', 'Waveform current peak in float [0, 1]',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            0.0, 1.0, 0.0),
-    },
-}, class Recorder extends GObject.Object {
+export class Recorder extends GObject.Object {
     private peaks: number[];
 
     private _duration!: number;
@@ -95,6 +80,26 @@ export const Recorder = GObject.registerClass({
     private file?: Gio.File;
     private timeout?: number | null;
     private pipeState?: Gst.State;
+
+    static {
+        GObject.registerClass(
+            {
+                Properties: {
+                    'duration': GObject.ParamSpec.int(
+                        'duration',
+                        'Recording Duration', 'Recording duration in nanoseconds',
+                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                        0, GLib.MAXINT16, 0),
+                    'current-peak': GObject.ParamSpec.float(
+                        'current-peak',
+                        'Waveform current peak', 'Waveform current peak in float [0, 1]',
+                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                        0.0, 1.0, 0.0),
+                },
+            },
+            this
+        )
+    }
 
     constructor() {
         super();
@@ -169,7 +174,7 @@ export const Recorder = GObject.registerClass({
             this.state = Gst.State.PLAYING;
     }
 
-    public stop(): RecordingClass | undefined {
+    public stop(): Recording | undefined {
         this.state = Gst.State.NULL;
         this.duration = 0;
         if (this.timeout) {
@@ -296,4 +301,4 @@ export const Recorder = GObject.registerClass({
         }
     }
 
-});
+}

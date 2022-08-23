@@ -4,15 +4,17 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 
 import { RecordingsDir } from './application.js';
-import { Recording, RecordingClass } from './recording.js';
+import { Recording } from './recording.js';
 
-export type RecordingListClass = InstanceType<typeof RecordingList>;
-
-export const RecordingList = GObject.registerClass(class RecordingList extends Gio.ListStore {
+export class RecordingList extends Gio.ListStore {
     private enumerator?: Gio.FileEnumerator;
 
     public cancellable: Gio.Cancellable;
     public dirMonitor: Gio.FileMonitor;
+
+    static {
+        GObject.registerClass(this);
+    }
 
     constructor() {
         super();
@@ -148,18 +150,18 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
 
     private getIndex(file: Gio.File): number {
         for (let i = 0; i < this.get_n_items(); i++) {
-            const item = this.get_item(i) as RecordingClass;
+            const item = this.get_item(i) as Recording;
             if (item.uri === file.get_uri())
                 return i;
         }
         return -1;
     }
 
-    private sortedInsert(recording: RecordingClass): void {
+    private sortedInsert(recording: Recording): void {
         let added = false;
 
         for (let i = 0; i < this.get_n_items(); i++) {
-            const curr = this.get_item(i) as RecordingClass;
+            const curr = this.get_item(i) as Recording;
             if (curr.timeModified.difference(recording.timeModified) <= 0) {
                 this.insert(i, recording);
                 added = true;
@@ -170,4 +172,4 @@ export const RecordingList = GObject.registerClass(class RecordingList extends G
         if (!added)
             this.append(recording);
     }
-});
+}

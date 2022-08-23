@@ -4,39 +4,16 @@ import Gio from 'gi://Gio'
 import GObject from 'gi://GObject'
 import Gtk from 'gi://Gtk?version=4.0'
 
-import { RecordingClass } from './recording.js';
+import { Recording } from './recording.js';
 import { displayDateTime, formatTime } from './utils.js';
-import { WaveForm, WaveFormClass, WaveType } from './waveform.js';
+import { WaveForm, WaveType } from './waveform.js';
 
 export enum RowState {
     Playing,
     Paused,
 }
 
-export type RowClass = InstanceType<typeof Row>;
-
-export const Row = GObject.registerClass({
-    Template: 'resource:///org/gnome/SoundRecorder/ui/row.ui',
-    InternalChildren: [
-        'playbackStack', 'mainStack', 'waveformStack', 'rightStack',
-        'name', 'entry', 'date', 'duration', 'revealer', 'playbackControls',
-        'saveBtn', 'playBtn', 'pauseBtn',
-    ],
-    Signals: {
-        'play': { param_types: [GObject.TYPE_STRING] },
-        'pause': {},
-        'seek-backward': {},
-        'seek-forward': {},
-        'deleted': {},
-    },
-    Properties: {
-        'expanded': GObject.ParamSpec.boolean(
-            'expanded',
-            'Row active status', 'Row active status',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            false),
-    },
-}, class Row extends Gtk.ListBoxRow {
+export class Row extends Gtk.ListBoxRow {
     private _playbackStack!: Gtk.Stack;
     private _mainStack!: Gtk.Stack;
     private _waveformStack!: Gtk.Stack;
@@ -50,12 +27,12 @@ export const Row = GObject.registerClass({
     private _playBtn!: Gtk.Button;
     private _pauseBtn!: Gtk.Button;
 
-    public recording: RecordingClass;
+    public recording: Recording;
     private _expanded: boolean;
     private _editMode: boolean;
     private _state: RowState;
 
-    public waveform: WaveFormClass;
+    public waveform: WaveForm;
     private actionGroup: Gio.SimpleActionGroup;
     private exportDialog?: Gtk.FileChooserNative | null;
 
@@ -65,7 +42,35 @@ export const Row = GObject.registerClass({
     private playAction: Gio.SimpleAction;
     private keyController: Gtk.EventControllerKey;
 
-    constructor(recording: RecordingClass) {
+    static {
+        GObject.registerClass(
+            {
+                Template: 'resource:///org/gnome/SoundRecorder/ui/row.ui',
+                InternalChildren: [
+                    'playbackStack', 'mainStack', 'waveformStack', 'rightStack',
+                    'name', 'entry', 'date', 'duration', 'revealer', 'playbackControls',
+                    'saveBtn', 'playBtn', 'pauseBtn',
+                ],
+                Signals: {
+                    'play': { param_types: [GObject.TYPE_STRING] },
+                    'pause': {},
+                    'seek-backward': {},
+                    'seek-forward': {},
+                    'deleted': {},
+                },
+                Properties: {
+                    'expanded': GObject.ParamSpec.boolean(
+                        'expanded',
+                        'Row active status', 'Row active status',
+                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                        false),
+                },
+            },
+            this
+        );
+    }
+
+    constructor(recording: Recording) {
         super();
 
         this.recording = recording;
@@ -177,7 +182,7 @@ export const Row = GObject.registerClass({
             this.saveRenameAction.activate(null);
         });
 
-        this.recording.connect('peaks-updated', (_recording: RecordingClass) => {
+        this.recording.connect('peaks-updated', (_recording: Recording) => {
             this._waveformStack.visible_child_name = 'wave';
             this.waveform.peaks = _recording.peaks;
         });
@@ -268,4 +273,4 @@ export const Row = GObject.registerClass({
     public get state(): RowState {
         return this._state;
     }
-});
+}

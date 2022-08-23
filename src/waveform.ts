@@ -37,26 +37,7 @@ export enum WaveType {
 
 const GUTTER = 4;
 
-export type WaveFormClass = InstanceType<typeof WaveForm>;
-
-export const WaveForm = GObject.registerClass({
-    Properties: {
-        'position': GObject.ParamSpec.float(
-            'position',
-            'Waveform position', 'Waveform position',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            0.0, 1.0, 0.0),
-        'peak': GObject.ParamSpec.float(
-            'peak',
-            'Waveform current peak', 'Waveform current peak in float [0, 1]',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            0.0, 1.0, 0.0),
-    },
-    Signals: {
-        'position-changed': {  param_types: [GObject.TYPE_DOUBLE]  },
-        'gesture-pressed': {},
-    },
-}, class WaveForm extends Gtk.DrawingArea {
+export class WaveForm extends Gtk.DrawingArea {
     private _peaks: number[];
     private _position: number;
     private dragGesture?: Gtk.GestureDrag;
@@ -64,6 +45,30 @@ export const WaveForm = GObject.registerClass({
     private lastX?: number;
 
     private waveType: WaveType;
+
+    static {
+        GObject.registerClass(
+            {
+                Properties: {
+                    'position': GObject.ParamSpec.float(
+                        'position',
+                        'Waveform position', 'Waveform position',
+                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                        0.0, 1.0, 0.0),
+                    'peak': GObject.ParamSpec.float(
+                        'peak',
+                        'Waveform current peak', 'Waveform current peak in float [0, 1]',
+                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                        0.0, 1.0, 0.0),
+                },
+                Signals: {
+                    'position-changed': {  param_types: [GObject.TYPE_DOUBLE]  },
+                    'gesture-pressed': {},
+                },
+            },
+            this
+        );
+    }
 
     constructor(params: Partial<Gtk.DrawingArea.ConstructorProperties> | undefined, type: WaveType) {
         super(params);
@@ -104,7 +109,7 @@ export const WaveForm = GObject.registerClass({
     }
 
     private drawFunc(superDa: Gtk.DrawingArea, ctx: Cairo.Context) {
-        const da = superDa as WaveFormClass;
+        const da = superDa as WaveForm;
         const maxHeight = da.get_allocated_height();
         const vertiCenter = maxHeight / 2;
         const horizCenter = da.get_allocated_width() / 2;
@@ -197,4 +202,4 @@ export const WaveForm = GObject.registerClass({
         this._peaks.length = 0;
         this.queue_draw();
     }
-});
+}

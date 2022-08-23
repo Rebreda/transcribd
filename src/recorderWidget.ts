@@ -4,8 +4,8 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=4.0';
 
 import { formatTime } from './utils.js';
-import { WaveForm, WaveFormClass, WaveType } from  './waveform.js';
-import { RecorderClass } from './recorder.js';
+import { WaveForm, WaveType } from  './waveform.js';
+import { Recorder } from './recorder.js';
 
 enum RecorderState {
     Recording,
@@ -13,33 +13,38 @@ enum RecorderState {
     Stopped,
 }
 
-export type RecorderWidgetClass = InstanceType<typeof RecorderWidget>;
-
-export const RecorderWidget = GObject.registerClass({
-    Template: 'resource:///org/gnome/SoundRecorder/ui/recorder.ui',
-    InternalChildren: [
-        'recorderBox', 'playbackStack', 'recorderTime',
-        'pauseBtn', 'resumeBtn',
-    ],
-    Signals: {
-        'canceled': {},
-        'paused': {},
-        'resumed': {},
-        'started': {},
-        'stopped': { param_types: [GObject.TYPE_OBJECT] },
-    },
-}, class RecorderWidget extends Gtk.Box {
+export class RecorderWidget extends Gtk.Box {
     private _recorderBox!: Gtk.Box;
     private _playbackStack!: Gtk.Stack;
     private _recorderTime!: Gtk.Label;
     private _pauseBtn!: Gtk.Button;
     private _resumeBtn!: Gtk.Button;
 
-    private recorder: RecorderClass;
-    private waveform: WaveFormClass;
+    private recorder: Recorder;
+    private waveform: WaveForm;
     public actionsGroup: Gio.SimpleActionGroup;
 
-    constructor(recorder: RecorderClass) {
+    static {
+        GObject.registerClass(
+            {
+                Template: 'resource:///org/gnome/SoundRecorder/ui/recorder.ui',
+                InternalChildren: [
+                    'recorderBox', 'playbackStack', 'recorderTime',
+                    'pauseBtn', 'resumeBtn',
+                ],
+                Signals: {
+                    'canceled': {},
+                    'paused': {},
+                    'resumed': {},
+                    'started': {},
+                    'stopped': { param_types: [GObject.TYPE_OBJECT] },
+                },
+            },
+            this
+        );
+    }
+
+    constructor(recorder: Recorder) {
         super();
         this.recorder = recorder;
 
@@ -175,4 +180,4 @@ export const RecorderWidget = GObject.registerClass({
             break;
         }
     }
-});
+}
