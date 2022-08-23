@@ -58,8 +58,8 @@ export class RecordingsListWidget extends Adw.Bin {
             }
         });
 
-        // @ts-expect-error TypeScript gets `bind_model()` wrong
-        this.list.bind_model(model, (recording: Recording) => {
+        this.list.bind_model(model, (item: GObject.Object) => {
+            const recording = item as Recording;
             const row = new Row(recording);
 
             row.waveform.connect('gesture-pressed', () => {
