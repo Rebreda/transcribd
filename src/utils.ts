@@ -22,7 +22,7 @@ import Gettext from 'gettext'
 import GLib from 'gi://GLib'
 import Gst from 'gi://Gst'
 
-export const formatTime = (nanoSeconds: number) => {
+export function formatTime(nanoSeconds: number) {
     const time = new Date(0, 0, 0, 0, 0, 0, nanoSeconds / Gst.MSECOND);
 
     const miliseconds = (time.getMilliseconds() / 100).toString();
@@ -32,9 +32,9 @@ export const formatTime = (nanoSeconds: number) => {
 
     // eslint-disable-next-line no-irregular-whitespace
     return `${hours} ∶ ${minutes} ∶ ${seconds} . <small>${miliseconds}</small>`;
-};
+}
 
-export const displayDateTime = (time: GLib.DateTime) => {
+export function displayDateTime(time: GLib.DateTime) {
     const DAY = 86400000000;
     const now = GLib.DateTime.new_now_local();
     const difference = now.difference(time);
@@ -62,4 +62,4 @@ export const displayDateTime = (time: GLib.DateTime) => {
         return _('Last year');
 
     return Gettext.ngettext('%d year ago', '%d years ago', years).format(years);
-};
+}
