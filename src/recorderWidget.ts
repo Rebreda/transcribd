@@ -1,4 +1,5 @@
 /* exported RecorderState RecorderWidget */
+import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=4.0';
@@ -107,41 +108,31 @@ export class RecorderWidget extends Gtk.Box {
 
     private onCancel(): void {
         this.onPause();
-        const dialog = new Gtk.MessageDialog({
-            modal: true,
-            destroy_with_parent: true,
-            buttons: Gtk.ButtonsType.NONE,
-            message_type: Gtk.MessageType.QUESTION,
-            text: _('Delete recording?'),
-            secondary_text: _('This recording will not be saved.'),
+        const dialog = new Adw.MessageDialog({
+            heading: _('Delete Recording?'),
+            body: _('This recording will not be saved.'),
+            transient_for: this.root as Gtk.Window,
         });
 
-        dialog.set_default_response(Gtk.ResponseType.NO);
-        dialog.add_button(_('Resume'), Gtk.ResponseType.NO);
-        dialog.add_button(_('Delete'), Gtk.ResponseType.YES)
-            .add_css_class('destructive-action');
-        
-        dialog.set_transient_for(this.root as Gtk.Window);
-        dialog.connect('response', (_, response: number) => {
-            switch (response) {
-            case Gtk.ResponseType.YES: {
-                const recording = this.recorder.stop();
-                this.state = RecorderState.Stopped;
-                if (recording) {
-                    recording.delete();
-                }
-                this.emit('canceled');
-                break;
-            }
-            case Gtk.ResponseType.NO:
-                this.onResume();
-                break;
-            }
+        dialog.add_response('close', _('_Resume'));
+        dialog.add_response('delete', _('_Delete'));
 
-            dialog.close();
+        dialog.set_response_appearance('delete', Adw.ResponseAppearance.DESTRUCTIVE);
+        dialog.set_default_response('close');
+
+        dialog.connect('response::delete', () => {
+            const recording = this.recorder.stop();
+            this.state = RecorderState.Stopped;
+            if (recording) {
+                recording.delete();
+            }
+            this.waveform.destroy();
+            this.emit('canceled');
         });
 
-        dialog.show();
+        dialog.connect('response::close', this.onResume.bind(this));
+
+        dialog.present();
     }
 
     private onStop(): void {
