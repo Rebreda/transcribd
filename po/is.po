@@ -249,7 +249,6 @@ msgid "Close"
 msgstr "Loka"
 
 #: data/ui/window.ui:234
-#, fuzzy
 #| msgid "Preferred format"
 msgid "Preferred Format"
 msgstr "Umbeðið hljóðsnið"
