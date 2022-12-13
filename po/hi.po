@@ -242,7 +242,7 @@ msgstr "रिकॉर्डिंग जोङें"
 
 #: data/ui/window.ui:62
 msgid "Use the <b>Record</b> button to make sound recordings"
-msgstr "</b>'रिकार्ड करें'</b> बटन का प्रयोग कर ध्वनि की रिकॉर्डिंग करें।"
+msgstr "<b>'रिकार्ड करें'</b> बटन का प्रयोग कर ध्वनि की रिकॉर्डिंग करें।"
 
 #: data/ui/window.ui:98
 msgid "Preferred Format"
