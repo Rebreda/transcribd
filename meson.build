@@ -61,9 +61,8 @@ subdir('po')
 install_symlink(
   meson.project_name(),
   pointing_to: sound_recorder_pkgdatadir / application_id,
-  install_dir: sound_recorder_bindir / meson.project_name()
+  install_dir: sound_recorder_bindir
 )
-
 
 gnome.post_install(
   glib_compile_schemas: true,
