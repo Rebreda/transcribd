@@ -4,6 +4,8 @@ include:
 
 flatpak:
   variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_SUBMODULE_DEPTH: 1
     MANIFEST_PATH: "org.gnome.SoundRecorder.json"
     BUNDLE: "sound-recorder-dev.flatpak"
     FLATPAK_MODULE: "gnome-sound-recorder"

@@ -5,7 +5,8 @@
         "paths": {
             "*": [
                 "*",
-                "types/*"
+                "types/*",
+                "gi-types/*"
             ]
         },
         "target": "ES2018",
@@ -16,9 +17,14 @@
         "lib": [
             "es2017"
         ],
-        "typeRoots": []
+        "typeRoots": [
+            "types",
+            "gi-types"
+        ]
     },
     "include": [
+        "gi-types/gi.d.ts",
+        "types/ambient.d.ts",
         "src/*"
     ],
     "exclude": [

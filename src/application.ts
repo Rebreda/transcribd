@@ -18,9 +18,6 @@
 *
 */
 
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="../types/ambient.d.ts" />
-
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
