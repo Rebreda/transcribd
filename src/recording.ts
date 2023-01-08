@@ -120,11 +120,8 @@ export class Recording extends GObject.Object {
             this._peaks = data;
             this.emit('peaks-updated');
             const enc = new TextEncoder();
-            const buffer = new GLib.Bytes(enc.encode(JSON.stringify(data)));
-            this.waveformCache.replace_contents_bytes_async(buffer, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null, (obj: Gio.File | null, res: Gio.AsyncResult) => {
-                if (obj)
-                    obj.replace_contents_finish(res);
-            });
+            const contents = enc.encode(JSON.stringify(data));
+            this.waveformCache.replace_contents_async(contents, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null, null);
         }
     }
 
@@ -133,9 +130,9 @@ export class Recording extends GObject.Object {
         return this._peaks;
     }
 
-    public delete(): void {
-        this._file.trash_async(GLib.PRIORITY_HIGH, null, null);
-        this.waveformCache.trash_async(GLib.PRIORITY_DEFAULT, null, null);
+    public async delete(): Promise<void> {
+        await this._file.trash_async(GLib.PRIORITY_HIGH, null);
+        await this.waveformCache.trash_async(GLib.PRIORITY_DEFAULT, null);
     }
 
     public save(dest: Gio.File): void {
@@ -150,26 +147,25 @@ export class Recording extends GObject.Object {
         return CacheDir.get_child(`${this.name}_data`);
     }
 
-    public loadPeaks(): void {
-        if (this.waveformCache.query_exists(null)) {
-            this.waveformCache.load_bytes_async(null, (obj: Gio.File | null, res: Gio.AsyncResult) => {
-                const bytes = obj?.load_bytes_finish(res)[0];
-                try {
-                    const decoder = new TextDecoder('utf-8');
-                    if (bytes) {
-                        const data = bytes.get_data();
-                        if (data) {
-                            this._peaks = JSON.parse(decoder.decode(data));
-                            this.emit('peaks-updated');
-                        }
-                    }
-                } catch (error) {
-                    log(`Error reading waveform data file: ${this.name}_data`);
+    public async loadPeaks(): Promise<void> {
+        try {
+            const bytes = (await this.waveformCache.load_bytes_async(null))[0];
+            const decoder = new TextDecoder('utf-8');
+            if (bytes) {
+                const data = bytes.get_data();
+                if (data) {
+                    this._peaks = JSON.parse(decoder.decode(data));
+                    this.emit('peaks-updated');
                 }
-            });
-        } else {
-            this.emit('peaks-loading');
-            this.generatePeaks();
+            }
+        } catch (error) {
+            log(`Error reading waveform data file: ${this.name}_data`);
+            if (error instanceof GLib.Error) {
+                if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
+                    this.emit('peaks-loading');
+                    this.generatePeaks();
+                }
+            }
         }
     }
 

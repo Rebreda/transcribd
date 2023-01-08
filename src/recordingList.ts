@@ -40,38 +40,41 @@ export class RecordingList extends Gio.ListStore {
         RecordingsDir.enumerate_children_async('standard::name',
             Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
             GLib.PRIORITY_LOW,
-            this.cancellable,
-            this.enumerateDirectory.bind(this));
+            this.cancellable
+        ).then(async (enumerator) => {
+            await this.enumerateDirectory(enumerator);
+        });
     }
 
-    private enumerateDirectory(obj: Gio.File | null, res: Gio.AsyncResult): void {
-        this.enumerator = obj?.enumerate_children_finish(res);
+    private async enumerateDirectory(enumerator: Gio.FileEnumerator): Promise<void> {
+        this.enumerator = enumerator;
         if (this.enumerator === null) {
             log('The contents of the Recordings directory were not indexed.');
             return;
         }
-        this.enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this.onNextFiles.bind(this));
-    }
 
-    private onNextFiles(obj: Gio.FileEnumerator | null, res: Gio.AsyncResult): void {
         try {
-            const fileInfos = obj?.next_files_finish(res);
-            if (fileInfos && fileInfos.length) {
+            for (let fileInfos = await this.nextFiles(); fileInfos.length > 0; fileInfos = await this.nextFiles()) {
                 fileInfos.forEach(info => {
                     const file = RecordingsDir.get_child(info.get_name());
                     const recording = new Recording(file);
                     this.sortedInsert(recording);
                 });
-                this.enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable, this.onNextFiles.bind(this));
-            } else {
-                this.enumerator?.close(this.cancellable);
             }
+
+            this.enumerator?.close(this.cancellable);
         } catch (e: unknown) {
             if (e instanceof GLib.Error) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                     console.error(`Failed to load recordings ${e}`);
             }
         }
+    }
+
+    private async nextFiles(): Promise<Gio.FileInfo[]> {
+        const fileInfos = await this.enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable);
+        // We check this here because the return value isn't stated as nullable in Gio.
+        return fileInfos ? fileInfos : [];
     }
 
     private getIndex(file: Gio.File): number {

@@ -57,6 +57,11 @@ export class Application extends Adw.Application {
             }
             return -1;
         });
+
+        Gio._promisify(Gio.File.prototype, 'trash_async', 'trash_finish');
+        Gio._promisify(Gio.File.prototype, 'load_bytes_async', 'load_bytes_finish');
+        Gio._promisify(Gio.File.prototype, 'enumerate_children_async', 'enumerate_children_finish');
+        Gio._promisify(Gio.FileEnumerator.prototype, 'next_files_async', 'next_files_finish');
     }
 
     private initAppMenu(): void {
