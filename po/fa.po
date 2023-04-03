@@ -9,28 +9,36 @@ msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
 "issues\n"
-"POT-Creation-Date: 2020-11-24 14:33+0000\n"
-"PO-Revision-Date: 2021-03-04 00:10+0000\n"
-"Last-Translator: Danial Behzadi <dani.behzi@ubuntu.com>\n"
+"POT-Creation-Date: 2023-01-25 19:42+0000\n"
+"PO-Revision-Date: 2023-03-28 15:14+0330\n"
+"Last-Translator: MohammadSaleh Kamyab <mskf1383@envs.net>\n"
 "Language-Team: Persian <fa@li.org>\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 3.2.2\n"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
-#: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
-#: src/application.js:32
+#: data/org.gnome.SoundRecorder.desktop.in.in:4
+#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:5 data/ui/window.ui:10
 msgid "Sound Recorder"
 msgstr "ضبط صوت"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:6
+#: data/org.gnome.SoundRecorder.desktop.in.in:5
+msgid "Record sound via the microphone and play it back"
+msgstr "ضبط صدا از طریق صدابَر و پخش آن"
+
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/org.gnome.SoundRecorder.desktop.in.in:10
+msgid "Audio;Application;Record;"
+msgstr "Audio;Application;Record;صوت;برنامه;ضبط;"
+
+#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:6
 msgid "A simple, modern sound recorder for GNOME"
 msgstr "یک ضبط صوت مدرن و ساده برای گنوم"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:10
+#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:10
 msgid ""
 "Sound Recorder provides a simple and modern interface that provides a straight-"
 "forward way to record and play audio. It allows you to do basic editing, and "
@@ -39,7 +47,7 @@ msgstr ""
 "ضبط صوت یک واسط ساده و مدرن را برای ضبط و پخش آسان صدا فراهم می‌کند. همچنین به "
 "شما اجازهٔ ویرایش ساده و ساخت یادداشت‌های صوتی را می‌دهد."
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:15
+#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:15
 msgid ""
 "Sound Recorder automatically handles the saving process so that you do not "
 "need to worry about accidentally discarding the previous recording."
@@ -47,26 +55,17 @@ msgstr ""
 "ضبط صوت به صورت خودکار روند ذخیره را انجام می‌دهد تا شما نگران دورانداختن "
 "اتفاقی پرونده پیشین نباشید."
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:19
+#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:19
 msgid "Supported audio formats:"
 msgstr "قالب‌های صوتی پشتیبانی شده:"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:21
+#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:21
 msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
 msgstr "وربیس اوگ، اپوس، فلک، ام‌پی‌تری و موو"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:69
+#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:106
 msgid "The GNOME Project"
 msgstr "پروژهٔ گنوم"
-
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
-msgid "Record sound via the microphone and play it back"
-msgstr "ضبط صدا از طریق میکروفون و پخش آن"
-
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Audio;Application;Record;صوت;برنامه;ضبط;"
 
 #: data/org.gnome.SoundRecorder.gschema.xml.in:15
 msgid "Window size"
@@ -108,278 +107,249 @@ msgstr ""
 "نگاشت کانال‌های موجود. اگر هیچ نگاشتی تنظیم نشده باشد، به صورت پیش‌گزیده کانال "
 "استریو استفاده می‌شود."
 
-#: data/ui/help-overlay.ui:15
+#: data/ui/help-overlay.ui:11
 msgctxt "shortcut window"
 msgid "General"
 msgstr "عمومی"
 
-#: data/ui/help-overlay.ui:20
+#: data/ui/help-overlay.ui:15
 msgctxt "shortcut window"
 msgid "Record"
 msgstr "ضبط"
 
-#: data/ui/help-overlay.ui:27
+#: data/ui/help-overlay.ui:21
 msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "توقّف ضبط"
 
-#: data/ui/help-overlay.ui:34
+#: data/ui/help-overlay.ui:27
 msgctxt "shortcut window"
 msgid "Play / Pause / Resume"
 msgstr "پخش / مکث / از سر گیری"
 
-#: data/ui/help-overlay.ui:42
+#: data/ui/help-overlay.ui:34
 msgctxt "shortcut window"
 msgid "Delete"
 msgstr "حذف"
 
-#: data/ui/help-overlay.ui:49
+#: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
 msgid "Open menu"
 msgstr "گشودن فهرست"
 
-#: data/ui/help-overlay.ui:56
+#: data/ui/help-overlay.ui:46
 msgctxt "shortcut window"
 msgid "Keyboard shortcuts"
 msgstr "میان‌برهای صفحه‌کلید"
 
-#: data/ui/help-overlay.ui:63
+#: data/ui/help-overlay.ui:52
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "خروج"
 
-#: data/ui/help-overlay.ui:71
+#: data/ui/help-overlay.ui:59
 msgctxt "shortcut window"
 msgid "Recording"
 msgstr "ضبط کردن"
 
-#: data/ui/help-overlay.ui:76
+#: data/ui/help-overlay.ui:63
 msgctxt "shortcut window"
 msgid "Seek Backward"
 msgstr "رفتن به پس"
 
-#: data/ui/help-overlay.ui:83
+#: data/ui/help-overlay.ui:69
 msgctxt "shortcut window"
 msgid "Seek Forward"
 msgstr "رفتن به پیش"
 
-#: data/ui/help-overlay.ui:90
+#: data/ui/help-overlay.ui:75
 msgctxt "shortcut window"
 msgid "Rename"
 msgstr "تغییر نام"
 
-#: data/ui/help-overlay.ui:97
+#: data/ui/help-overlay.ui:81
 msgctxt "shortcut window"
 msgid "Export"
 msgstr "برون‌ریزی"
 
-#: data/ui/recorder.ui:72
+#: data/ui/recorder.ui:43
 msgid "Resume Recording"
 msgstr "از سر گیری ضبط"
 
-#: data/ui/recorder.ui:96
+#: data/ui/recorder.ui:61
 msgid "Pause Recording"
 msgstr "مکث ضبط"
 
-#: data/ui/recorder.ui:128
+#: data/ui/recorder.ui:78
 msgid "Stop Recording"
 msgstr "توقّف ضبط"
 
-#: data/ui/recorder.ui:157
+#: data/ui/recorder.ui:98
 msgid "Delete Recording"
 msgstr "حذف ضبط"
 
-#: data/ui/row.ui:165 data/ui/row.ui:444
-msgid "Export"
-msgstr "برون‌ریزی"
-
-#: data/ui/row.ui:189 data/ui/row.ui:440
-msgid "Rename"
-msgstr "تغییر نام"
-
-#: data/ui/row.ui:241
-msgid "Save"
-msgstr "ذخیره"
-
-#: data/ui/row.ui:278 src/recorderWidget.js:100
+#: data/ui/row.ui:109
 msgid "Delete"
 msgstr "حذف"
 
-#: data/ui/row.ui:313
+#: data/ui/row.ui:129
 msgid "Seek 10s Backward"
 msgstr "۱۰ث پس‌روی"
 
-#: data/ui/row.ui:341
+#: data/ui/row.ui:147
 msgid "Play"
 msgstr "پخش"
 
-#: data/ui/row.ui:367
+#: data/ui/row.ui:171
 msgid "Pause"
 msgstr "مکث"
 
-#: data/ui/row.ui:399
+#: data/ui/row.ui:194
 msgid "Seek 10s Forward"
 msgstr "۱۰ث پیش‌روی"
 
-#: data/ui/window.ui:60
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "برون‌ریزی"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "تغییر نام"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "ذخیره"
+
+#: data/ui/window.ui:28
 msgid "Record"
 msgstr "ضبط"
 
-#: data/ui/window.ui:149
+#: data/ui/window.ui:61
 msgid "Add Recordings"
 msgstr "افزودن ضبط"
 
-#: data/ui/window.ui:166
+#: data/ui/window.ui:62
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "از دکمهٔ <b>ضبط</b> برای شروع ضبط استفاده کنید"
 
-#: data/ui/window.ui:237
-msgid "Undo"
-msgstr "برگردان"
-
-#: data/ui/window.ui:254
-msgid "Close"
-msgstr "بستن"
-
-#: data/ui/window.ui:290
+#: data/ui/window.ui:98
 msgid "Preferred Format"
 msgstr "قالب ترجیحی"
 
-#: data/ui/window.ui:292
+#: data/ui/window.ui:100
 msgid "Vorbis"
 msgstr "وربیس"
 
-#: data/ui/window.ui:297
+#: data/ui/window.ui:105
 msgid "Opus"
 msgstr "اپوس"
 
-#: data/ui/window.ui:302
+#: data/ui/window.ui:110
 msgid "FLAC"
 msgstr "فلک"
 
-#: data/ui/window.ui:307
+#: data/ui/window.ui:115
 msgid "MP3"
 msgstr "ام‌پی‌تری"
 
-#: data/ui/window.ui:313
+#: data/ui/window.ui:121
 msgid "Audio Channel"
 msgstr "کانال صدا"
 
-#: data/ui/window.ui:315
+#: data/ui/window.ui:123
 msgid "Stereo"
 msgstr "استریو"
 
-#: data/ui/window.ui:320
+#: data/ui/window.ui:128
 msgid "Mono"
 msgstr "مونو"
 
-#: data/ui/window.ui:327
+#: data/ui/window.ui:135
 msgid "_Keyboard Shortcuts"
 msgstr "میان‌برهای _صفحه‌کلید"
 
-#: data/ui/window.ui:332
+#: data/ui/window.ui:140
 msgid "About Sound Recorder"
 msgstr "دربارهٔ ضبط صوت"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:130
-msgid "translator-credits"
-msgstr ""
-"آرش موسوی <mousavi.arash@gmail.com>\n"
-"دانیال بهزادی <dani.behzi@ubuntu.com>"
+#~ msgid "Undo"
+#~ msgstr "برگردان"
 
-#: src/application.js:132
-msgid "A Sound Recording Application for GNOME"
-msgstr "یک برنامهٔ ضبط صوت برای گنوم"
+#~ msgid "Close"
+#~ msgstr "بستن"
 
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:113
+#~ msgid "translator-credits"
+#~ msgstr ""
+#~ "آرش موسوی <mousavi.arash@gmail.com>\n"
+#~ "دانیال بهزادی <dani.behzi@ubuntu.com>"
+
+#~ msgid "A Sound Recording Application for GNOME"
+#~ msgstr "یک برنامهٔ ضبط صوت برای گنوم"
+
 #, javascript-format
-msgid "Recording %d"
-msgstr "ضبط %Id"
+#~ msgid "Recording %d"
+#~ msgstr "ضبط %Id"
 
-#: src/recorderWidget.js:94
-msgid "Delete recording?"
-msgstr "حذف ضبط؟"
+#~ msgid "Delete recording?"
+#~ msgstr "حذف ضبط؟"
 
-#: src/recorderWidget.js:95
-msgid "This recording will not be saved."
-msgstr "این ضبط، ذخیره نخواهد شد."
+#~ msgid "This recording will not be saved."
+#~ msgstr "این ضبط، ذخیره نخواهد شد."
 
-#: src/recorderWidget.js:99
-msgid "Resume"
-msgstr "از سر گیری"
+#~ msgid "Resume"
+#~ msgstr "از سر گیری"
 
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:42
-msgid "Recordings"
-msgstr "ضبط‌ها"
+#~ msgid "Recordings"
+#~ msgstr "ضبط‌ها"
 
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:59
 #, javascript-format
-msgid "%s (Old)"
-msgstr "%s (قدیمی)"
+#~ msgid "%s (Old)"
+#~ msgstr "%s (قدیمی)"
 
-#: src/row.js:71
-msgid "Export Recording"
-msgstr "برون‌ریزی ضبط"
+#~ msgid "Export Recording"
+#~ msgstr "برون‌ریزی ضبط"
 
-#: src/row.js:71
-msgid "_Export"
-msgstr "_برون‌ریزی"
+#~ msgid "_Export"
+#~ msgstr "_برون‌ریزی"
 
-#: src/row.js:71
-msgid "_Cancel"
-msgstr "_لغو"
+#~ msgid "_Cancel"
+#~ msgstr "_لغو"
 
-#: src/utils.js:48
-msgid "Yesterday"
-msgstr "دیروز"
+#~ msgid "Yesterday"
+#~ msgstr "دیروز"
 
-#: src/utils.js:50
 #, javascript-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "%Id روز پیش"
+#~ msgid "%d day ago"
+#~ msgid_plural "%d days ago"
+#~ msgstr[0] "%Id روز پیش"
 
-#: src/utils.js:52
-msgid "Last week"
-msgstr "هفته پیش"
+#~ msgid "Last week"
+#~ msgstr "هفته پیش"
 
-#: src/utils.js:54
 #, javascript-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "%Id هفته پیش"
+#~ msgid "%d week ago"
+#~ msgid_plural "%d weeks ago"
+#~ msgstr[0] "%Id هفته پیش"
 
-#: src/utils.js:56
-msgid "Last month"
-msgstr "ماه پیش"
+#~ msgid "Last month"
+#~ msgstr "ماه پیش"
 
-#: src/utils.js:58
 #, javascript-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "%Id ماه قبل"
+#~ msgid "%d month ago"
+#~ msgid_plural "%d months ago"
+#~ msgstr[0] "%Id ماه قبل"
 
-#: src/utils.js:60
-msgid "Last year"
-msgstr "پارسال"
+#~ msgid "Last year"
+#~ msgstr "پارسال"
 
-#: src/utils.js:62
 #, javascript-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "%Id سال قبل"
+#~ msgid "%d year ago"
+#~ msgid_plural "%d years ago"
+#~ msgstr[0] "%Id سال قبل"
 
-#: src/window.js:71
 #, javascript-format
-msgid "\"%s\" deleted"
-msgstr "«%s» حذف شد"
+#~ msgid "\"%s\" deleted"
+#~ msgstr "«%s» حذف شد"
 
 #~ msgid "Microphone volume level"
 #~ msgstr "سطح حجم صدای میکروفن"
