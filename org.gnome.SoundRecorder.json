@@ -4,7 +4,8 @@
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
-        "org.freedesktop.Sdk.Extension.node18"
+        "org.freedesktop.Sdk.Extension.node18",
+        "org.freedesktop.Sdk.Extension.typescript"
     ],
     "command" : "gnome-sound-recorder",
     "tags" : [
@@ -20,30 +21,14 @@
         "--talk-name=org.a11y.Bus"
     ],
     "build-options" : {
-        "append-path" : "/usr/lib/sdk/node18/bin"
+        "append-path" : "/usr/lib/sdk/node18/bin:/usr/lib/sdk/typescript/bin"
     },
-    "cleanup" : [
-        "/app/yarn-mirror"
-    ],
     "modules" : [
-        {
-            "name" : "yarn-deps",
-            "buildsystem" : "simple",
-            "build-commands" : [
-                "/usr/lib/sdk/node18/enable.sh",
-                "mkdir -p /app",
-                "cp -r $FLATPAK_BUILDER_BUILDDIR/flatpak-node/yarn-mirror/ /app"
-            ],
-            "sources" : [
-                "generated-sources.json"
-            ]
-        },
         {
             "name" : "gnome-sound-recorder",
             "buildsystem" : "meson",
             "config-opts" : [
-            	"-Dprofile=development",
-                "-Doffline-mirror=/app/yarn-mirror"
+            	"-Dprofile=development"
             ],
             "sources" : [
                 {

@@ -51,34 +51,7 @@ dependency('gstreamer-pbutils-1.0')
 gnome = import('gnome')
 i18n = import('i18n')
 
-yarn = find_program('yarn', required: true)
-
-yarn_args = []
-
-offline_mirror = get_option('offline-mirror')
-if offline_mirror != ''
-  run_command(
-    'yarn',
-    'config',
-    '--offline',
-    'set',
-    'yarn-offline-mirror',
-    offline_mirror,
-    env: { 'HOME': meson.project_build_root() },
-    check: true,
-  )
-
-  yarn_args += [
-    '--offline',
-    '--use-yarnrc', meson.project_build_root() / '.yarnrc'
-  ]
-endif
-
-yarn_deps = custom_target(
-  'yarn-deps',
-  command: [ yarn, 'install', yarn_args ],
-  output: ['yarn-deps-out']
-)
+tsc = find_program('tsc', required: true)
 
 subdir('data')
 subdir('src')

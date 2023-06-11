@@ -35,8 +35,7 @@ typescript = custom_target(
   input: sources,
   build_by_default: true,
   build_always_stale: true,
-  command: [ yarn, yarn_args, 'run', 'typecheck', '--outDir', tsc_out ],
-  depends: yarn_deps,
+  command: [ tsc, '--outDir', tsc_out ],
   output: ['tsc-output'],
 )
 
