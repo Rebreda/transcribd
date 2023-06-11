@@ -43,7 +43,7 @@
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">win.show-help-overlay</property>
-                <property name="title" translatable="yes" context="shortcut window">Keyboard shortcuts</property>
+                <property name="title" translatable="yes" context="shortcut window">Keyboard Shortcuts</property>
               </object>
             </child>
             <child>
