@@ -5,3 +5,5 @@ _build
 .flatpak
 node_modules/
 .vscode/
+.fenv/
+.flatpak-builder/
