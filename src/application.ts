@@ -47,7 +47,7 @@ export class Application extends Adw.Application {
         this.add_main_option('version', 'v'.charCodeAt(0), GLib.OptionFlags.NONE, GLib.OptionArg.NONE,
             'Print version information and exit', null);
 
-        this.connect('handle-local-options', (app, options) => {
+        this.connect('handle-local-options', (_, options: GLib.VariantDict) => {
             if (options.contains('version')) {
                 print(pkg.version);
                 /* quit the invoked process after printing the version number
@@ -114,7 +114,7 @@ export class Application extends Adw.Application {
         } catch (e: unknown) {
             if (e instanceof GLib.Error) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
-                    console.error(`Failed to create directory ${e}`);
+                    console.error(`Failed to create directory: ${e.message}`);
             }
         }
         this.initAppMenu();

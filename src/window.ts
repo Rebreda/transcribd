@@ -172,7 +172,7 @@ export class Window extends Adw.ApplicationWindow {
         const toast = Adw.Toast.new(message);
         toast.connect('dismissed', () => {
             if (!this.toastUndo)
-                recording.delete();
+                void recording.delete();
 
             this.toastUndo = false;
         });

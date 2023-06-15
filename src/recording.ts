@@ -8,6 +8,10 @@ import GstPbutils from 'gi://GstPbutils';
 import { CacheDir } from './application.js'
 import { EncodingProfiles } from './recorder.js';
 
+function isNumArray(input: unknown): input is number[] {
+    return Array.isArray(input) && input.every(i => typeof i === "number")
+}
+
 export class Recording extends GObject.Object {
     private _file: Gio.File;
     private _peaks: number[];
@@ -76,7 +80,7 @@ export class Recording extends GObject.Object {
         discoverer.discover_uri_async(this.uri);
     }
 
-    public get name(): string | null  {
+    public get name(): string | null {
         return this._file.get_basename();
     }
 
@@ -154,14 +158,19 @@ export class Recording extends GObject.Object {
             if (bytes) {
                 const data = bytes.get_data();
                 if (data) {
-                    this._peaks = JSON.parse(decoder.decode(data));
-                    this.emit('peaks-updated');
+                    const parsedJSON: unknown = JSON.parse(decoder.decode(data));
+                    if (isNumArray(parsedJSON)) {
+                        this._peaks = parsedJSON;
+                        this.emit('peaks-updated');
+                    } else {
+                        throw new GLib.NumberParserError({ message: 'Failed to parse waveform', code: GLib.NumberParserError.INVALID });
+                    }
                 }
             }
         } catch (error) {
-            log(`Error reading waveform data file: ${this.name}_data`);
             if (error instanceof GLib.Error) {
-                if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
+                log(`Error reading waveform data file: ${error.message}`);
+                if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND) || error.matches(GLib.NumberParserError, GLib.NumberParserError.INVALID)) {
                     this.emit('peaks-loading');
                     this.generatePeaks();
                 }

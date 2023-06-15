@@ -37,7 +37,7 @@ export class RecordingList extends Gio.ListStore {
 
         });
 
-        RecordingsDir.enumerate_children_async('standard::name',
+        void RecordingsDir.enumerate_children_async('standard::name',
             Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
             GLib.PRIORITY_LOW,
             this.cancellable
@@ -66,7 +66,7 @@ export class RecordingList extends Gio.ListStore {
         } catch (e: unknown) {
             if (e instanceof GLib.Error) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                    console.error(`Failed to load recordings ${e}`);
+                    console.error(`Failed to load recordings ${e.message}`);
             }
         }
     }

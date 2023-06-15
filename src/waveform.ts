@@ -88,7 +88,7 @@ export class WaveForm extends Gtk.DrawingArea {
             this.queue_draw();
         });
 
-        this.set_draw_func(this.drawFunc);
+        this.set_draw_func(this.drawFunc.bind(this));
     }
 
     private dragBegin(gesture: Gtk.GestureDrag): void {
@@ -128,6 +128,10 @@ export class WaveForm extends Gtk.DrawingArea {
         if (!ok)
             dividerColor = styleContext.get_color();
 
+        // Because the cairo module isn't real, we have to use these to ignore `any`.
+        // We keep them to the minimum possible scope to catch real errors.
+        /* eslint-disable @typescript-eslint/no-unsafe-call */
+        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
         ctx.setLineCap(Cairo.LineCap.ROUND);
         ctx.setLineWidth(2);
 
@@ -138,6 +142,8 @@ export class WaveForm extends Gtk.DrawingArea {
         ctx.stroke();
 
         ctx.setLineWidth(1);
+        /* eslint-enable @typescript-eslint/no-unsafe-call */
+        /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
         da._peaks.forEach(peak => {
             if (da.waveType === WaveType.Player && pointer > horizCenter)
@@ -145,9 +151,13 @@ export class WaveForm extends Gtk.DrawingArea {
             else
                 da.setSourceRGBA(ctx, leftColor);
 
+            /* eslint-disable @typescript-eslint/no-unsafe-call */
+            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
             ctx.moveTo(pointer, vertiCenter + peak * maxHeight);
             ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
             ctx.stroke();
+            /* eslint-enable @typescript-eslint/no-unsafe-call */
+            /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
             if (da.waveType === WaveType.Player)
                 pointer += GUTTER;
@@ -194,7 +204,11 @@ export class WaveForm extends Gtk.DrawingArea {
     }
 
     private setSourceRGBA(cr: Cairo.Context, rgba: Gdk.RGBA): void {
+        /* eslint-disable @typescript-eslint/no-unsafe-call */
+        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
         cr.setSourceRGBA(rgba.red, rgba.green, rgba.blue, rgba.alpha);
+        /* eslint-enable @typescript-eslint/no-unsafe-call */
+        /* eslint-enable @typescript-eslint/no-unsafe-member-access */
     }
 
     public destroy(): void {

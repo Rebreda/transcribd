@@ -56,7 +56,7 @@ export class RecorderWidget extends Gtk.Box {
         this._recorderBox.prepend(this.waveform);
 
         this.recorder.bind_property('current-peak', this.waveform, 'peak', GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT);
-        this.recorder.connect('notify::duration', _recorder => {
+        this.recorder.connect('notify::duration', (_recorder: Recorder) => {
             this._recorderTime.set_markup(formatTime(_recorder.duration));
         });
 
@@ -124,7 +124,7 @@ export class RecorderWidget extends Gtk.Box {
             const recording = this.recorder.stop();
             this.state = RecorderState.Stopped;
             if (recording) {
-                recording.delete();
+                void recording.delete();
             }
             this.waveform.destroy();
             this.emit('canceled');

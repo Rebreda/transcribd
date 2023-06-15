@@ -21,14 +21,14 @@
         "typeRoots": [
             "types",
             "gi-types"
-        ]
+        ],
     },
     "include": [
         "gi-types/gi.d.ts",
         "types/ambient.d.ts",
-        "src/*"
+        "src/*",
     ],
     "exclude": [
         "node_modules/@types/**"
-    ]
+    ],
 }

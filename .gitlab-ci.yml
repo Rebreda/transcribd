@@ -2,10 +2,12 @@ include:
   - project: "gnome/citemplates"
     file: "flatpak/flatpak_ci_initiative.yml"
 
-flatpak:
-  variables:
+variables:
     GIT_SUBMODULE_STRATEGY: recursive
     GIT_SUBMODULE_DEPTH: 1
+
+flatpak:
+  variables:
     MANIFEST_PATH: "org.gnome.SoundRecorder.json"
     BUNDLE: "sound-recorder-dev.flatpak"
     FLATPAK_MODULE: "gnome-sound-recorder"

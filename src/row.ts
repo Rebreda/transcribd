@@ -88,7 +88,7 @@ export class Row extends Gtk.ListBoxRow {
             this.waveform.peaks = this.recording.peaks;
             this._waveformStack.visible_child_name = 'wave';
         } else {
-            this.recording.loadPeaks();
+            void this.recording.loadPeaks();
         }
 
         if (recording.timeModified)
