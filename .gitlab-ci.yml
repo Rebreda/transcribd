@@ -26,9 +26,9 @@ eslint:
   variables:
     LINT_LOG: "eslint-report.txt"
   script:
-    - sudo dnf install -y yarnpkg
-    - yarn install
-    - yarn run eslint -o $LINT_LOG --no-color src || { cat $LINT_LOG; false; }
+    - sudo dnf install -y npm
+    - npm install
+    - npx eslint -o $LINT_LOG --no-color src || { cat $LINT_LOG; false; }
   artifacts:
     paths:
       - ${LINT_LOG}
