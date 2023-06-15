@@ -29,35 +29,45 @@ import { Recording } from './recording.js';
 
 // All supported encoding profiles.
 export const EncodingProfiles = [
-    { name: 'VORBIS',
+    {
+        name: 'VORBIS',
         containerCaps: 'application/ogg;audio/ogg;video/ogg',
         audioCaps: 'audio/x-vorbis',
         contentType: 'audio/x-vorbis+ogg',
-        extension: 'ogg' },
+        extension: 'ogg',
+    },
 
-    { name: 'OPUS',
+    {
+        name: 'OPUS',
         containerCaps: 'application/ogg',
         audioCaps: 'audio/x-opus',
         contentType: 'audio/x-opus+ogg',
-        extension: 'opus' },
+        extension: 'opus',
+    },
 
-    { name: 'FLAC',
+    {
+        name: 'FLAC',
         containerCaps: 'audio/x-flac',
         audioCaps: 'audio/x-flac',
         contentType: 'audio/flac',
-        extension: 'flac' },
+        extension: 'flac',
+    },
 
-    { name: 'MP3',
+    {
+        name: 'MP3',
         containerCaps: 'application/x-id3',
         audioCaps: 'audio/mpeg,mpegversion=(int)1,layer=(int)3',
         contentType: 'audio/mpeg',
-        extension: 'mp3' },
+        extension: 'mp3',
+    },
 
-    { name: 'M4A',
+    {
+        name: 'M4A',
         containerCaps: 'video/quicktime,variant=(string)iso',
         audioCaps: 'audio/mpeg,mpegversion=(int)4',
         contentType: 'video/mp4',
-        extension: 'm4a' },
+        extension: 'm4a',
+    },
 ];
 
 const AudioChannels = [
@@ -85,20 +95,30 @@ export class Recorder extends GObject.Object {
         GObject.registerClass(
             {
                 Properties: {
-                    'duration': GObject.ParamSpec.int(
+                    duration: GObject.ParamSpec.int(
                         'duration',
-                        'Recording Duration', 'Recording duration in nanoseconds',
-                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                        0, GLib.MAXINT16, 0),
+                        'Recording Duration',
+                        'Recording duration in nanoseconds',
+                        GObject.ParamFlags.READWRITE |
+                            GObject.ParamFlags.CONSTRUCT,
+                        0,
+                        GLib.MAXINT16,
+                        0
+                    ),
                     'current-peak': GObject.ParamSpec.float(
                         'current-peak',
-                        'Waveform current peak', 'Waveform current peak in float [0, 1]',
-                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                        0.0, 1.0, 0.0),
+                        'Waveform current peak',
+                        'Waveform current peak in float [0, 1]',
+                        GObject.ParamFlags.READWRITE |
+                            GObject.ParamFlags.CONSTRUCT,
+                        0.0,
+                        1.0,
+                        0.0
+                    ),
                 },
             },
             this
-        )
+        );
     }
 
     constructor() {
@@ -116,16 +136,16 @@ export class Recorder extends GObject.Object {
             ['audioconvert', 'audioConvert'],
             ['level', 'level'],
             ['encodebin', 'ebin'],
-            ['filesink', 'filesink']
+            ['filesink', 'filesink'],
         ].map(([fac, name]) => {
             const element = Gst.ElementFactory.make(fac, name);
-            if (!element)
-                throw new Error('Not all elements could be created.');
+            if (!element) throw new Error('Not all elements could be created.');
             this.pipeline.add(element);
             return element;
         });
 
-        [srcElement, audioConvert, this.level, this.ebin, this.filesink]  = elements;
+        [srcElement, audioConvert, this.level, this.ebin, this.filesink] =
+            elements;
 
         srcElement.link(audioConvert);
         audioConvert.link_filtered(this.level, caps);
@@ -137,16 +157,19 @@ export class Recorder extends GObject.Object {
         do {
             /* Translators: ""Recording %d"" is the default name assigned to a file created
             by the application (for example, "Recording 1"). */
-            this.file = RecordingsDir.get_child_for_display_name(_('Recording %d').format(index++));
+            this.file = RecordingsDir.get_child_for_display_name(
+                _('Recording %d').format(index++)
+            );
         } while (this.file.query_exists(null));
 
         this.recordBus = this.pipeline.get_bus();
         this.recordBus.add_signal_watch();
-        this.handlerId = this.recordBus.connect('message', (_, message: Gst.Message) => {
-            if (message)
-                this.onMessageReceived(message);
-        });
-
+        this.handlerId = this.recordBus.connect(
+            'message',
+            (_, message: Gst.Message) => {
+                if (message) this.onMessageReceived(message);
+            }
+        );
 
         if (this.ebin && this.level && this.filesink) {
             this.ebin.set_property('profile', this.getProfile());
@@ -159,8 +182,7 @@ export class Recorder extends GObject.Object {
 
         this.timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
             const pos = this.pipeline.query_position(Gst.Format.TIME)[1];
-            if (pos > 0)
-                this.duration = pos;
+            if (pos > 0) this.duration = pos;
             return true;
         });
     }
@@ -170,8 +192,7 @@ export class Recorder extends GObject.Object {
     }
 
     public resume(): void {
-        if (this.state === Gst.State.PAUSED)
-            this.state = Gst.State.PLAYING;
+        if (this.state === Gst.State.PAUSED) this.state = Gst.State.PLAYING;
     }
 
     public stop(): Recording | undefined {
@@ -189,8 +210,11 @@ export class Recorder extends GObject.Object {
             this.handlerId = null;
         }
 
-
-        if (this.file && this.file.query_exists(null) && this.peaks.length > 0) {
+        if (
+            this.file &&
+            this.file.query_exists(null) &&
+            this.peaks.length > 0
+        ) {
             const recording = new Recording(this.file);
             recording.peaks = this.peaks.slice();
             this.peaks.length = 0;
@@ -204,15 +228,23 @@ export class Recorder extends GObject.Object {
         switch (message.type) {
             case Gst.MessageType.ELEMENT: {
                 if (GstPbutils.is_missing_plugin_message(message)) {
-                    const detail = GstPbutils.missing_plugin_message_get_installer_detail(message);
-                    const description = GstPbutils.missing_plugin_message_get_description(message);
+                    const detail =
+                        GstPbutils.missing_plugin_message_get_installer_detail(
+                            message
+                        );
+                    const description =
+                        GstPbutils.missing_plugin_message_get_description(
+                            message
+                        );
                     log(`Detail: ${detail}\nDescription: ${description}`);
                     break;
                 }
 
                 const s = message.get_structure();
                 if (s && s.has_name('level')) {
-                    const peakVal = s.get_value('peak') as unknown as GObject.ValueArray;
+                    const peakVal = s.get_value(
+                        'peak'
+                    ) as unknown as GObject.ValueArray;
 
                     if (peakVal)
                         this.current_peak = peakVal.get_nth(0) as number;
@@ -249,10 +281,21 @@ export class Recorder extends GObject.Object {
         audioCaps?.set_value('channels', this.getChannel());
 
         if (audioCaps) {
-            const encodingProfile = GstPbutils.EncodingAudioProfile.new(audioCaps, null, null, 1);
+            const encodingProfile = GstPbutils.EncodingAudioProfile.new(
+                audioCaps,
+                null,
+                null,
+                1
+            );
             const containerCaps = Gst.Caps.from_string(profile.containerCaps);
             if (containerCaps) {
-                const containerProfile = GstPbutils.EncodingContainerProfile.new('record', null, containerCaps, null);
+                const containerProfile =
+                    GstPbutils.EncodingContainerProfile.new(
+                        'record',
+                        null,
+                        containerCaps,
+                        null
+                    );
                 containerProfile.add_profile(encodingProfile);
                 return containerProfile;
             }
@@ -278,8 +321,7 @@ export class Recorder extends GObject.Object {
     // eslint-disable-next-line camelcase
     public set current_peak(peak: number) {
         if (this.peaks) {
-            if (peak > 0)
-                peak = 0;
+            if (peak > 0) peak = 0;
 
             this._current_peak = Math.pow(10, peak / 20);
             this.peaks.push(this._current_peak);
@@ -300,5 +342,4 @@ export class Recorder extends GObject.Object {
                 log('Unable to update the recorder pipeline state');
         }
     }
-
 }

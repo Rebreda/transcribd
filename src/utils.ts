@@ -17,9 +17,9 @@
  * Author: Meg Ford <megford@gnome.org>
  *
  */
-import Gettext from 'gettext'
-import GLib from 'gi://GLib'
-import Gst from 'gi://Gst'
+import Gettext from 'gettext';
+import GLib from 'gi://GLib';
+import Gst from 'gi://Gst';
 
 export function formatTime(nanoSeconds: number): string {
     const time = new Date(0, 0, 0, 0, 0, 0, nanoSeconds / Gst.MSECOND);
@@ -50,16 +50,21 @@ export function displayDateTime(time: GLib.DateTime): string {
         return formattedTime ? formattedTime : _('Less than a day ago');
     } else if (difference < 2 * DAY) {
         return _('Yesterday');
-    } else if (difference < 7 * DAY) {``
+    } else if (difference < 7 * DAY) {
+        ``;
         return Gettext.ngettext('%d day ago', '%d days ago', days).format(days);
     } else if (difference < 14 * DAY) {
         return _('Last week');
     } else if (difference < 28 * DAY) {
-        return Gettext.ngettext('%d week ago', '%d weeks ago',  weeks).format(weeks);
+        return Gettext.ngettext('%d week ago', '%d weeks ago', weeks).format(
+            weeks
+        );
     } else if (difference < 60 * DAY) {
         return _('Last month');
     } else if (difference < 360 * DAY) {
-        return Gettext.ngettext('%d month ago', '%d months ago', months).format(months);
+        return Gettext.ngettext('%d month ago', '%d months ago', months).format(
+            months
+        );
     } else if (difference < 730 * DAY) {
         return _('Last year');
     }

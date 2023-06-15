@@ -3,6 +3,7 @@ module.exports = {
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
+        'prettier',
     ],
     parser: '@typescript-eslint/parser',
     parserOptions: {
@@ -11,8 +12,9 @@ module.exports = {
         tsconfigRootDir: __dirname,
     },
     rules: {
-        '@typescript-eslint/restrict-template-expressions': ['error', { allowNullish: true, },]
+        '@typescript-eslint/restrict-template-expressions': ['error', { allowNullish: true, },],
+        'prettier/prettier': 'error',
     },
-    plugins: ['@typescript-eslint'],
+    plugins: ['@typescript-eslint', 'prettier'],
     root: true,
 };

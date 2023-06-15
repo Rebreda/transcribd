@@ -1,22 +1,22 @@
 /* exported Application RecordingsDir CacheDir Settings */
 /*
-* Copyright 2013 Meg Ford
-* This library is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public
-* License as published by the Free Software Foundation; either
-* version 2 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Library General Public License for more details.
-*
-* You should have received a copy of the GNU Library General Public
-* License along with this library; if not, see <http://www.gnu.org/licenses/>.
-*
-* Author: Meg Ford <megford@gnome.org>
-*
-*/
+ * Copyright 2013 Meg Ford
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
+ *
+ * Author: Meg Ford <megford@gnome.org>
+ *
+ */
 
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
@@ -25,8 +25,12 @@ import GObject from 'gi://GObject';
 import Gst from 'gi://Gst';
 import Gtk from 'gi://Gtk?version=4.0';
 
-export const RecordingsDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]));
-export const CacheDir = Gio.file_new_for_path(GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]));
+export const RecordingsDir = Gio.file_new_for_path(
+    GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name])
+);
+export const CacheDir = Gio.file_new_for_path(
+    GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name])
+);
 export const Settings = new Gio.Settings({ schema: pkg.name });
 
 import { Window } from './window.js';
@@ -39,13 +43,22 @@ export class Application extends Adw.Application {
     }
 
     constructor() {
-        super({ application_id: pkg.name, resource_base_path: '/org/gnome/SoundRecorder/' });
+        super({
+            application_id: pkg.name,
+            resource_base_path: '/org/gnome/SoundRecorder/',
+        });
         GLib.set_application_name(_('Sound Recorder'));
         GLib.setenv('PULSE_PROP_media.role', 'production', true);
         GLib.setenv('PULSE_PROP_application.icon_name', pkg.name, true);
 
-        this.add_main_option('version', 'v'.charCodeAt(0), GLib.OptionFlags.NONE, GLib.OptionArg.NONE,
-            'Print version information and exit', null);
+        this.add_main_option(
+            'version',
+            'v'.charCodeAt(0),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            'Print version information and exit',
+            null
+        );
 
         this.connect('handle-local-options', (_, options: GLib.VariantDict) => {
             if (options.contains('version')) {
@@ -59,9 +72,21 @@ export class Application extends Adw.Application {
         });
 
         Gio._promisify(Gio.File.prototype, 'trash_async', 'trash_finish');
-        Gio._promisify(Gio.File.prototype, 'load_bytes_async', 'load_bytes_finish');
-        Gio._promisify(Gio.File.prototype, 'enumerate_children_async', 'enumerate_children_finish');
-        Gio._promisify(Gio.FileEnumerator.prototype, 'next_files_async', 'next_files_finish');
+        Gio._promisify(
+            Gio.File.prototype,
+            'load_bytes_async',
+            'load_bytes_finish'
+        );
+        Gio._promisify(
+            Gio.File.prototype,
+            'enumerate_children_async',
+            'enumerate_children_finish'
+        );
+        Gio._promisify(
+            Gio.FileEnumerator.prototype,
+            'next_files_async',
+            'next_files_finish'
+        );
     }
 
     private initAppMenu(): void {
@@ -85,7 +110,9 @@ export class Application extends Adw.Application {
 
         this.set_accels_for_action('app.quit', ['<Primary>q']);
         this.set_accels_for_action('win.open-primary-menu', ['F10']);
-        this.set_accels_for_action('win.show-help-overlay', ['<Primary>question']);
+        this.set_accels_for_action('win.show-help-overlay', [
+            '<Primary>question',
+        ]);
         this.set_accels_for_action('recorder.start', ['<Primary>r']);
         this.set_accels_for_action('recorder.pause', ['space']);
         this.set_accels_for_action('recorder.resume', ['space']);
@@ -123,16 +150,14 @@ export class Application extends Adw.Application {
     public vfunc_activate(): void {
         if (!this.window) {
             this.window = new Window({ application: this });
-            if (pkg.name.endsWith('Devel'))
-                this.window.add_css_class('devel');
+            if (pkg.name.endsWith('Devel')) this.window.add_css_class('devel');
         }
         this.window.present();
     }
 
     private showAbout(): void {
         let appName = GLib.get_application_name();
-        if (!appName)
-            appName = _('Sound Recorder');
+        if (!appName) appName = _('Sound Recorder');
 
         const aboutDialog = new Adw.AboutWindow({
             artists: [
@@ -156,7 +181,8 @@ export class Application extends Adw.Application {
             application_icon: pkg.name,
             version: pkg.version,
             website: 'https://wiki.gnome.org/Apps/SoundRecorder',
-            copyright: 'Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui &amp; Felipe Borges',
+            copyright:
+                'Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui &amp; Felipe Borges',
             modal: true,
             transient_for: this.window,
         });

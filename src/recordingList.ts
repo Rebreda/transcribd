@@ -20,24 +20,29 @@ export class RecordingList extends Gio.ListStore {
         super();
         this.cancellable = new Gio.Cancellable();
         // Monitor Direcotry actions
-        this.dirMonitor = RecordingsDir.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, this.cancellable);
-        this.dirMonitor.connect('changed', (_dirMonitor, file1, file2, eventType) => {
-            const index = this.getIndex(file1);
+        this.dirMonitor = RecordingsDir.monitor_directory(
+            Gio.FileMonitorFlags.WATCH_MOVES,
+            this.cancellable
+        );
+        this.dirMonitor.connect(
+            'changed',
+            (_dirMonitor, file1, file2, eventType) => {
+                const index = this.getIndex(file1);
 
-            switch (eventType) {
-            case Gio.FileMonitorEvent.MOVED_OUT:
-                if (index >= 0)
-                    this.remove(index);
-                break;
-            case Gio.FileMonitorEvent.MOVED_IN:
-                if (index === -1)
-                    this.sortedInsert(new Recording(file1));
-                break;
+                switch (eventType) {
+                    case Gio.FileMonitorEvent.MOVED_OUT:
+                        if (index >= 0) this.remove(index);
+                        break;
+                    case Gio.FileMonitorEvent.MOVED_IN:
+                        if (index === -1)
+                            this.sortedInsert(new Recording(file1));
+                        break;
+                }
             }
+        );
 
-        });
-
-        void RecordingsDir.enumerate_children_async('standard::name',
+        void RecordingsDir.enumerate_children_async(
+            'standard::name',
             Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
             GLib.PRIORITY_LOW,
             this.cancellable
@@ -46,7 +51,9 @@ export class RecordingList extends Gio.ListStore {
         });
     }
 
-    private async enumerateDirectory(enumerator: Gio.FileEnumerator): Promise<void> {
+    private async enumerateDirectory(
+        enumerator: Gio.FileEnumerator
+    ): Promise<void> {
         this.enumerator = enumerator;
         if (this.enumerator === null) {
             log('The contents of the Recordings directory were not indexed.');
@@ -54,8 +61,12 @@ export class RecordingList extends Gio.ListStore {
         }
 
         try {
-            for (let fileInfos = await this.nextFiles(); fileInfos.length > 0; fileInfos = await this.nextFiles()) {
-                fileInfos.forEach(info => {
+            for (
+                let fileInfos = await this.nextFiles();
+                fileInfos.length > 0;
+                fileInfos = await this.nextFiles()
+            ) {
+                fileInfos.forEach((info) => {
                     const file = RecordingsDir.get_child(info.get_name());
                     const recording = new Recording(file);
                     this.sortedInsert(recording);
@@ -72,7 +83,11 @@ export class RecordingList extends Gio.ListStore {
     }
 
     private async nextFiles(): Promise<Gio.FileInfo[]> {
-        const fileInfos = await this.enumerator?.next_files_async(5, GLib.PRIORITY_LOW, this.cancellable);
+        const fileInfos = await this.enumerator?.next_files_async(
+            5,
+            GLib.PRIORITY_LOW,
+            this.cancellable
+        );
         // We check this here because the return value isn't stated as nullable in Gio.
         return fileInfos ? fileInfos : [];
     }
@@ -80,8 +95,7 @@ export class RecordingList extends Gio.ListStore {
     private getIndex(file: Gio.File): number {
         for (let i = 0; i < this.get_n_items(); i++) {
             const item = this.get_item(i) as Recording;
-            if (item.uri === file.get_uri())
-                return i;
+            if (item.uri === file.get_uri()) return i;
         }
         return -1;
     }
@@ -98,7 +112,6 @@ export class RecordingList extends Gio.ListStore {
             }
         }
 
-        if (!added)
-            this.append(recording);
+        if (!added) this.append(recording);
     }
 }

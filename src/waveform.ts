@@ -1,4 +1,3 @@
-
 /* exported WaveForm
 /*
  * Copyright 2013 Meg Ford
@@ -50,19 +49,29 @@ export class WaveForm extends Gtk.DrawingArea {
         GObject.registerClass(
             {
                 Properties: {
-                    'position': GObject.ParamSpec.float(
+                    position: GObject.ParamSpec.float(
                         'position',
-                        'Waveform position', 'Waveform position',
-                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                        0.0, 1.0, 0.0),
-                    'peak': GObject.ParamSpec.float(
+                        'Waveform position',
+                        'Waveform position',
+                        GObject.ParamFlags.READWRITE |
+                            GObject.ParamFlags.CONSTRUCT,
+                        0.0,
+                        1.0,
+                        0.0
+                    ),
+                    peak: GObject.ParamSpec.float(
                         'peak',
-                        'Waveform current peak', 'Waveform current peak in float [0, 1]',
-                        GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                        0.0, 1.0, 0.0),
+                        'Waveform current peak',
+                        'Waveform current peak in float [0, 1]',
+                        GObject.ParamFlags.READWRITE |
+                            GObject.ParamFlags.CONSTRUCT,
+                        0.0,
+                        1.0,
+                        0.0
+                    ),
                 },
                 Signals: {
-                    'position-changed': {  param_types: [GObject.TYPE_DOUBLE]  },
+                    'position-changed': { param_types: [GObject.TYPE_DOUBLE] },
                     'gesture-pressed': {},
                 },
             },
@@ -70,7 +79,10 @@ export class WaveForm extends Gtk.DrawingArea {
         );
     }
 
-    constructor(params: Partial<Gtk.DrawingArea.ConstructorProperties> | undefined, type: WaveType) {
+    constructor(
+        params: Partial<Gtk.DrawingArea.ConstructorProperties> | undefined,
+        type: WaveType
+    ) {
         super(params);
         this._peaks = [];
         this._position = 0;
@@ -84,9 +96,12 @@ export class WaveForm extends Gtk.DrawingArea {
             this.add_controller(this.dragGesture);
         }
 
-        this.hcId = Adw.StyleManager.get_default().connect('notify::high-contrast', () => {
-            this.queue_draw();
-        });
+        this.hcId = Adw.StyleManager.get_default().connect(
+            'notify::high-contrast',
+            () => {
+                this.queue_draw();
+            }
+        );
 
         this.set_draw_func(this.drawFunc.bind(this));
     }
@@ -121,12 +136,14 @@ export class WaveForm extends Gtk.DrawingArea {
 
         const rightColor = styleContext.lookup_color('dimmed_color')[1];
 
-        const dividerName = da.waveType === WaveType.Player ? 'accent_color' : 'destructive_color';
+        const dividerName =
+            da.waveType === WaveType.Player
+                ? 'accent_color'
+                : 'destructive_color';
         const lookupColor = styleContext.lookup_color(dividerName);
         const ok = lookupColor[0];
         let dividerColor = lookupColor[1];
-        if (!ok)
-            dividerColor = styleContext.get_color();
+        if (!ok) dividerColor = styleContext.get_color();
 
         // Because the cairo module isn't real, we have to use these to ignore `any`.
         // We keep them to the minimum possible scope to catch real errors.
@@ -145,11 +162,10 @@ export class WaveForm extends Gtk.DrawingArea {
         /* eslint-enable @typescript-eslint/no-unsafe-call */
         /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
-        da._peaks.forEach(peak => {
+        da._peaks.forEach((peak) => {
             if (da.waveType === WaveType.Player && pointer > horizCenter)
                 da.setSourceRGBA(ctx, rightColor);
-            else
-                da.setSourceRGBA(ctx, leftColor);
+            else da.setSourceRGBA(ctx, leftColor);
 
             /* eslint-disable @typescript-eslint/no-unsafe-call */
             /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -159,10 +175,8 @@ export class WaveForm extends Gtk.DrawingArea {
             /* eslint-enable @typescript-eslint/no-unsafe-call */
             /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
-            if (da.waveType === WaveType.Player)
-                pointer += GUTTER;
-            else
-                pointer -= GUTTER;
+            if (da.waveType === WaveType.Player) pointer += GUTTER;
+            else pointer -= GUTTER;
         });
     }
 
@@ -195,8 +209,7 @@ export class WaveForm extends Gtk.DrawingArea {
     }
 
     private clamped(position: number): number {
-        if (position > 0)
-            position = 0;
+        if (position > 0) position = 0;
         else if (position < -this._peaks.length * GUTTER)
             position = -this._peaks.length * GUTTER;
 
