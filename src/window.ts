@@ -54,6 +54,7 @@ export class Window extends Adw.ApplicationWindow {
     private recordingListWidget: RecordingsListWidget;
 
     private toastUndo: boolean;
+    private undoToasts: Adw.Toast[];
     private undoSignalID: number | null;
     private undoAction: Gio.SimpleAction;
 
@@ -120,6 +121,7 @@ export class Window extends Adw.ApplicationWindow {
 
         this.toastUndo = false;
         this.undoSignalID = null;
+        this.undoToasts = [];
         this.undoAction = new Gio.SimpleAction({ name: 'undo' });
         this.add_action(this.undoAction);
 
@@ -151,6 +153,7 @@ export class Window extends Adw.ApplicationWindow {
     }
 
     public vfunc_close_request(): boolean {
+        this.dismissUndoToasts();
         this.recordingList.cancellable.cancel();
         if (this.itemsSignalId)
             this.recordingList.disconnect(this.itemsSignalId);
@@ -163,6 +166,10 @@ export class Window extends Adw.ApplicationWindow {
 
         this.recorder.stop();
         return false;
+    }
+
+    dismissUndoToasts() {
+        this.undoToasts.forEach((toast) => toast.dismiss());
     }
 
     private onRecorderStarted(): void {
@@ -200,6 +207,9 @@ export class Window extends Adw.ApplicationWindow {
             if (!this.toastUndo) void recording.delete();
 
             this.toastUndo = false;
+            this.undoToasts = this.undoToasts.filter(
+                (undoToast) => undoToast.title !== toast.title,
+            );
         });
 
         if (this.undoSignalID !== null)
@@ -213,6 +223,7 @@ export class Window extends Adw.ApplicationWindow {
         toast.set_action_name('win.undo');
         toast.set_button_label(_('Undo'));
         this._toastOverlay.add_toast(toast);
+        this.undoToasts.push(toast);
     }
 
     public set state(state: WindowState) {
