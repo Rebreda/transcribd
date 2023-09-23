@@ -28,14 +28,6 @@
       <gnome:userid>christopherdavis</gnome:userid>
     </foaf:Person>
   </maintainer>
-
-  <maintainer>
-    <foaf:Person>
-      <foaf:name>Bilal Elmoussaoui</foaf:name>
-      <foaf:mbox rdf:resource="mailto:bilal.elmoussaoui@gnome.org" />
-      <gnome:userid>bilelmoussaoui</gnome:userid>
-    </foaf:Person>
-  </maintainer>
 </Project>
 
 
