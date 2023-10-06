@@ -162,22 +162,30 @@ export class WaveForm extends Gtk.DrawingArea {
         /* eslint-enable @typescript-eslint/no-unsafe-call */
         /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
-        da._peaks.forEach((peak) => {
-            if (da.waveType === WaveType.Player && pointer > horizCenter)
-                da.setSourceRGBA(ctx, rightColor);
-            else da.setSourceRGBA(ctx, leftColor);
+        for (const peak of da._peaks) {
+            // don't try to render peaks outside the widget's width
+            if (pointer > da.get_allocated_width()) {
+                break;
+            }
 
-            /* eslint-disable @typescript-eslint/no-unsafe-call */
-            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-            ctx.moveTo(pointer, vertiCenter + peak * maxHeight);
-            ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
-            ctx.stroke();
-            /* eslint-enable @typescript-eslint/no-unsafe-call */
-            /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+            // don't try to draw peaks before the widget's left edge
+            if (pointer > 0) {
+                if (da.waveType === WaveType.Player && pointer > horizCenter)
+                    da.setSourceRGBA(ctx, rightColor);
+                else da.setSourceRGBA(ctx, leftColor);
+
+                /* eslint-disable @typescript-eslint/no-unsafe-call */
+                /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+                ctx.moveTo(pointer, vertiCenter + peak * maxHeight);
+                ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
+                ctx.stroke();
+                /* eslint-enable @typescript-eslint/no-unsafe-call */
+                /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+            }
 
             if (da.waveType === WaveType.Player) pointer += GUTTER;
             else pointer -= GUTTER;
-        });
+        }
     }
 
     public set peak(p: number) {
