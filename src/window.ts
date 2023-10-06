@@ -43,8 +43,8 @@ export class Window extends Adw.ApplicationWindow {
     private _mainStack!: Gtk.Stack;
     private _emptyPage!: Adw.StatusPage;
     private _column!: Adw.Clamp;
-    private _headerRevealer!: Gtk.Revealer;
     private _toastOverlay!: Adw.ToastOverlay;
+    private _toolbarView!: Adw.ToolbarView;
 
     private recorder: Recorder;
     private recorderWidget: RecorderWidget;
@@ -67,8 +67,8 @@ export class Window extends Adw.ApplicationWindow {
                     'mainStack',
                     'emptyPage',
                     'column',
-                    'headerRevealer',
                     'toastOverlay',
+                    'toolbarView',
                 ],
             },
             this
@@ -233,7 +233,7 @@ export class Window extends Adw.ApplicationWindow {
         }
 
         this._mainStack.visible_child_name = visibleChild;
-        this._headerRevealer.reveal_child = isHeaderVisible;
+        this._toolbarView.reveal_top_bars = isHeaderVisible;
         this._state = state;
     }
 

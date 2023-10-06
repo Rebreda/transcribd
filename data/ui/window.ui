@@ -9,39 +9,34 @@
     <property name="default_height">480</property>
     <property name="title" translatable="yes">Sound Recorder</property>
     <child>
-      <object class="AdwToolbarView">
+      <object class="AdwToolbarView" id="toolbarView">
         <child type="top">
-          <object class="GtkRevealer" id="headerRevealer">
-            <property name="reveal_child">True</property>
+          <object class="AdwHeaderBar">
             <child>
-              <object class="AdwHeaderBar">
+              <object class="GtkButton">
+                <property name="receives_default">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="action_name">recorder.start</property>
                 <child>
-                  <object class="GtkButton">
-                    <property name="receives_default">False</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="action_name">recorder.start</property>
-                    <child>
-                      <object class="AdwButtonContent">
-                        <property name="icon_name">media-record-symbolic</property>
-                        <property name="label" translatable="yes">Record</property>
-                      </object>
-                    </child>
-                    <style>
-                      <class name="suggested-action"/>
-                    </style>
+                  <object class="AdwButtonContent">
+                    <property name="icon_name">media-record-symbolic</property>
+                    <property name="label" translatable="yes">Record</property>
                   </object>
                 </child>
-                <child type="end">
-                  <object class="GtkMenuButton">
-                    <property name="receives_default">False</property>
-                    <property name="menu_model">primaryMenu</property>
-                    <property name="icon_name">open-menu-symbolic</property>
-                    <style>
-                      <class name="image-button"/>
-                    </style>
-                  </object>
-                </child>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="receives_default">false</property>
+                <property name="menu_model">primaryMenu</property>
+                <property name="icon_name">open-menu-symbolic</property>
+                <style>
+                  <class name="image-button"/>
+                </style>
               </object>
             </child>
           </object>
