@@ -9,9 +9,8 @@
     <property name="default_height">480</property>
     <property name="title" translatable="yes">Sound Recorder</property>
     <child>
-      <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <child>
+      <object class="AdwToolbarView">
+        <child type="top">
           <object class="GtkRevealer" id="headerRevealer">
             <property name="reveal_child">True</property>
             <child>
