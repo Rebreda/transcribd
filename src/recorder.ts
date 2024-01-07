@@ -313,12 +313,10 @@ export class Recorder extends GObject.Object {
         this.notify('duration');
     }
 
-    // eslint-disable-next-line camelcase
     public get current_peak(): number {
         return this._current_peak;
     }
 
-    // eslint-disable-next-line camelcase
     public set current_peak(peak: number) {
         if (this.peaks) {
             if (peak > 0) peak = 0;

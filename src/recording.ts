@@ -128,7 +128,6 @@ export class Recording extends GObject.Object {
         return this._file.get_uri();
     }
 
-    // eslint-disable-next-line camelcase
     public set peaks(data: number[]) {
         if (data.length > 0) {
             this._peaks = data;
@@ -146,7 +145,6 @@ export class Recording extends GObject.Object {
         }
     }
 
-    // eslint-disable-next-line camelcase
     public get peaks(): number[] {
         return this._peaks;
     }
