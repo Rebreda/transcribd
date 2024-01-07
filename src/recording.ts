@@ -157,15 +157,14 @@ export class Recording extends GObject.Object {
     }
 
     public save(dest: Gio.File): void {
-        this.file.copy_async(
+        void this.file.copy_async(
             dest,
-            Gio.FileCreateFlags.NONE,
+            Gio.FileCopyFlags.NONE,
             GLib.PRIORITY_DEFAULT,
             null,
-            // @ts-expect-error TypeScript isn't reading async function params correctly
             null,
-            (obj: Gio.File, res: Gio.AsyncResult) => {
-                if (obj.copy_finish(res)) log('Exporting file: done');
+            (obj: Gio.File | null, res: Gio.AsyncResult) => {
+                if (obj?.copy_finish(res)) log('Exporting file: done');
             }
         );
     }
