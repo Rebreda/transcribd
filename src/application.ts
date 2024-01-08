@@ -128,6 +128,19 @@ export class Application extends Adw.Application {
         this.set_accels_for_action('recording.export', ['<Primary>s']);
     }
 
+    private initUserDirectory(dir: Gio.File): void {
+        try {
+            dir.make_directory_with_parents(null);
+        } catch (e: unknown) {
+            if (
+                e instanceof GLib.Error &&
+                !e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS)
+            ) {
+                console.error(`Failed to create director: ${e.message}`);
+            }
+        }
+    }
+
     public vfunc_startup(): void {
         super.vfunc_startup();
         log('Sound Recorder (%s)'.format(pkg.name));
@@ -135,15 +148,9 @@ export class Application extends Adw.Application {
 
         Gst.init(null);
 
-        try {
-            CacheDir.make_directory_with_parents(null);
-            RecordingsDir.make_directory_with_parents(null);
-        } catch (e: unknown) {
-            if (e instanceof GLib.Error) {
-                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
-                    console.error(`Failed to create directory: ${e.message}`);
-            }
-        }
+        this.initUserDirectory(CacheDir);
+        this.initUserDirectory(RecordingsDir);
+
         this.initAppMenu();
     }
 
