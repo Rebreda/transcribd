@@ -1,6 +1,6 @@
 #!@GJS@ -m
 import GLib from 'gi://GLib';
-import System from 'system'
+import { exit, programArgs } from 'system'
 
 imports.package.init({
     name: "@APPLICATION_ID@",
@@ -12,16 +12,6 @@ imports.package.init({
 pkg.initGettext();
 pkg.initFormat();
 
-const loop = new GLib.MainLoop(null, false);
-
-import('resource:///org/gnome/SoundRecorder@profile@/js/main.js').then((main) => {
-  GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-    loop.quit();
-    const exitCode = imports.package.run(main);
-    System.exit(exitCode);
-    return GLib.SOURCE_REMOVE;
-  });
-})
-.catch(logError);
-
-loop.run();
+const module = await import('resource:///org/gnome/SoundRecorder@profile@/js/main.js');
+const exitCode = await module.main(programArgs);
+exit(exitCode);
