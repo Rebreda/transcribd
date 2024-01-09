@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/org/gnome/SoundRecorder">
+  <gresource prefix="/app/drey/Vocalis">
     <file>style.css</file>
     <file>style-hc.css</file>
     <file>ui/recorder.ui</file>
@@ -8,7 +8,7 @@
     <file>ui/window.ui</file>
     <file alias="gtk/help-overlay.ui">ui/help-overlay.ui</file>
   </gresource>
-  <gresource prefix="/org/gnome/SoundRecorder/icons/16x16/actions/">
+  <gresource prefix="/app/drey/Vocalis/icons/16x16/actions/">
     <file compressed="true" preprocess="xml-stripblanks" alias="skip-back-symbolic.svg">icons/skip-back-symbolic.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="skip-forward-symbolic.svg">icons/skip-forward-symbolic.svg</file>
   </gresource>

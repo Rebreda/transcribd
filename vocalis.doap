@@ -4,22 +4,13 @@
          xmlns:gnome="http://api.gnome.org/doap-extensions#"
          xmlns="http://usefulinc.com/ns/doap#">
 
-  <name xml:lang="en">Sound Recorder</name>
+  <name xml:lang="en">Vocalis</name>
   <shortdesc xml:lang="en">Make simple recordings from your desktop</shortdesc>
   <description>A simple sound recorder for your desktop</description>
-  <download-page rdf:resource="http://download.gnome.org/sources/gnome-sound-recorder/" />
-  <bug-database rdf:resource="https://gitlab.gnome.org/GNOME/gnome-sound-recorder/issues/" />
+  <bug-database rdf:resource="https://gitlab.gnome.org/World/vocalis/issues/" />
 
   <category rdf:resource="http://api.gnome.org/doap-extensions#apps" />
   <programming-language>JavaScript</programming-language>
-
-  <maintainer>
-    <foaf:Person>
-      <foaf:name>Meg Ford</foaf:name>
-      <foaf:mbox rdf:resource="mailto:megford@gnome.org" />
-      <gnome:userid>megford</gnome:userid>
-    </foaf:Person>
-  </maintainer>
 
   <maintainer>
     <foaf:Person>

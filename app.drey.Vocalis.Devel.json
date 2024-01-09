@@ -1,5 +1,5 @@
 {
-    "app-id" : "org.gnome.SoundRecorderDevel",
+    "id" : "app.drey.Vocalis.Devel",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
@@ -7,7 +7,7 @@
         "org.freedesktop.Sdk.Extension.node18",
         "org.freedesktop.Sdk.Extension.typescript"
     ],
-    "command" : "gnome-sound-recorder",
+    "command" : "vocalis",
     "tags" : [
         "nightly"
     ],
@@ -25,7 +25,7 @@
     },
     "modules" : [
         {
-            "name" : "gnome-sound-recorder",
+            "name" : "vocalis",
             "buildsystem" : "meson",
             "config-opts" : [
             	"-Dprofile=development"
@@ -33,7 +33,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "https://gitlab.gnome.org/GNOME/gnome-sound-recorder.git"
+                    "url" : "https://gitlab.gnome.org/World/vocalis.git"
                 }
             ]
         }

@@ -1,8 +1,8 @@
 {
-  "name": "gnome-sound-recorder",
-  "version": "43.beta",
+  "name": "vocalis",
+  "version": "1.0.0",
   "main": "src/main.ts",
-  "repository": "git@gitlab.gnome.org:GNOME/gnome-sound-recorder.git",
+  "repository": "git@gitlab.gnome.org:World/vocalis.git",
   "contributors": [
     "Meg Ford <medford@gnome.org>",
     "Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>",

@@ -1,13 +1,13 @@
 project(
-  'gnome-sound-recorder',
-  version: '43.beta',
+  'vocalis',
+  version: '1.0.0',
   license: 'GPL2+',
   meson_version: '>= 0.63.0',
 )
 
 
 if get_option('profile') == 'development'
-  profile = 'Devel'
+  profile = '.Devel'
   name_suffix = ' (Development)'
   vcs_tag = run_command('git', 'rev-parse', '--short', 'HEAD', check: true).stdout().strip()
   if vcs_tag == ''
@@ -21,16 +21,16 @@ else
   version_suffix = ''
 endif
 
-application_id = 'org.gnome.SoundRecorder@0@'.format(profile)
+application_id = 'app.drey.Vocalis@0@'.format(profile)
 
 gettext_package = application_id
-sound_recorder_prefix = get_option('prefix')
-sound_recorder_bindir = sound_recorder_prefix / get_option('bindir')
-sound_recorder_libdir = sound_recorder_prefix / get_option('libdir')
-sound_recorder_datadir = sound_recorder_prefix / get_option('datadir')
-sound_recorder_pkgdatadir = sound_recorder_datadir / application_id
+vocalis_prefix = get_option('prefix')
+vocalis_bindir = vocalis_prefix / get_option('bindir')
+vocalis_libdir = vocalis_prefix / get_option('libdir')
+vocalis_datadir = vocalis_prefix / get_option('datadir')
+vocalis_pkgdatadir = vocalis_datadir / application_id
 
-sound_recorder_schemadir = sound_recorder_datadir / 'glib-2.0' / 'schemas'
+vocalis_schemadir = vocalis_datadir / 'glib-2.0' / 'schemas'
 
 po_dir = meson.project_source_root() / 'po'
 
@@ -60,8 +60,8 @@ subdir('po')
 
 install_symlink(
   meson.project_name(),
-  pointing_to: sound_recorder_pkgdatadir / application_id,
-  install_dir: sound_recorder_bindir
+  pointing_to: vocalis_pkgdatadir / application_id,
+  install_dir: vocalis_bindir
 )
 
 gnome.post_install(

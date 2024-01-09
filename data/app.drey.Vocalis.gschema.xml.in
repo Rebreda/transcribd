@@ -9,7 +9,7 @@
     <value nick='stereo' value='0'/>
     <value nick='mono' value='1'/>
   </enum>
-  <schema id="@app-id@" path="/org/gnome/SoundRecorder/" gettext-domain="@gettext-package@">
+  <schema id="@app-id@" path="/app/drey/Vocalis/" gettext-domain="@gettext-package@">
     <key name="window-size" type="ai">
       <default>[780, 480]</default>
       <summary>Window size</summary>

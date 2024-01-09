@@ -45,9 +45,9 @@ export class Application extends Adw.Application {
     constructor() {
         super({
             application_id: pkg.name,
-            resource_base_path: '/org/gnome/SoundRecorder/',
+            resource_base_path: '/app/drey/Vocalis/',
         });
-        GLib.set_application_name(_('Sound Recorder'));
+        GLib.set_application_name(_('Vocalis'));
         GLib.setenv('PULSE_PROP_media.role', 'production', true);
         GLib.setenv('PULSE_PROP_application.icon_name', pkg.name, true);
 
@@ -143,7 +143,7 @@ export class Application extends Adw.Application {
 
     public vfunc_startup(): void {
         super.vfunc_startup();
-        log('Sound Recorder (%s)'.format(pkg.name));
+        log('Vocalis (%s)'.format(pkg.name));
         log('Version: %s'.format(pkg.version));
 
         Gst.init(null);
@@ -164,7 +164,7 @@ export class Application extends Adw.Application {
 
     private showAbout(): void {
         let appName = GLib.get_application_name();
-        if (!appName) appName = _('Sound Recorder');
+        if (!appName) appName = _('Vocalis');
 
         const aboutDialog = new Adw.AboutWindow({
             artists: [
@@ -174,25 +174,26 @@ export class Application extends Adw.Application {
                 'Sam Hewitt <hewittsamuel@gmail.com>',
             ],
             developers: [
+                'Christopher Davis <christopherdavis@gnome.org>',
                 'Meg Ford <megford@gnome.org>',
                 'Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>',
                 'Felipe Borges <felipeborges@gnome.org>',
                 'Kavan Mevada <kavanmevada@gmail.com>',
-                'Christopher Davis <christopherdavis@gnome.org>',
             ],
             /* Translators: Replace "translator-credits" with your names, one name per line */
             translator_credits: _('translator-credits'),
             application_name: appName,
-            comments: _('A Sound Recording Application for GNOME'),
             license_type: Gtk.License.GPL_2_0,
             application_icon: pkg.name,
             version: pkg.version,
             website: 'https://wiki.gnome.org/Apps/SoundRecorder',
+            issue_url: 'https://gitlab.gnome.org/World/vocalis/-/issues',
             copyright:
-                'Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui &amp; Felipe Borges',
+                'Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui &amp; Felipe Borges\nCopyright 2024 Christopher Davis',
             modal: true,
             transient_for: this.window,
         });
+
         aboutDialog.show();
     }
 }

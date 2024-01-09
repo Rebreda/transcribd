@@ -62,7 +62,7 @@ export class Window extends Adw.ApplicationWindow {
     static {
         GObject.registerClass(
             {
-                Template: 'resource:///org/gnome/SoundRecorder/ui/window.ui',
+                Template: 'resource:///app/drey/Vocalis/ui/window.ui',
                 InternalChildren: [
                     'mainStack',
                     'emptyPage',

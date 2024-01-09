@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/org/gnome/SoundRecorder@profile@/js">
+  <gresource prefix="/app/drey/Vocalis@profile@/js">
     <file>application.js</file>
     <file>main.js</file>
     <file>recorder.js</file>

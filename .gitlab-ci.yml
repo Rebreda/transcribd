@@ -8,11 +8,11 @@ variables:
 
 flatpak:
   variables:
-    MANIFEST_PATH: "org.gnome.SoundRecorder.json"
-    BUNDLE: "sound-recorder-dev.flatpak"
-    FLATPAK_MODULE: "gnome-sound-recorder"
+    MANIFEST_PATH: "app.drey.Vocalis.Devel.json"
+    BUNDLE: "vocalis-dev.flatpak"
+    FLATPAK_MODULE: "vocalis"
     RUNTIME_REPO: "https://nightly.gnome.org/gnome-nightly.flatpakrepo"
-    APP_ID: "org.gnome.SoundRecorderDevel"
+    APP_ID: "app.drey.Vocalis.Devel"
   extends: .flatpak
   before_script:
     - flatpak --user install -y org.freedesktop.Sdk.Extension.node18//23.08 org.freedesktop.Sdk.Extension.typescript//23.08

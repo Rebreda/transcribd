@@ -1,27 +1,27 @@
 icon_dir = 'icons' / 'hicolor' / 'scalable' / 'apps'
 install_data(
   'icons' / '@0@.svg'.format(application_id),
-  install_dir:  sound_recorder_datadir / icon_dir
+  install_dir:  vocalis_datadir / icon_dir
 )
 
 icon_dir = 'icons' / 'hicolor' / 'symbolic' / 'apps'
 install_data(
-  'icons' / 'org.gnome.SoundRecorder-symbolic.svg',
+  'icons' / 'app.drey.Vocalis-symbolic.svg',
   rename: '@0@-symbolic.svg'.format(application_id),
-  install_dir: sound_recorder_datadir / icon_dir
+  install_dir: vocalis_datadir / icon_dir
 )
 
 desktop_conf = configuration_data()
 desktop_conf.set('app-id', application_id)
 desktop_file = i18n.merge_file(
   input: configure_file(
-  	input: 'org.gnome.SoundRecorder.desktop.in.in',
+  	input: 'app.drey.Vocalis.desktop.in.in',
   	output: '@BASENAME@',
   	configuration: desktop_conf
   ),
   output: '@0@.desktop'.format(application_id),
   install: true,
-  install_dir: sound_recorder_datadir / 'applications',
+  install_dir: vocalis_datadir / 'applications',
   po_dir: po_dir,
   type: 'desktop'
 )
@@ -40,18 +40,18 @@ gsettings_conf = configuration_data()
 gsettings_conf.set('app-id', application_id)
 gsettings_conf.set('gettext-package', gettext_package)
 configure_file(
-  input: 'org.gnome.SoundRecorder.gschema.xml.in',
+  input: 'app.drey.Vocalis.gschema.xml.in',
   output: '@0@.gschema.xml'.format(application_id),
   configuration: gsettings_conf,
   install: true,
-  install_dir: sound_recorder_schemadir
+  install_dir: vocalis_schemadir
 )
 
 data_res = gnome.compile_resources(
   application_id + '.data',
-  'org.gnome.SoundRecorder.data.gresource.xml',
+  'app.drey.Vocalis.data.gresource.xml',
   gresource_bundle: true,
-  install_dir: sound_recorder_pkgdatadir,
+  install_dir: vocalis_pkgdatadir,
   install: true
 )
 
@@ -61,14 +61,14 @@ metainfo_conf.set('gettext-package', gettext_package)
 
 metainfo_file = i18n.merge_file(
   input: configure_file(
-  	input: 'org.gnome.SoundRecorder.metainfo.xml.in.in',
+  	input: 'app.drey.Vocalis.metainfo.xml.in.in',
   	output: '@BASENAME@',
   	configuration: metainfo_conf
 	),
   output: '@0@.metainfo.xml'.format(application_id),
   po_dir: po_dir,
   install: true,
-  install_dir:  sound_recorder_datadir / 'metainfo'
+  install_dir:  vocalis_datadir / 'metainfo'
 )
 
 appstream_util = find_program('appstream-util', required: false)

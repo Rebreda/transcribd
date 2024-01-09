@@ -45,7 +45,7 @@ export class Row extends Gtk.ListBoxRow {
     static {
         GObject.registerClass(
             {
-                Template: 'resource:///org/gnome/SoundRecorder/ui/row.ui',
+                Template: 'resource:///app/drey/Vocalis/ui/row.ui',
                 InternalChildren: [
                     'playbackStack',
                     'mainStack',

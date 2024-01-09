@@ -7,7 +7,7 @@
     <property name="vexpand">True</property>
     <property name="default_width">780</property>
     <property name="default_height">480</property>
-    <property name="title" translatable="yes">Sound Recorder</property>
+    <property name="title" translatable="yes">Vocalis</property>
     <child>
       <object class="AdwToolbarView" id="toolbarView">
         <child type="top">
@@ -132,7 +132,7 @@
       </item>
       <item>
         <attribute name="action">app.about</attribute>
-        <attribute name="label" translatable="yes">About Sound Recorder</attribute>
+        <attribute name="label" translatable="yes">About Vocalis</attribute>
       </item>
     </section>
   </menu>

@@ -28,7 +28,7 @@ export class RecorderWidget extends Gtk.Box {
     static {
         GObject.registerClass(
             {
-                Template: 'resource:///org/gnome/SoundRecorder/ui/recorder.ui',
+                Template: 'resource:///app/drey/Vocalis/ui/recorder.ui',
                 InternalChildren: [
                     'recorderBox',
                     'playbackStack',

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Richard Hughes <richard@hughsie.com> -->
+<component type="desktop-application">
+  <id>@app-id@.desktop</id>
+  <name>Vocalis</name>
+  <summary>A simple, modern sound recorder for GNOME</summary>
+  <project_license>GPL-2.0+</project_license>
+  <metadata_license>CC0-1.0</metadata_license>
+  <description>
+    <p>
+      Vocalis provides a simple and modern interface that provides a
+      straight-forward way to record and play audio.
+      It allows you to do basic editing, and create voice memos.
+    </p>
+    <p>
+      Vocalis automatically handles the saving process so that you
+      do not need to worry about accidentally discarding the previous recording.
+    </p>
+    <p>Supported audio formats:</p>
+    <ul>
+      <li>Ogg Vorbis, Opus, FLAC, MP3 and MOV</li>
+    </ul>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://gitlab.gnome.org/World/vocalis/raw/master/data/resources/screenshots/screenshot1.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://gitlab.gnome.org/World/vocalis/raw/master/data/resources/screenshots/screenshot2.png</image>
+    </screenshot>
+  </screenshots>
+  <kudos>
+    <kudo>HiDpiIcon</kudo>
+    <kudo>ModernToolkit</kudo>
+  </kudos>
+  <content_rating type="oars-1.0" />
+  <releases>
+    <!-- TODO: Replace this before release -->
+    <release version="1.0.0" date="2024-01-09"/>
+  </releases>
+  <launchable type="desktop-id">@app-id@.desktop</launchable>
+  <url type="homepage">https://wiki.gnome.org/Apps/SoundRecorder</url>
+  <url type="bugtracker">https://gitlab.gnome.org/World/vocalis/issues</url>
+  <url type="translate">https://wiki.gnome.org/TranslationProject</url>
+  <developer_name>Christopher Davis</developer_name>
+  <update_contact>chistopherdavis_at_gnome.org</update_contact>
+  <translation type="gettext">@gettext-package@</translation>
+  <custom>
+    <value key="Purism::form_factor">workstation</value>
+    <value key="Purism::form_factor">mobile</value>
+  </custom>
+</component>
