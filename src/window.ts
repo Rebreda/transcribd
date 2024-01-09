@@ -71,7 +71,7 @@ export class Window extends Adw.ApplicationWindow {
                     'toolbarView',
                 ],
             },
-            this
+            this,
         );
     }
 
@@ -101,7 +101,7 @@ export class Window extends Adw.ApplicationWindow {
 
         this.recordingListWidget = new RecordingsListWidget(
             this.recordingList,
-            this.player
+            this.player,
         );
 
         this.recordingListWidget.connect(
@@ -115,7 +115,7 @@ export class Window extends Adw.ApplicationWindow {
                     message = _('Recording deleted');
                 }
                 this.sendNotification(message, recording, index);
-            }
+            },
         );
 
         this.toastUndo = false;
@@ -136,15 +136,15 @@ export class Window extends Adw.ApplicationWindow {
 
         this.recorderWidget.connect(
             'started',
-            this.onRecorderStarted.bind(this)
+            this.onRecorderStarted.bind(this),
         );
         this.recorderWidget.connect(
             'canceled',
-            this.onRecorderCanceled.bind(this)
+            this.onRecorderCanceled.bind(this),
         );
         this.recorderWidget.connect(
             'stopped',
-            this.onRecorderStopped.bind(this)
+            this.onRecorderStopped.bind(this),
         );
         this.insert_action_group('recorder', this.recorderWidget.actionsGroup);
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
@@ -182,7 +182,7 @@ export class Window extends Adw.ApplicationWindow {
 
     private onRecorderStopped(
         _widget: RecorderWidget,
-        recording: Recording
+        recording: Recording,
     ): void {
         this.recordingList.insert(0, recording);
         const row = this.recordingListWidget.list.get_row_at_index(0) as Row;
@@ -193,7 +193,7 @@ export class Window extends Adw.ApplicationWindow {
     private sendNotification(
         message: string,
         recording: Recording,
-        index: number
+        index: number,
     ): void {
         const toast = Adw.Toast.new(message);
         toast.connect('dismissed', () => {

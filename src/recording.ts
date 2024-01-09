@@ -39,7 +39,7 @@ export class Recording extends GObject.Object {
                             GObject.ParamFlags.CONSTRUCT,
                         0,
                         GLib.MAXINT16,
-                        0
+                        0,
                     ),
                     name: GObject.ParamSpec.string(
                         'name',
@@ -47,11 +47,11 @@ export class Recording extends GObject.Object {
                         'Recording name in string',
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
-                        ''
+                        '',
                     ),
                 },
             },
-            this
+            this,
         );
     }
 
@@ -65,7 +65,7 @@ export class Recording extends GObject.Object {
         const info = file.query_info(
             'time::created,time::modified,standard::content-type',
             0,
-            null
+            null,
         );
         const contentType = info.get_attribute_string('standard::content-type');
 
@@ -140,7 +140,7 @@ export class Recording extends GObject.Object {
                 false,
                 Gio.FileCreateFlags.REPLACE_DESTINATION,
                 null,
-                null
+                null,
             );
         }
     }
@@ -163,7 +163,7 @@ export class Recording extends GObject.Object {
             null,
             (obj: Gio.File | null, res: Gio.AsyncResult) => {
                 if (obj?.copy_finish(res)) log('Exporting file: done');
-            }
+            },
         );
     }
 
@@ -179,7 +179,7 @@ export class Recording extends GObject.Object {
                 const data = bytes.get_data();
                 if (data) {
                     const parsedJSON: unknown = JSON.parse(
-                        decoder.decode(data)
+                        decoder.decode(data),
                     );
                     if (isNumArray(parsedJSON)) {
                         this._peaks = parsedJSON;
@@ -199,7 +199,7 @@ export class Recording extends GObject.Object {
                     error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND) ||
                     error.matches(
                         GLib.NumberParserError,
-                        GLib.NumberParserError.INVALID
+                        GLib.NumberParserError.INVALID,
                     )
                 ) {
                     this.emit('peaks-loading');
@@ -211,7 +211,7 @@ export class Recording extends GObject.Object {
 
     private generatePeaks(): void {
         this.pipeline = Gst.parse_launch(
-            'uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked'
+            'uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked',
         ) as Gst.Bin;
 
         const uridecodebin = this.pipeline.get_by_name('uridecodebin');
@@ -231,7 +231,7 @@ export class Recording extends GObject.Object {
                     const s = message.get_structure();
                     if (s && s.has_name('level')) {
                         const peakVal = s.get_value(
-                            'peak'
+                            'peak',
                         ) as unknown as GObject.ValueArray;
 
                         if (peakVal) {

@@ -57,7 +57,7 @@ export class WaveForm extends Gtk.DrawingArea {
                             GObject.ParamFlags.CONSTRUCT,
                         0.0,
                         1.0,
-                        0.0
+                        0.0,
                     ),
                     peak: GObject.ParamSpec.float(
                         'peak',
@@ -67,7 +67,7 @@ export class WaveForm extends Gtk.DrawingArea {
                             GObject.ParamFlags.CONSTRUCT,
                         0.0,
                         1.0,
-                        0.0
+                        0.0,
                     ),
                 },
                 Signals: {
@@ -75,13 +75,13 @@ export class WaveForm extends Gtk.DrawingArea {
                     'gesture-pressed': {},
                 },
             },
-            this
+            this,
         );
     }
 
     constructor(
         params: Partial<Gtk.DrawingArea.ConstructorProperties> | undefined,
-        type: WaveType
+        type: WaveType,
     ) {
         super(params);
         this._peaks = [];
@@ -100,7 +100,7 @@ export class WaveForm extends Gtk.DrawingArea {
             'notify::high-contrast',
             () => {
                 this.queue_draw();
-            }
+            },
         );
 
         this.set_draw_func(this.drawFunc.bind(this));

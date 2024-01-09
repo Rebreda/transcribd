@@ -26,10 +26,10 @@ import Gst from 'gi://Gst';
 import Gtk from 'gi://Gtk?version=4.0';
 
 export const RecordingsDir = Gio.file_new_for_path(
-    GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name])
+    GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]),
 );
 export const CacheDir = Gio.file_new_for_path(
-    GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name])
+    GLib.build_filenamev([GLib.get_user_cache_dir(), pkg.name]),
 );
 export const Settings = new Gio.Settings({ schema: pkg.name });
 
@@ -57,7 +57,7 @@ export class Application extends Adw.Application {
             GLib.OptionFlags.NONE,
             GLib.OptionArg.NONE,
             'Print version information and exit',
-            null
+            null,
         );
 
         this.connect('handle-local-options', (_, options: GLib.VariantDict) => {
@@ -75,17 +75,17 @@ export class Application extends Adw.Application {
         Gio._promisify(
             Gio.File.prototype,
             'load_bytes_async',
-            'load_bytes_finish'
+            'load_bytes_finish',
         );
         Gio._promisify(
             Gio.File.prototype,
             'enumerate_children_async',
-            'enumerate_children_finish'
+            'enumerate_children_finish',
         );
         Gio._promisify(
             Gio.FileEnumerator.prototype,
             'next_files_async',
-            'next_files_finish'
+            'next_files_finish',
         );
     }
 

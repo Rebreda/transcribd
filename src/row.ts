@@ -75,11 +75,11 @@ export class Row extends Gtk.ListBoxRow {
                         'Row active status',
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
-                        false
+                        false,
                     ),
                 },
             },
-            this
+            this,
         );
     }
 
@@ -96,7 +96,7 @@ export class Row extends Gtk.ListBoxRow {
                 margin_top: 18,
                 height_request: 60,
             },
-            WaveType.Player
+            WaveType.Player,
         );
         this._waveformStack.add_named(this.waveform, 'wave');
 
@@ -115,19 +115,19 @@ export class Row extends Gtk.ListBoxRow {
             'name',
             this._name,
             'label',
-            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT
+            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT,
         );
         recording.bind_property(
             'name',
             this._entry,
             'text',
-            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT
+            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT,
         );
         this.bind_property(
             'expanded',
             this._revealer,
             'reveal_child',
-            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT
+            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT,
         );
 
         this.actionGroup = new Gio.SimpleActionGroup();
@@ -140,21 +140,22 @@ export class Row extends Gtk.ListBoxRow {
                 window,
                 Gtk.FileChooserAction.SAVE,
                 _('_Export'),
-                _('_Cancel')
+                _('_Cancel'),
             );
             this.exportDialog.set_current_name(
-                `${this.recording.name}.${this.recording.extension}`
+                `${this.recording.name}.${this.recording.extension}`,
             );
             this.exportDialog.connect(
                 'response',
                 (_dialog: Gtk.FileChooserNative, response: number) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
                     if (response === Gtk.ResponseType.ACCEPT) {
                         const dest = this.exportDialog?.get_file();
                         if (dest) this.recording.save(dest);
                     }
                     this.exportDialog?.destroy();
                     this.exportDialog = null;
-                }
+                },
             );
             this.exportDialog.show();
         });
@@ -166,7 +167,7 @@ export class Row extends Gtk.ListBoxRow {
         });
         this.saveRenameAction.connect(
             'activate',
-            this.onRenameRecording.bind(this)
+            this.onRenameRecording.bind(this),
         );
         this.actionGroup.add_action(this.saveRenameAction);
 
@@ -182,7 +183,7 @@ export class Row extends Gtk.ListBoxRow {
             'enabled',
             this.saveRenameAction,
             'enabled',
-            GObject.BindingFlags.INVERT_BOOLEAN
+            GObject.BindingFlags.INVERT_BOOLEAN,
         );
         this.actionGroup.add_action(this.renameAction);
 
@@ -236,7 +237,7 @@ export class Row extends Gtk.ListBoxRow {
                 this._entry.remove_css_class('error');
 
                 if (key === Gdk.KEY_Escape) this.editMode = false;
-            }
+            },
         );
         this._entry.add_controller(this.keyController);
 
@@ -294,7 +295,7 @@ export class Row extends Gtk.ListBoxRow {
         for (const action of this.actionGroup.list_actions()) {
             if (action !== 'save') {
                 const someAction = this.actionGroup.lookup(
-                    action
+                    action,
                 ) as Gio.SimpleAction;
                 someAction.enabled = !state;
             }

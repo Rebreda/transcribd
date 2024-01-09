@@ -44,7 +44,7 @@ export class RecorderWidget extends Gtk.Box {
                     stopped: { param_types: [GObject.TYPE_OBJECT] },
                 },
             },
-            this
+            this,
         );
     }
 
@@ -57,7 +57,7 @@ export class RecorderWidget extends Gtk.Box {
                 vexpand: true,
                 valign: Gtk.Align.FILL,
             },
-            WaveType.Recorder
+            WaveType.Recorder,
         );
         this._recorderBox.prepend(this.waveform);
 
@@ -65,7 +65,7 @@ export class RecorderWidget extends Gtk.Box {
             'current-peak',
             this.waveform,
             'peak',
-            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT
+            GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.DEFAULT,
         );
         this.recorder.connect('notify::duration', (_recorder: Recorder) => {
             this._recorderTime.set_markup(formatTime(_recorder.duration));
@@ -105,7 +105,7 @@ export class RecorderWidget extends Gtk.Box {
             'enabled',
             cancelAction,
             'enabled',
-            GObject.BindingFlags.INVERT_BOOLEAN
+            GObject.BindingFlags.INVERT_BOOLEAN,
         );
     }
 
@@ -146,7 +146,7 @@ export class RecorderWidget extends Gtk.Box {
 
         dialog.set_response_appearance(
             'delete',
-            Adw.ResponseAppearance.DESTRUCTIVE
+            Adw.ResponseAppearance.DESTRUCTIVE,
         );
         dialog.set_default_response('close');
 
@@ -174,13 +174,13 @@ export class RecorderWidget extends Gtk.Box {
 
     public set state(recorderState: RecorderState) {
         const pauseAction = this.actionsGroup.lookup(
-            'pause'
+            'pause',
         ) as Gio.SimpleAction;
         const resumeAction = this.actionsGroup.lookup(
-            'resume'
+            'resume',
         ) as Gio.SimpleAction;
         const startAction = this.actionsGroup.lookup(
-            'start'
+            'start',
         ) as Gio.SimpleAction;
         const stopAction = this.actionsGroup.lookup('stop') as Gio.SimpleAction;
 

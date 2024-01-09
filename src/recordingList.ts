@@ -22,7 +22,7 @@ export class RecordingList extends Gio.ListStore {
         // Monitor Direcotry actions
         this.dirMonitor = RecordingsDir.monitor_directory(
             Gio.FileMonitorFlags.WATCH_MOVES,
-            this.cancellable
+            this.cancellable,
         );
         this.dirMonitor.connect(
             'changed',
@@ -38,21 +38,21 @@ export class RecordingList extends Gio.ListStore {
                             this.sortedInsert(new Recording(file1));
                         break;
                 }
-            }
+            },
         );
 
         void RecordingsDir.enumerate_children_async(
             'standard::name',
             Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
             GLib.PRIORITY_LOW,
-            this.cancellable
+            this.cancellable,
         ).then(async (enumerator) => {
             await this.enumerateDirectory(enumerator);
         });
     }
 
     private async enumerateDirectory(
-        enumerator: Gio.FileEnumerator
+        enumerator: Gio.FileEnumerator,
     ): Promise<void> {
         this.enumerator = enumerator;
         if (this.enumerator === null) {
@@ -86,7 +86,7 @@ export class RecordingList extends Gio.ListStore {
         const fileInfos = await this.enumerator?.next_files_async(
             5,
             GLib.PRIORITY_LOW,
-            this.cancellable
+            this.cancellable,
         );
         // We check this here because the return value isn't stated as nullable in Gio.
         return fileInfos ? fileInfos : [];

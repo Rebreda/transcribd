@@ -57,13 +57,13 @@ export function displayDateTime(time: GLib.DateTime): string {
         return _('Last week');
     } else if (difference < 28 * DAY) {
         return Gettext.ngettext('%d week ago', '%d weeks ago', weeks).format(
-            weeks
+            weeks,
         );
     } else if (difference < 60 * DAY) {
         return _('Last month');
     } else if (difference < 360 * DAY) {
         return Gettext.ngettext('%d month ago', '%d months ago', months).format(
-            months
+            months,
         );
     } else if (difference < 730 * DAY) {
         return _('Last year');

@@ -103,7 +103,7 @@ export class Recorder extends GObject.Object {
                             GObject.ParamFlags.CONSTRUCT,
                         0,
                         GLib.MAXINT16,
-                        0
+                        0,
                     ),
                     'current-peak': GObject.ParamSpec.float(
                         'current-peak',
@@ -113,11 +113,11 @@ export class Recorder extends GObject.Object {
                             GObject.ParamFlags.CONSTRUCT,
                         0.0,
                         1.0,
-                        0.0
+                        0.0,
                     ),
                 },
             },
-            this
+            this,
         );
     }
 
@@ -158,7 +158,7 @@ export class Recorder extends GObject.Object {
             /* Translators: ""Recording %d"" is the default name assigned to a file created
             by the application (for example, "Recording 1"). */
             this.file = RecordingsDir.get_child_for_display_name(
-                _('Recording %d').format(index++)
+                _('Recording %d').format(index++),
             );
         } while (this.file.query_exists(null));
 
@@ -168,7 +168,7 @@ export class Recorder extends GObject.Object {
             'message',
             (_, message: Gst.Message) => {
                 if (message) this.onMessageReceived(message);
-            }
+            },
         );
 
         if (this.ebin && this.level && this.filesink) {
@@ -230,11 +230,11 @@ export class Recorder extends GObject.Object {
                 if (GstPbutils.is_missing_plugin_message(message)) {
                     const detail =
                         GstPbutils.missing_plugin_message_get_installer_detail(
-                            message
+                            message,
                         );
                     const description =
                         GstPbutils.missing_plugin_message_get_description(
-                            message
+                            message,
                         );
                     log(`Detail: ${detail}\nDescription: ${description}`);
                     break;
@@ -243,7 +243,7 @@ export class Recorder extends GObject.Object {
                 const s = message.get_structure();
                 if (s && s.has_name('level')) {
                     const peakVal = s.get_value(
-                        'peak'
+                        'peak',
                     ) as unknown as GObject.ValueArray;
 
                     if (peakVal)
@@ -285,7 +285,7 @@ export class Recorder extends GObject.Object {
                 audioCaps,
                 null,
                 null,
-                1
+                1,
             );
             const containerCaps = Gst.Caps.from_string(profile.containerCaps);
             if (containerCaps) {
@@ -294,7 +294,7 @@ export class Recorder extends GObject.Object {
                         'record',
                         null,
                         containerCaps,
-                        null
+                        null,
                     );
                 containerProfile.add_profile(encodingProfile);
                 return containerProfile;

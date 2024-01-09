@@ -25,7 +25,7 @@ export class RecordingsListWidget extends Adw.Bin {
                     },
                 },
             },
-            this
+            this,
         );
     }
 
@@ -56,7 +56,7 @@ export class RecordingsListWidget extends Adw.Bin {
                     if (this.activePlayingRow)
                         this.activePlayingRow.state = RowState.Playing;
                 }
-            }
+            },
         );
 
         this.player.connect(
@@ -66,7 +66,7 @@ export class RecordingsListWidget extends Adw.Bin {
                     const duration = this.activePlayingRow.recording.duration;
                     this.activePlayingRow.waveform.position = pos / duration;
                 }
-            }
+            },
         );
 
         this.list.bind_model(model, (item: GObject.Object) => {
@@ -87,7 +87,7 @@ export class RecordingsListWidget extends Adw.Bin {
                 'position-changed',
                 (_wave: WaveForm, position: number) => {
                     this.player.seek(position * row.recording.duration);
-                }
+                },
             );
 
             row.connect('play', (_row: Row) => {
