@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2014 Richard Hughes <richard@hughsie.com> -->
 <component type="desktop-application">
-  <id>@app-id@.desktop</id>
+  <id>@app-id@</id>
   <name>Vocalis</name>
   <summary>Take notes with your voice</summary>
   <project_license>GPL-2.0+</project_license>
