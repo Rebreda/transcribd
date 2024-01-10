@@ -12,8 +12,6 @@ A simple, modern sound recorder for GNOME
 
 ### Useful links
 
-Homepage: https://wiki.gnome.org/Apps/SoundRecorder
-
 Report issues: https://gitlab.gnome.org/World/vocalis/issues/
 
 Donate: http://www.gnome.org/friends/

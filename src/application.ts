@@ -186,7 +186,7 @@ export class Application extends Adw.Application {
             license_type: Gtk.License.GPL_2_0,
             application_icon: pkg.name,
             version: pkg.version,
-            website: 'https://wiki.gnome.org/Apps/SoundRecorder',
+            website: 'https://gitlab.gnome.org/World/vocalis',
             issue_url: 'https://gitlab.gnome.org/World/vocalis/-/issues',
             copyright:
                 'Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui &amp; Felipe Borges\nCopyright 2024 Christopher Davis',

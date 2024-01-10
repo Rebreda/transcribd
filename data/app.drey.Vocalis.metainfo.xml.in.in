@@ -34,7 +34,7 @@
     <release version="1.0.0" date="2024-01-09"/>
   </releases>
   <launchable type="desktop-id">@app-id@.desktop</launchable>
-  <url type="homepage">https://wiki.gnome.org/Apps/SoundRecorder</url>
+  <url type="homepage">https://gitlab.gnome.org/World/vocalis/</url>
   <url type="bugtracker">https://gitlab.gnome.org/World/vocalis/issues</url>
   <url type="translate">https://wiki.gnome.org/TranslationProject</url>
   <developer_name>Christopher Davis</developer_name>
