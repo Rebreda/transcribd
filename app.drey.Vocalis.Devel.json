@@ -16,9 +16,7 @@
         "--device=dri",
         "--socket=fallback-x11",
         "--socket=wayland",
-        "--socket=pulseaudio",
-        "--filesystem=~/Recordings",
-        "--talk-name=org.a11y.Bus"
+        "--socket=pulseaudio"
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/node18/bin:/usr/lib/sdk/typescript/bin"
