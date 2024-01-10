@@ -3,14 +3,13 @@
 <component type="desktop-application">
   <id>@app-id@.desktop</id>
   <name>Vocalis</name>
-  <summary>A simple, modern sound recorder for GNOME</summary>
+  <summary>Take notes with your voice</summary>
   <project_license>GPL-2.0+</project_license>
   <metadata_license>CC0-1.0</metadata_license>
   <description>
     <p>
       Vocalis provides a simple and modern interface that provides a
-      straight-forward way to record and play audio.
-      It allows you to do basic editing, and create voice memos.
+      straight-forward way to record and play voice memos.
     </p>
     <p>
       Vocalis automatically handles the saving process so that you
