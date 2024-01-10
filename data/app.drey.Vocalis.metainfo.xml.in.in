@@ -28,10 +28,6 @@
       <image>https://gitlab.gnome.org/World/vocalis/raw/master/data/resources/screenshots/screenshot2.png</image>
     </screenshot>
   </screenshots>
-  <kudos>
-    <kudo>HiDpiIcon</kudo>
-    <kudo>ModernToolkit</kudo>
-  </kudos>
   <content_rating type="oars-1.0" />
   <releases>
     <!-- TODO: Replace this before release -->
