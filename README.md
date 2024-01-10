@@ -14,8 +14,6 @@ A simple, modern sound recorder for GNOME
 
 Report issues: https://gitlab.gnome.org/World/vocalis/issues/
 
-Donate: http://www.gnome.org/friends/
-
 Translate: https://wiki.gnome.org/TranslationProject
 
 You can also join us in [#sound-recorder:gnome.org on Matrix](https://matrix.to/#/#sound-recorder:gnome.org)
