@@ -2,95 +2,99 @@
 # Copyright (C) 2014 gnome-sound-recorder's COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-sound-recorder package.
 # Daniel Korostil <ted.korostiled@gmail.com>, 2014, 2015, 2016, 2017.
-# Yuri Chornoivan <yurchor@ukr.net>, 2020.
+# Yuri Chornoivan <yurchor@ukr.net>, 2020, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/issu"
-"es\n"
-"POT-Creation-Date: 2020-09-09 18:18+0000\n"
-"PO-Revision-Date: 2020-09-10 09:29+0300\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
+"POT-Creation-Date: 2024-03-15 07:11+0000\n"
+"PO-Revision-Date: 2024-03-15 21:48+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<"
-"=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Lokalize 20.11.70\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Lokalize 23.04.1\n"
 "X-Project-Style: gnome\n"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
-#: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
-#: src/application.js:32
-msgid "Sound Recorder"
-msgstr "Записувач звуку"
+#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+msgid "Vocalis"
+msgstr "Vocalis"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
-msgstr "Простий, новітній записувач звуку для GNOME"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:10
-msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
-msgstr ""
-"Записувач звуку надає простий і новітній інтерфейс для записування й "
-"програвання звуку. Це дозволяє робити базове редагування і створювати "
-"звукові примітки."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:15
-msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
-msgstr ""
-"Записувач звуку автоматично записує, тому не варто переживати за випадково "
-"відкинуті попередні записи."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:19
-msgid "Supported audio formats:"
-msgstr "Підтримувані звукові формати:"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:21
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 і MOV"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:50
-msgid "The GNOME Project"
-msgstr "Проєкт GNOME"
-
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:5
 msgid "Record sound via the microphone and play it back"
 msgstr "Записати звук через мікрофон і програти його"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Звук;Програма;Запис;"
+#: data/app.drey.Vocalis.desktop.in.in:10
+#| msgid "Audio;Application;Record;"
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr "Звук;Програма;Запис;Записувач звуку;"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "Створення нотаток за допомогою диктування"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
+#| msgid ""
+#| "Sound Recorder provides a simple and modern interface that provides a "
+#| "straight-forward way to record and play audio. It allows you to do basic "
+#| "editing, and create voice memos."
+msgid ""
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
+msgstr ""
+"Vocalis надає простий і сучасний інтерфейс для безпосереднього записування і"
+" відтворення звукових нотаток."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
+#| msgid ""
+#| "Sound Recorder automatically handles the saving process so that you do "
+#| "not need to worry about accidentally discarding the previous recording."
+msgid ""
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
+msgstr ""
+"Vocalis виконує записування автоматично, тому не варто перейматися щодо"
+" випадкового відкидання попереднього запису."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
+msgid "Supported audio formats:"
+msgstr "Підтримувані звукові формати:"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
+msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgstr "Ogg Vorbis, Opus, FLAC, MP3 і MOV"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
+
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "Розмір вікна"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:17
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "Розмір вікна (ширина і висота)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "Позиція вікна"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:22
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "Розташування вікна (x та y)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
 msgstr "Показує типи для попередньо заданих назв кодування звуку."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:27
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
@@ -98,11 +102,11 @@ msgstr ""
 "Показує типи для попередньо заданих назв кодування звуку. Якщо нічого не "
 "вказано, буде використано типові параметри кодування."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
 msgstr "Доступні канали"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:32
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
@@ -110,293 +114,281 @@ msgstr ""
 "Показує доступні канали. Якщо не вказано, типово використовується "
 "стереоканал."
 
-#: data/ui/help-overlay.ui:15
+#: data/ui/help-overlay.ui:11
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Загальне"
 
-#: data/ui/help-overlay.ui:20
-#| msgid "Record"
+#: data/ui/help-overlay.ui:15
 msgctxt "shortcut window"
 msgid "Record"
 msgstr "Записати"
 
-#: data/ui/help-overlay.ui:27
-#| msgid "Stop Recording"
+#: data/ui/help-overlay.ui:21
 msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "Припинити запис"
 
-#: data/ui/help-overlay.ui:34
-#| msgctxt "shortcut window"
-#| msgid "Play / Pause"
+#: data/ui/help-overlay.ui:27
 msgctxt "shortcut window"
 msgid "Play / Pause / Resume"
 msgstr "Відтворення / Пауза / Продовження"
 
-#: data/ui/help-overlay.ui:42
+#: data/ui/help-overlay.ui:34
 msgctxt "shortcut window"
 msgid "Delete"
 msgstr "Вилучити"
 
-#: data/ui/help-overlay.ui:49
+#: data/ui/help-overlay.ui:40
+#| msgctxt "shortcut window"
+#| msgid "Open menu"
 msgctxt "shortcut window"
-msgid "Open menu"
-msgstr "Відкрити меню"
+msgid "Open Main Menu"
+msgstr "Відкрити головне меню"
 
-#: data/ui/help-overlay.ui:56
+#: data/ui/help-overlay.ui:46
+#| msgid "_Keyboard Shortcuts"
 msgctxt "shortcut window"
-msgid "Keyboard shortcuts"
+msgid "Keyboard Shortcuts"
 msgstr "Клавіатурні скорочення"
 
-#: data/ui/help-overlay.ui:63
+#: data/ui/help-overlay.ui:52
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Вийти"
 
-#: data/ui/help-overlay.ui:71
+#: data/ui/help-overlay.ui:59
 msgctxt "shortcut window"
 msgid "Recording"
 msgstr "Запис"
 
-#: data/ui/help-overlay.ui:76
+#: data/ui/help-overlay.ui:63
 msgctxt "shortcut window"
 msgid "Seek Backward"
 msgstr "Перемотати назад"
 
-#: data/ui/help-overlay.ui:83
+#: data/ui/help-overlay.ui:69
 msgctxt "shortcut window"
 msgid "Seek Forward"
 msgstr "Перемотати вперед"
 
-#: data/ui/help-overlay.ui:90
-#| msgid "Rename"
+#: data/ui/help-overlay.ui:75
 msgctxt "shortcut window"
 msgid "Rename"
 msgstr "Перейменувати"
 
-#: data/ui/help-overlay.ui:97
+#: data/ui/help-overlay.ui:81
 msgctxt "shortcut window"
 msgid "Export"
 msgstr "Експортувати"
 
-#: data/ui/recorder.ui:72
+#: data/ui/recorder.ui:43
 msgid "Resume Recording"
 msgstr "Відновити записування"
 
-#: data/ui/recorder.ui:96
+#: data/ui/recorder.ui:61
 msgid "Pause Recording"
 msgstr "Призупинити записування"
 
-#: data/ui/recorder.ui:128
+#: data/ui/recorder.ui:78
 msgid "Stop Recording"
 msgstr "Припинити запис"
 
-#: data/ui/recorder.ui:157
+#: data/ui/recorder.ui:98
 msgid "Delete Recording"
 msgstr "Вилучити запис"
 
-#: data/ui/row.ui:165 data/ui/row.ui:444
-msgid "Export"
-msgstr "Експортувати"
-
-#: data/ui/row.ui:189 data/ui/row.ui:440
-msgid "Rename"
-msgstr "Перейменувати"
-
-#: data/ui/row.ui:241
-msgid "Save"
-msgstr "Зберегти"
-
-#: data/ui/row.ui:278 src/recorderWidget.js:100
+#: data/ui/row.ui:109
 msgid "Delete"
 msgstr "Вилучити"
 
-#: data/ui/row.ui:313
+#: data/ui/row.ui:129
 msgid "Seek 10s Backward"
 msgstr "Перемотати на 10 с назад"
 
-#: data/ui/row.ui:341
+#: data/ui/row.ui:147
 msgid "Play"
 msgstr "Пуск"
 
-#: data/ui/row.ui:367
+#: data/ui/row.ui:171
 msgid "Pause"
 msgstr "Пауза"
 
-#: data/ui/row.ui:399
+#: data/ui/row.ui:194
 msgid "Seek 10s Forward"
 msgstr "Перемотати на 10 с вперед"
 
-#: data/ui/window.ui:60
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "Експортувати"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "Перейменувати"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "Зберегти"
+
+#: data/ui/window.ui:24
 msgid "Record"
 msgstr "Записати"
 
-#: data/ui/window.ui:149
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "Головне меню"
+
+#: data/ui/window.ui:56
 msgid "Add Recordings"
 msgstr "Додати записи"
 
-#: data/ui/window.ui:166
+#: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "Натисніть кнопку <b>Записати</b>, щоб зробити записи звуку"
 
-#: data/ui/window.ui:237
-msgid "Undo"
-msgstr "Скасувати"
-
-#: data/ui/window.ui:254
-msgid "Close"
-msgstr "Закрити"
-
-#: data/ui/window.ui:290
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "Бажаний формат"
 
-#: data/ui/window.ui:292
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:297
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:302
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:307
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:312
-msgid "M4A"
-msgstr "M4A"
-
-#: data/ui/window.ui:318
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "Звуковий канал"
 
-#: data/ui/window.ui:320
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "Стерео"
 
-#: data/ui/window.ui:325
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "Моно"
 
-#: data/ui/window.ui:332
+#: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
 msgstr "_Клавіатурні скорочення"
 
-#: data/ui/window.ui:337
-msgid "About Sound Recorder"
-msgstr "Про «Записувач звуку»"
+#: data/ui/window.ui:135
+msgid "About Vocalis"
+msgstr "Про Vocalis"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:129
-msgid "translator-credits"
-msgstr "Daniel Korostil <ted.korostiled@gmail.com>"
+#~ msgid "Sound Recorder"
+#~ msgstr "Записувач звуку"
 
-#: src/application.js:131
-msgid "A Sound Recording Application for GNOME"
-msgstr "Програма для запису звуку для GNOME"
+#~ msgid "A simple, modern sound recorder for GNOME"
+#~ msgstr "Простий, новітній записувач звуку для GNOME"
 
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:113
+#~ msgid "The GNOME Project"
+#~ msgstr "Проєкт GNOME"
+
+#~ msgctxt "shortcut window"
+#~ msgid "Keyboard shortcuts"
+#~ msgstr "Клавіатурні скорочення"
+
+#~ msgid "Undo"
+#~ msgstr "Скасувати"
+
+#~ msgid "Close"
+#~ msgstr "Закрити"
+
+#~ msgid "M4A"
+#~ msgstr "M4A"
+
+#~ msgid "About Sound Recorder"
+#~ msgstr "Про «Записувач звуку»"
+
+#~ msgid "translator-credits"
+#~ msgstr "Daniel Korostil <ted.korostiled@gmail.com>"
+
+#~ msgid "A Sound Recording Application for GNOME"
+#~ msgstr "Програма для запису звуку для GNOME"
+
 #, javascript-format
-msgid "Recording %d"
-msgstr "Запис %d"
+#~ msgid "Recording %d"
+#~ msgstr "Запис %d"
 
-#: src/recorderWidget.js:94
-msgid "Delete recording?"
-msgstr "Вилучити запис?"
+#~ msgid "Delete recording?"
+#~ msgstr "Вилучити запис?"
 
-#: src/recorderWidget.js:95
-msgid "This recording will not be saved."
-msgstr "Цей запис не буде збережено."
+#~ msgid "This recording will not be saved."
+#~ msgstr "Цей запис не буде збережено."
 
-#: src/recorderWidget.js:99
-msgid "Resume"
-msgstr "Продовжити"
+#~ msgid "Resume"
+#~ msgstr "Продовжити"
 
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:42
-msgid "Recordings"
-msgstr "Записи"
+#~ msgid "Recordings"
+#~ msgstr "Записи"
 
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:59
 #, javascript-format
-msgid "%s (Old)"
-msgstr "%s (старий)"
+#~ msgid "%s (Old)"
+#~ msgstr "%s (старий)"
 
-#: src/row.js:71
-msgid "Export Recording"
-msgstr "Експортувати запис"
+#~ msgid "Export Recording"
+#~ msgstr "Експортувати запис"
 
-#: src/row.js:71
-msgid "_Export"
-msgstr "_Експортувати"
+#~ msgid "_Export"
+#~ msgstr "_Експортувати"
 
-#: src/row.js:71
-msgid "_Cancel"
-msgstr "_Скасувати"
+#~ msgid "_Cancel"
+#~ msgstr "_Скасувати"
 
-#: src/utils.js:48
-msgid "Yesterday"
-msgstr "Вчора"
+#~ msgid "Yesterday"
+#~ msgstr "Вчора"
 
-#: src/utils.js:50
 #, javascript-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "%d день тому"
-msgstr[1] "%d дні тому"
-msgstr[2] "%d днів тому"
+#~ msgid "%d day ago"
+#~ msgid_plural "%d days ago"
+#~ msgstr[0] "%d день тому"
+#~ msgstr[1] "%d дні тому"
+#~ msgstr[2] "%d днів тому"
 
-#: src/utils.js:52
-msgid "Last week"
-msgstr "Минулого тижня"
+#~ msgid "Last week"
+#~ msgstr "Минулого тижня"
 
-#: src/utils.js:54
 #, javascript-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "%d тиждень тому"
-msgstr[1] "%d тижні тому"
-msgstr[2] "%d тижнів тому"
+#~ msgid "%d week ago"
+#~ msgid_plural "%d weeks ago"
+#~ msgstr[0] "%d тиждень тому"
+#~ msgstr[1] "%d тижні тому"
+#~ msgstr[2] "%d тижнів тому"
 
-#: src/utils.js:56
-msgid "Last month"
-msgstr "Минулого місяця"
+#~ msgid "Last month"
+#~ msgstr "Минулого місяця"
 
-#: src/utils.js:58
 #, javascript-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "%d місяць тому"
-msgstr[1] "%d місяці тому"
-msgstr[2] "%d місяців тому"
+#~ msgid "%d month ago"
+#~ msgid_plural "%d months ago"
+#~ msgstr[0] "%d місяць тому"
+#~ msgstr[1] "%d місяці тому"
+#~ msgstr[2] "%d місяців тому"
 
-#: src/utils.js:60
-msgid "Last year"
-msgstr "Минулого року"
+#~ msgid "Last year"
+#~ msgstr "Минулого року"
 
-#: src/utils.js:62
 #, javascript-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "%d рік тому"
-msgstr[1] "%d роки тому"
-msgstr[2] "%d років тому"
+#~ msgid "%d year ago"
+#~ msgid_plural "%d years ago"
+#~ msgstr[0] "%d рік тому"
+#~ msgstr[1] "%d роки тому"
+#~ msgstr[2] "%d років тому"
 
-#: src/window.js:71
 #, javascript-format
-msgid "\"%s\" deleted"
-msgstr "«%s» вилучено"
+#~ msgid "\"%s\" deleted"
+#~ msgstr "«%s» вилучено"
 
 #~ msgctxt "shortcut window"
 #~ msgid "Recorder"
