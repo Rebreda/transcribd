@@ -7,90 +7,86 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
-"issues\n"
-"POT-Creation-Date: 2020-09-09 18:18+0000\n"
-"PO-Revision-Date: 2020-09-13 20:13+0300\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
+"POT-Creation-Date: 2024-03-15 07:11+0000\n"
+"PO-Revision-Date: 2024-03-16 23:18+0200\n"
 "Last-Translator: Aurimas Černius <aurisc4@gmail.com>\n"
 "Language-Team: Lietuvių <gnome-lt@lists.akl.lt>\n"
 "Language: lt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n"
-"%100<10 || n%100>=20) ? 1 : 2)\n"
-"X-Generator: Gtranslator 3.36.0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"(n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 3.4.2\n"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
-#: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
-#: src/application.js:32
-msgid "Sound Recorder"
-msgstr "Garso įrašymas"
+#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+msgid "Vocalis"
+msgstr "Vocalis"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
-msgstr "Paprasta garso įrašymo programa GNOME aplinkai"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:10
-msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
-msgstr ""
-"Garso įrašymas suteikia paprastą ir modernią sąsają, kuri leidžia paprastai "
-"įrašyti bei groti garsą. Ji leidžia atlikti bazinį redagavimą bei sukurti "
-"garso įrašus."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:15
-msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
-msgstr ""
-"Garso įrašymas automatiškai apdoroja įrašymo procesą, tad nereikia rūpintis, "
-"kad netyčia neišmestumėt ankstesnio įrašo."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:19
-msgid "Supported audio formats:"
-msgstr "Palaikomi garso formatai:"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:21
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 ir MOV"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:50
-msgid "The GNOME Project"
-msgstr "GNOME projektas"
-
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:5
 msgid "Record sound via the microphone and play it back"
 msgstr "Įrašykite garsą mikrofonu ir jį grokite"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Garsas;Programa;Įrašyti;"
+#: data/app.drey.Vocalis.desktop.in.in:10
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr "Garsas;Programa;Įrašyti;Garso įrašymas;"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "Užsirašykite balsu"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
+msgid ""
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
+msgstr ""
+"Vocalis suteikia paprastą ir modernią sąsają, kuri leidžia paprastai įrašyti "
+"bei groti garso įrašus."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
+msgid ""
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
+msgstr ""
+"Vocalis automatiškai apdoroja įrašymo procesą, tad nereikia rūpintis, kad "
+"netyčia neišmestumėt ankstesnio įrašo."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
+msgid "Supported audio formats:"
+msgstr "Palaikomi garso formatai:"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
+msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgstr "Ogg Vorbis, Opus, FLAC, MP3 ir MOV"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
+
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "Lango dydis"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:17
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "Lango dydis (plotis ir aukštis)"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "Lango padėtis"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:22
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "Lango padėtis (x ir y)"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
 msgstr "Susieja daugialypės terpės tipus su garso koduotojų vardais."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:27
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
@@ -98,11 +94,11 @@ msgstr ""
 "Susieja daugialypės terpės tipus su garso koduotojų vardais. Jei nėra "
 "atitinkančio daugialypės terpės tipo, bus naudojamas numatytasis koduotojas."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
 msgstr "Prieinami kanalai"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:32
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
@@ -110,301 +106,281 @@ msgstr ""
 "Susieja prieinamus kanalus. Jei nėra nustatyto susiejimo, numatytai bus "
 "naudojamas stereo kanalas."
 
-#: data/ui/help-overlay.ui:15
+#: data/ui/help-overlay.ui:11
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Esmė"
 
-#: data/ui/help-overlay.ui:20
-#| msgid "Record"
+#: data/ui/help-overlay.ui:15
 msgctxt "shortcut window"
 msgid "Record"
 msgstr "Įrašyti"
 
-#: data/ui/help-overlay.ui:27
-#| msgid "Stop Recording"
+#: data/ui/help-overlay.ui:21
 msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "Sustabdyti įrašymą"
 
-#: data/ui/help-overlay.ui:34
+#: data/ui/help-overlay.ui:27
 msgctxt "shortcut window"
 msgid "Play / Pause / Resume"
 msgstr "Groti / pristabdyti / tęsti"
 
-#: data/ui/help-overlay.ui:42
-#| msgid "Delete"
+#: data/ui/help-overlay.ui:34
 msgctxt "shortcut window"
 msgid "Delete"
 msgstr "Ištrinti"
 
-#: data/ui/help-overlay.ui:49
+#: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
-msgid "Open menu"
-msgstr "Atverti meniu"
+msgid "Open Main Menu"
+msgstr "Atverti pagrindinį meniu"
 
-#: data/ui/help-overlay.ui:56
+#: data/ui/help-overlay.ui:46
 msgctxt "shortcut window"
-msgid "Keyboard shortcuts"
+msgid "Keyboard Shortcuts"
 msgstr "Klaviatūros trumpiniai"
 
-#: data/ui/help-overlay.ui:63
-#| msgid "Quit"
+#: data/ui/help-overlay.ui:52
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Išeiti"
 
-#: data/ui/help-overlay.ui:71
-#| msgid "Recordings"
+#: data/ui/help-overlay.ui:59
 msgctxt "shortcut window"
 msgid "Recording"
 msgstr "Įrašas"
 
-#: data/ui/help-overlay.ui:76
-#| msgid "Seek 10s Backward"
+#: data/ui/help-overlay.ui:63
 msgctxt "shortcut window"
 msgid "Seek Backward"
 msgstr "Grįžti atgal"
 
-#: data/ui/help-overlay.ui:83
-#| msgid "Seek 10s Forward"
+#: data/ui/help-overlay.ui:69
 msgctxt "shortcut window"
 msgid "Seek Forward"
 msgstr "Eiti pirmyn"
 
-#: data/ui/help-overlay.ui:90
-#| msgid "Rename"
+#: data/ui/help-overlay.ui:75
 msgctxt "shortcut window"
 msgid "Rename"
 msgstr "Pervadinti"
 
-#: data/ui/help-overlay.ui:97
-#| msgid "Export"
+#: data/ui/help-overlay.ui:81
 msgctxt "shortcut window"
 msgid "Export"
 msgstr "Eksportuoti"
 
-#: data/ui/recorder.ui:72
+#: data/ui/recorder.ui:43
 msgid "Resume Recording"
 msgstr "Tęsti įrašymą"
 
-#: data/ui/recorder.ui:96
+#: data/ui/recorder.ui:61
 msgid "Pause Recording"
 msgstr "Pristabdyti įrašymą"
 
-#: data/ui/recorder.ui:128
+#: data/ui/recorder.ui:78
 msgid "Stop Recording"
 msgstr "Sustabdyti įrašymą"
 
-#: data/ui/recorder.ui:157
-#| msgid "Resume Recording"
+#: data/ui/recorder.ui:98
 msgid "Delete Recording"
 msgstr "Ištrinti įrašą"
 
-#: data/ui/row.ui:165 data/ui/row.ui:444
-msgid "Export"
-msgstr "Eksportuoti"
-
-#: data/ui/row.ui:189 data/ui/row.ui:440
-msgid "Rename"
-msgstr "Pervadinti"
-
-#: data/ui/row.ui:241
-msgid "Save"
-msgstr "Įrašyti"
-
-#: data/ui/row.ui:278 src/recorderWidget.js:100
+#: data/ui/row.ui:109
 msgid "Delete"
 msgstr "Ištrinti"
 
-#: data/ui/row.ui:313
+#: data/ui/row.ui:129
 msgid "Seek 10s Backward"
 msgstr "Grįžti 10s atgal"
 
-#: data/ui/row.ui:341
+#: data/ui/row.ui:147
 msgid "Play"
 msgstr "Groti"
 
-#: data/ui/row.ui:367
+#: data/ui/row.ui:171
 msgid "Pause"
 msgstr "Pristabdyti"
 
-#: data/ui/row.ui:399
+#: data/ui/row.ui:194
 msgid "Seek 10s Forward"
 msgstr "Eiti 10s pirmyn"
 
-#: data/ui/window.ui:60
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "Eksportuoti"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "Pervadinti"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "Įrašyti"
+
+#: data/ui/window.ui:24
 msgid "Record"
 msgstr "Įrašyti"
 
-#: data/ui/window.ui:149
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "Pagrindinis meniu"
+
+#: data/ui/window.ui:56
 msgid "Add Recordings"
 msgstr "Pridėti įrašus"
 
-#: data/ui/window.ui:166
+#: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "Naudokite mygtuką <b>Įrašyti</b> garso įrašams padaryti"
 
-#: data/ui/window.ui:237
-msgid "Undo"
-msgstr "Atšaukti"
-
-#: data/ui/window.ui:254
-msgid "Close"
-msgstr "Užverti"
-
-#: data/ui/window.ui:290
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "Pageidaujamas formatas"
 
-#: data/ui/window.ui:292
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:297
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:302
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:307
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:312
-msgid "M4A"
-msgstr "M4A"
-
-#: data/ui/window.ui:318
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "Audio kanalas"
 
-#: data/ui/window.ui:320
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "Stereo"
 
-#: data/ui/window.ui:325
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "Mono"
 
-#: data/ui/window.ui:332
+#: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
 msgstr "_Klaviatūros trumpiniai"
 
-#: data/ui/window.ui:337
-msgid "About Sound Recorder"
-msgstr "Apie garso įrašymą"
+#: data/ui/window.ui:135
+msgid "About Vocalis"
+msgstr "Apie Vocalis"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:129
-msgid "translator-credits"
-msgstr ""
-"Išvertė:\n"
-"Aurimas Černius <aurisc4@gmail.com>"
+#~ msgid "Sound Recorder"
+#~ msgstr "Garso įrašymas"
 
-#: src/application.js:131
-msgid "A Sound Recording Application for GNOME"
-msgstr "Garso įrašymo programa GNOME aplinkai"
+#~ msgid "A simple, modern sound recorder for GNOME"
+#~ msgstr "Paprasta garso įrašymo programa GNOME aplinkai"
 
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:113
+#~ msgid "The GNOME Project"
+#~ msgstr "GNOME projektas"
+
+#~ msgctxt "shortcut window"
+#~ msgid "Keyboard shortcuts"
+#~ msgstr "Klaviatūros trumpiniai"
+
+#~ msgid "Undo"
+#~ msgstr "Atšaukti"
+
+#~ msgid "Close"
+#~ msgstr "Užverti"
+
+#~ msgid "M4A"
+#~ msgstr "M4A"
+
+#~ msgid "About Sound Recorder"
+#~ msgstr "Apie garso įrašymą"
+
+#~ msgid "translator-credits"
+#~ msgstr ""
+#~ "Išvertė:\n"
+#~ "Aurimas Černius <aurisc4@gmail.com>"
+
+#~ msgid "A Sound Recording Application for GNOME"
+#~ msgstr "Garso įrašymo programa GNOME aplinkai"
+
 #, javascript-format
-msgid "Recording %d"
-msgstr "Įrašas %d"
+#~ msgid "Recording %d"
+#~ msgstr "Įrašas %d"
 
-#: src/recorderWidget.js:94
-#| msgid "Resume Recording"
-msgid "Delete recording?"
-msgstr "Ištrinti įrašą?"
+#~| msgid "Resume Recording"
+#~ msgid "Delete recording?"
+#~ msgstr "Ištrinti įrašą?"
 
-#: src/recorderWidget.js:95
-msgid "This recording will not be saved."
-msgstr "Šis įrašas nebus įrašytas."
+#~ msgid "This recording will not be saved."
+#~ msgstr "Šis įrašas nebus įrašytas."
 
-#: src/recorderWidget.js:99
-msgid "Resume"
-msgstr "Tęsti"
+#~ msgid "Resume"
+#~ msgstr "Tęsti"
 
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:42
-msgid "Recordings"
-msgstr "Įrašai"
+#~ msgid "Recordings"
+#~ msgstr "Įrašai"
 
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:59
 #, javascript-format
-msgid "%s (Old)"
-msgstr "%s (senas)"
+#~ msgid "%s (Old)"
+#~ msgstr "%s (senas)"
 
-#: src/row.js:71
-msgid "Export Recording"
-msgstr "Eksportuoti įrašą"
+#~ msgid "Export Recording"
+#~ msgstr "Eksportuoti įrašą"
 
-#: src/row.js:71
-msgid "_Export"
-msgstr "_Eksportuoti"
+#~ msgid "_Export"
+#~ msgstr "_Eksportuoti"
 
-#: src/row.js:71
-msgid "_Cancel"
-msgstr "_Atsisakyti"
+#~ msgid "_Cancel"
+#~ msgstr "_Atsisakyti"
 
-#: src/utils.js:48
-msgid "Yesterday"
-msgstr "Vakar"
+#~ msgid "Yesterday"
+#~ msgstr "Vakar"
 
-#: src/utils.js:50
 #, javascript-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "Prieš %d dieną"
-msgstr[1] "Prieš %d dienas"
-msgstr[2] "Prieš %d dienų"
+#~ msgid "%d day ago"
+#~ msgid_plural "%d days ago"
+#~ msgstr[0] "Prieš %d dieną"
+#~ msgstr[1] "Prieš %d dienas"
+#~ msgstr[2] "Prieš %d dienų"
 
-#: src/utils.js:52
-msgid "Last week"
-msgstr "Praeitą savaitę"
+#~ msgid "Last week"
+#~ msgstr "Praeitą savaitę"
 
-#: src/utils.js:54
 #, javascript-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "Prieš %d savaitę"
-msgstr[1] "Prieš %d savaites"
-msgstr[2] "Prieš %d savaičių"
+#~ msgid "%d week ago"
+#~ msgid_plural "%d weeks ago"
+#~ msgstr[0] "Prieš %d savaitę"
+#~ msgstr[1] "Prieš %d savaites"
+#~ msgstr[2] "Prieš %d savaičių"
 
-#: src/utils.js:56
-msgid "Last month"
-msgstr "Praeitą mėnesį"
+#~ msgid "Last month"
+#~ msgstr "Praeitą mėnesį"
 
-#: src/utils.js:58
 #, javascript-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "Prieš %d mėnesį"
-msgstr[1] "Prieš %d mėnesius"
-msgstr[2] "Prieš %d mėnesių"
+#~ msgid "%d month ago"
+#~ msgid_plural "%d months ago"
+#~ msgstr[0] "Prieš %d mėnesį"
+#~ msgstr[1] "Prieš %d mėnesius"
+#~ msgstr[2] "Prieš %d mėnesių"
 
-#: src/utils.js:60
-msgid "Last year"
-msgstr "Praeitais metais"
+#~ msgid "Last year"
+#~ msgstr "Praeitais metais"
 
-#: src/utils.js:62
 #, javascript-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "Prieš %d metus"
-msgstr[1] "Prieš %d metus"
-msgstr[2] "Prieš %d metų"
+#~ msgid "%d year ago"
+#~ msgid_plural "%d years ago"
+#~ msgstr[0] "Prieš %d metus"
+#~ msgstr[1] "Prieš %d metus"
+#~ msgstr[2] "Prieš %d metų"
 
-#: src/window.js:71
 #, javascript-format
-msgid "\"%s\" deleted"
-msgstr "„%s“ ištrintas"
+#~ msgid "\"%s\" deleted"
+#~ msgstr "„%s“ ištrintas"
 
 #~| msgid "Recordings"
 #~ msgid "Cancel Recording"
