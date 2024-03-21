@@ -6,96 +6,104 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
-"issues\n"
-"POT-Creation-Date: 2023-04-03 13:12+0000\n"
-"PO-Revision-Date: 2023-06-14 22:44+0200\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
+"POT-Creation-Date: 2024-03-15 07:11+0000\n"
+"PO-Revision-Date: 2024-03-21 05:04+0100\n"
 "Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
 "Language-Team: Georgian <ka@li.org>\n"
 "Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.3.1\n"
+"X-Generator: Poedit 3.3.2\n"
 
-#: data/org.gnome.SoundRecorder.desktop.in.in:4
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:5 data/ui/window.ui:10
-msgid "Sound Recorder"
-msgstr "ხმის ჩამწერი"
+#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+msgid "Vocalis"
+msgstr "Vocalis"
 
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:5
 msgid "Record sound via the microphone and play it back"
-msgstr ""
+msgstr "ჩაიწერეთ ხმა მიკროფონიდან და დაუკარით ის"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Audio;Application;Record;"
-
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
+#: data/app.drey.Vocalis.desktop.in.in:10
+#| msgid "Audio;Application;Record;"
+msgid "Audio;Application;Record;Sound Recorder;"
 msgstr ""
+"Audio;Application;Record;Sound Recorder;აუდიო;აპლიკაცია;ჩაწერა;ხმისჩაწერა;"
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:10
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "ჩაიწერეთ შენიშვნები თქვენი ხმით"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
 msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
 msgstr ""
+"Vocalis წარმოგიდგენთ მარტივ და თანამედროვე ინტერფეისს სანიშნეების ჩასაწერად "
+"და დასაკრავად."
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:15
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
 msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
 msgstr ""
+"Vocalis ჩაწერის პროცესს თვითონ მიხედავს. ნუ ინერვიულებთ წინა ჩანაწერის "
+"შემთხვევით მოცილებაზე."
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:19
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
 msgid "Supported audio formats:"
 msgstr "მხარდაჭერილი აუდიო ფორმატები:"
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:21
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
 msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
 msgstr "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:106
-msgid "The GNOME Project"
-msgstr "პროექტი \"GNOME\""
+#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:15
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "ფანჯრის ზომა"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "ფანჯრის ზომა (სიგანე, სიმაღლე)"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:20
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "ფანჯრის მდებარეობა"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "ფანჯრის მდებარეობა (x და y)"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:25
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
-msgstr ""
+msgstr "მედიის ტიპების ასახვა აუდიო ენკოდერის პრესეტის სახელებზე."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
 msgstr ""
+"ასახავს მედიის ტიპებს აუდო ენკოდერის პრესეტის სახელებზე. თუ ასახვა "
+"დაყენებული არაა, გამოყენებული იქნება ნაგულისხმევი ენკოდერის პარამეტრები."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:30
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
 msgstr "ხელმისაწვდომი არხები"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
 msgstr ""
+"ასახავს ხელმისაწვდომ არხებს. თუ ასახვა დაყენებული არაა, ნაგულისხმევად "
+"სტერეოარხი იქნება გამოყენებული."
 
 #: data/ui/help-overlay.ui:11
 msgctxt "shortcut window"
@@ -124,13 +132,13 @@ msgstr "წაშლა"
 
 #: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
-msgid "Open menu"
-msgstr "მენიუს გახსნა"
+msgid "Open Main Menu"
+msgstr "მთავარი მენიუს გახსნა"
 
 #: data/ui/help-overlay.ui:46
 msgctxt "shortcut window"
-msgid "Keyboard shortcuts"
-msgstr "კლავიატურის ბმულები"
+msgid "Keyboard Shortcuts"
+msgstr "კლავიატურის მალსახმობები"
 
 #: data/ui/help-overlay.ui:52
 msgctxt "shortcut window"
@@ -210,54 +218,72 @@ msgstr "გადარქმევა"
 msgid "Save"
 msgstr "შენახვა"
 
-#: data/ui/window.ui:28
+#: data/ui/window.ui:24
 msgid "Record"
 msgstr "ჩაწერა"
 
-#: data/ui/window.ui:61
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "მთავარი მენიუ"
+
+#: data/ui/window.ui:56
 msgid "Add Recordings"
 msgstr "ჩანაწერების დამატება"
 
-#: data/ui/window.ui:62
+#: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr ""
+"გამოიყენეთ <b>ჩაწერის</b> ღილაკი, თქვენი ხმოვანი ჩანაწერების შესაქმნელად."
 
-#: data/ui/window.ui:98
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "სასურველი ფორნატი"
 
-#: data/ui/window.ui:100
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:105
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:110
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:115
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:121
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "აუდიოს ხმა"
 
-#: data/ui/window.ui:123
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "სტერეო"
 
-#: data/ui/window.ui:128
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "მონო"
 
-#: data/ui/window.ui:135
+#: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
 msgstr "_კლავიატურის მალსახმობები"
 
-#: data/ui/window.ui:140
-msgid "About Sound Recorder"
-msgstr "ხმის ჩამწერის შესახებ"
+#: data/ui/window.ui:135
+msgid "About Vocalis"
+msgstr "Vocalis-ის შესახებ"
+
+#~ msgid "Sound Recorder"
+#~ msgstr "ხმის ჩამწერი"
+
+#~ msgid "The GNOME Project"
+#~ msgstr "პროექტი \"GNOME\""
+
+#~ msgctxt "shortcut window"
+#~ msgid "Keyboard shortcuts"
+#~ msgstr "კლავიატურის ბმულები"
+
+#~ msgid "About Sound Recorder"
+#~ msgstr "ხმის ჩამწერის შესახებ"
