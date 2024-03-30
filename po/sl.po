@@ -8,11 +8,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
-"issues\n"
-"POT-Creation-Date: 2020-09-29 14:37+0000\n"
-"PO-Revision-Date: 2020-10-04 21:02+0200\n"
-"Last-Translator: Matej Urbančič <mateju@svn.gnome.org>\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
+"POT-Creation-Date: 2024-03-15 07:11+0000\n"
+"PO-Revision-Date: 2024-03-30 18:08+0100\n"
+"Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <gnome-si@googlegroups.com>\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
@@ -20,79 +19,90 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n"
 "%100==4 ? 3 : 0);\n"
-"X-Generator: Poedit 2.4.1\n"
+"X-Generator: Poedit 2.2.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
-#: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
-#: src/application.js:32
-msgid "Sound Recorder"
-msgstr "Snemalnik zvoka"
+#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#, fuzzy
+msgid "Vocalis"
+msgstr "Vokalis"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
-msgstr "Snemalnik zvoka za GNOME"
+#: data/app.drey.Vocalis.desktop.in.in:5
+msgid "Record sound via the microphone and play it back"
+msgstr "Snemanje zvoka z mikrofonom in predvajanje posnetkov"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:10
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/app.drey.Vocalis.desktop.in.in:10
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr ""
+"zvok;program;snemaj;snemanje;shranjevanje;govor;diktafon;sound;record;"
+"posnetki;posnetek;"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+#, fuzzy
+msgid "Take notes with your voice"
+msgstr "Beležite opomnike z lastnim glasom"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
+#, fuzzy
+#| msgid ""
+#| "Sound Recorder provides a simple and modern interface that provides a "
+#| "straight-forward way to record and play audio. It allows you to do basic "
+#| "editing, and create voice memos."
 msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
 msgstr ""
 "Snemalnik zvoka je enostaven in sodoben program, ki omogoča hitro snemanje "
 "in predvajanje zvoka. Omogoča enostavnejše urejanje in ustvarjanje zvočnih "
 "opomnikov."
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:15
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
+#, fuzzy
+#| msgid ""
+#| "Sound Recorder automatically handles the saving process so that you do "
+#| "not need to worry about accidentally discarding the previous recording."
 msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
 msgstr ""
 "Snemalnik zvoka samodejno upravlja shranjevanje, zato ni treba skrbeti, da "
 "bi posnetek izgubili."
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:19
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
 msgid "Supported audio formats:"
 msgstr "Podprti zvočni zapisi:"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:21
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
 msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
 msgstr "Ogg Vorbis, Opus, FLAC, MP3 in MOV"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:69
-msgid "The GNOME Project"
-msgstr "Projekt GNOME"
+#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
 
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
-msgid "Record sound via the microphone and play it back"
-msgstr "Snemanje zvoka z mikrofonom in predvajanje posnetkov"
-
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Zvok;Program;Snemaj;Shranjevanje;Govor;Diktafon;Sound;Record;Posnetki;"
-
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "Velikost okna"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:17
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "Velikost okna (širina in višina)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "Položaj okna"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:22
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "Položaj okna (x in y)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
 msgstr "Izpiše vrste zapisa na nastavljena imena zvočnega kodirnika."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:27
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
@@ -101,11 +111,11 @@ msgstr ""
 "posnetka preslikava ni določena, bodo uporabljene privzete nastavitve "
 "kodirnika."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
 msgstr "Razpoložljivi kanali"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:32
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
@@ -113,430 +123,172 @@ msgstr ""
 "Preslike razpoložljive kanale. Če nabor ni določen, bo privzeto uporabljen "
 "stereo kanal."
 
-#: data/ui/help-overlay.ui:15
+#: data/ui/help-overlay.ui:11
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Splošno"
 
-#: data/ui/help-overlay.ui:20
+#: data/ui/help-overlay.ui:15
 msgctxt "shortcut window"
 msgid "Record"
 msgstr "Začne snemanje"
 
-#: data/ui/help-overlay.ui:27
+#: data/ui/help-overlay.ui:21
 msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "Zaustavi snemanje"
 
-#: data/ui/help-overlay.ui:34
+#: data/ui/help-overlay.ui:27
 msgctxt "shortcut window"
 msgid "Play / Pause / Resume"
 msgstr "Preklopi predvajanje in premor"
 
-#: data/ui/help-overlay.ui:42
+#: data/ui/help-overlay.ui:34
 msgctxt "shortcut window"
 msgid "Delete"
 msgstr "Izbriše posnetek"
 
-#: data/ui/help-overlay.ui:49
+#: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
-msgid "Open menu"
-msgstr "Odpre meni"
+msgid "Open Main Menu"
+msgstr "Odpre glavni meni"
 
-#: data/ui/help-overlay.ui:56
+#: data/ui/help-overlay.ui:46
 msgctxt "shortcut window"
-msgid "Keyboard shortcuts"
-msgstr "Tipkovne bližnjice‫"
+msgid "Keyboard Shortcuts"
+msgstr "Tipkovne bližnjice"
 
-#: data/ui/help-overlay.ui:63
+#: data/ui/help-overlay.ui:52
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Konča program"
 
-#: data/ui/help-overlay.ui:71
+#: data/ui/help-overlay.ui:59
 msgctxt "shortcut window"
 msgid "Recording"
 msgstr "Snemanje"
 
-#: data/ui/help-overlay.ui:76
+#: data/ui/help-overlay.ui:63
 msgctxt "shortcut window"
 msgid "Seek Backward"
 msgstr "Išči nazaj"
 
-#: data/ui/help-overlay.ui:83
+#: data/ui/help-overlay.ui:69
 msgctxt "shortcut window"
 msgid "Seek Forward"
 msgstr "Išči naprej"
 
-#: data/ui/help-overlay.ui:90
+#: data/ui/help-overlay.ui:75
 msgctxt "shortcut window"
 msgid "Rename"
 msgstr "Preimenuje predmet"
 
-#: data/ui/help-overlay.ui:97
+#: data/ui/help-overlay.ui:81
 msgctxt "shortcut window"
 msgid "Export"
 msgstr "Izvozi v drug zapis"
 
-#: data/ui/recorder.ui:72
+#: data/ui/recorder.ui:43
 msgid "Resume Recording"
 msgstr "Nadaljuj snemanje"
 
-#: data/ui/recorder.ui:96
+#: data/ui/recorder.ui:61
 msgid "Pause Recording"
 msgstr "Naredi premor snemanja"
 
-#: data/ui/recorder.ui:128
+#: data/ui/recorder.ui:78
 msgid "Stop Recording"
 msgstr "Zaustavi snemanje"
 
-#: data/ui/recorder.ui:157
+#: data/ui/recorder.ui:98
 msgid "Delete Recording"
 msgstr "Izbriši posnetek"
 
-#: data/ui/row.ui:165 data/ui/row.ui:444
-msgid "Export"
-msgstr "Izvozi"
-
-#: data/ui/row.ui:189 data/ui/row.ui:440
-msgid "Rename"
-msgstr "Preimenuj"
-
-#: data/ui/row.ui:241
-msgid "Save"
-msgstr "Shrani"
-
-#: data/ui/row.ui:278 src/recorderWidget.js:100
+#: data/ui/row.ui:109
 msgid "Delete"
 msgstr "Izbriši"
 
-#: data/ui/row.ui:313
+#: data/ui/row.ui:129
 msgid "Seek 10s Backward"
 msgstr "Išči 10 s nazaj"
 
-#: data/ui/row.ui:341
+#: data/ui/row.ui:147
 msgid "Play"
 msgstr "Predvajaj"
 
-#: data/ui/row.ui:367
+#: data/ui/row.ui:171
 msgid "Pause"
 msgstr "Premor"
 
-#: data/ui/row.ui:399
+#: data/ui/row.ui:194
 msgid "Seek 10s Forward"
 msgstr "Išči 10 s naprej"
 
-#: data/ui/window.ui:60
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "Izvozi"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "Preimenuj"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "Shrani"
+
+#: data/ui/window.ui:24
 msgid "Record"
 msgstr "Posnemi"
 
-#: data/ui/window.ui:149
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "Glavni meni"
+
+#: data/ui/window.ui:56
 msgid "Add Recordings"
 msgstr "Dodaj posnetke"
 
-#: data/ui/window.ui:166
+#: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "Snemanje je mogoče začeti s pritiskom na gumb <b>Posnemi</b>."
 
-#: data/ui/window.ui:237
-msgid "Undo"
-msgstr "Razveljavi"
-
-#: data/ui/window.ui:254
-msgid "Close"
-msgstr "Zapri"
-
-#: data/ui/window.ui:290
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "Prednostni zapis"
 
-#: data/ui/window.ui:292
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:297
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:302
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:307
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:312
-msgid "M4A"
-msgstr "M4A"
-
-#: data/ui/window.ui:318
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "Zvokovni kanal"
 
-#: data/ui/window.ui:320
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "Stereo"
 
-#: data/ui/window.ui:325
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "Mono"
 
-#: data/ui/window.ui:332
+#: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
 msgstr "_Tipkovne bližnjice"
 
-#: data/ui/window.ui:337
-msgid "About Sound Recorder"
-msgstr "O programu"
-
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:130
-msgid "translator-credits"
-msgstr "Matej Urbančič <mateju@svn.gnome.org>"
-
-#: src/application.js:132
-msgid "A Sound Recording Application for GNOME"
-msgstr "Program za snemanje zvoka za okolje GNOME"
-
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:113
-#, javascript-format
-msgid "Recording %d"
-msgstr "posnetek %d"
-
-#: src/recorderWidget.js:94
-msgid "Delete recording?"
-msgstr "Ali želite izbrisati posnetek?"
-
-#: src/recorderWidget.js:95
-msgid "This recording will not be saved."
-msgstr "Ta posnetek ne bo shranjen."
-
-#: src/recorderWidget.js:99
-msgid "Resume"
-msgstr "Nadaljuj"
-
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:42
-msgid "Recordings"
-msgstr "Posnetki"
-
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:59
-#, javascript-format
-msgid "%s (Old)"
-msgstr "%s (staro)"
-
-#: src/row.js:71
-msgid "Export Recording"
-msgstr "Izvozi posnetek"
-
-#: src/row.js:71
-msgid "_Export"
-msgstr "_Izvozi"
-
-#: src/row.js:71
-msgid "_Cancel"
-msgstr "_Prekliči"
-
-#: src/utils.js:48
-msgid "Yesterday"
-msgstr "Včeraj"
-
-#: src/utils.js:50
-#, javascript-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "Pred %d dnevi"
-msgstr[1] "Pred %d dnem"
-msgstr[2] "Pred %d dnevoma"
-msgstr[3] "Pred %d dnevi"
-
-#: src/utils.js:52
-msgid "Last week"
-msgstr "Prejšnji teden"
-
-#: src/utils.js:54
-#, javascript-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "Pred %d tedni"
-msgstr[1] "Pred %d tednom"
-msgstr[2] "Pred %d tednoma"
-msgstr[3] "Pred %d tedni"
-
-#: src/utils.js:56
-msgid "Last month"
-msgstr "Prejšnji mesec"
-
-#: src/utils.js:58
-#, javascript-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "Pred %d meseci"
-msgstr[1] "Pred %d mesecem"
-msgstr[2] "Pred %d mesecema"
-msgstr[3] "Pred %d meseci"
-
-#: src/utils.js:60
-msgid "Last year"
-msgstr "Lansko leto"
-
-#: src/utils.js:62
-#, javascript-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "Pred %d leti"
-msgstr[1] "Pred %d letom"
-msgstr[2] "Pred %d letoma"
-msgstr[3] "Pred %d leti"
-
-#: src/window.js:71
-#, javascript-format
-msgid "\"%s\" deleted"
-msgstr "Datoteka »%s« je izbrisana."
-
-#~ msgid "Cancel Recording"
-#~ msgstr "Prekliči snemanje"
-
-#~ msgid "Sound Recorder started"
-#~ msgstr "Snemalnik zvoka je zagnan"
-
-#~ msgid "Microphone volume level"
-#~ msgstr "Raven glasnosti mikrofona"
-
-#~ msgid "Microphone volume level."
-#~ msgstr "Raven glasnosti mikrofona."
-
-#~ msgid "Speaker volume level"
-#~ msgstr "Raven glasnosti zvočnikov"
-
-#~ msgid "Speaker volume level."
-#~ msgstr "Raven glasnosti zvočnikov."
-
-#~ msgid "Preferences"
-#~ msgstr "Možnosti"
-
-#~ msgid "Default mode"
-#~ msgstr "Privzeti način"
-
-#~ msgid "Volume"
-#~ msgstr "Glasnost"
-
-#~ msgid "Microphone"
-#~ msgstr "Mikrofon"
-
-#~ msgid "Unable to create Recordings directory."
-#~ msgstr "Mape Posnetki ni mogoče ustvariti!"
-
-#~ msgid "Please install the GStreamer 1.0 PulseAudio plugin."
-#~ msgstr "Namestiti je treba vstavek GStreamer 1.0 PulseAudio"
-
-#~ msgid "Your audio capture settings are invalid."
-#~ msgstr "Določene so neveljavne nastavitve zajemanja zvoka."
-
-#~ msgid "Not all elements could be created."
-#~ msgstr "Vseh predmetov ni mogoče ustvariti."
-
-#~ msgid "Not all of the elements were linked."
-#~ msgstr "Vsi predmeti niso povezani."
-
-#~ msgid ""
-#~ "Unable to set the pipeline \n"
-#~ " to the recording state."
-#~ msgstr ""
-#~ "Cevovoda ni mogoče nastaviti\n"
-#~ " na stanje snemanja."
-
-#~ msgid "Recording from %F %A at %T"
-#~ msgstr "Posnetek - %A, %F ob %T"
-
-#~ msgid "org.gnome.SoundRecorder"
-#~ msgstr "org.gnome.SoundRecorder"
-
-#~ msgid "SoundRecorder"
-#~ msgstr "Snemalnik zvoka"
-
-#~ msgid "Info"
-#~ msgstr "Podrobnosti"
-
-#~ msgid "Done"
-#~ msgstr "Dokončano"
-
-#~ msgctxt "File Name"
-#~ msgid "Name"
-#~ msgstr "Ime"
-
-#~ msgid "Source"
-#~ msgstr "Vir"
-
-#~ msgid "Date Modified"
-#~ msgstr "Datum spremembe"
-
-#~ msgid "Date Created"
-#~ msgstr "Datum nastanka"
-
-#~ msgctxt "Media Type"
-#~ msgid "Type"
-#~ msgstr "Vrsta"
-
-#~ msgid "Unknown"
-#~ msgstr "Neznano"
-
-#~ msgid "Recording…"
-#~ msgstr "Poteka snemanje ..."
-
-#~ msgid "%d Recorded Sound"
-#~ msgid_plural "%d Recorded Sounds"
-#~ msgstr[0] "%d posnetih zvokov"
-#~ msgstr[1] "%d posnet zvok"
-#~ msgstr[2] "%d posneta zvoka"
-#~ msgstr[3] "%d posneti zvoki"
-
-#~ msgid "No Recorded Sounds"
-#~ msgstr "Ni shranjenih posnetkov"
-
-#~ msgid "MOV"
-#~ msgstr "MOV"
-
-#~ msgid "Load More"
-#~ msgstr "Naloži več"
-
-#~ msgid "Unable to play recording"
-#~ msgstr "Glasbe ni mogoče predvajati"
-
-#~ msgid "No Media Profile was set."
-#~ msgstr "Ni nastavljenega profila posnetkov."
-
-#~ msgid "Clip %d"
-#~ msgstr "Izrez %d"
-
-#~ msgid "About"
-#~ msgstr "O programu"
-
-#~ msgid "%Y-%m-%d %H:%M:%S"
-#~ msgstr "%d-%m-%Y %H:%M:%S"
-
-#~ msgid "Preferred media type for encoding audio when recording"
-#~ msgstr "Priljubljena vrsta zapisa za kodiranje zvoka ob snemanju"
-
-#~ msgid ""
-#~ "Preferred media type for encoding audio when recording. 'audio/x-vorbis' "
-#~ "for Ogg Vorbis, or 'audio/mpeg' for MP3, for example. This is not a MIME "
-#~ "type."
-#~ msgstr ""
-#~ "Priljubljena vrsta zapisa za kodiranje zvoka ob snemanju. Primer: 'audio/"
-#~ "x-vorbis' za Ogg Vorbis ali 'audio/mpeg' za MP3. To ni vrsta MIME."
-
-#~ msgid "Unable to set the playbin to the playing state."
-#~ msgstr "Predvajalnika ni mogoče nastaviti za predvajanje."
-
-#~ msgid "Audio from %Y-%m-%d %H:%M:%S"
-#~ msgstr "Posnetek %d-%m-%Y %H:%M:%S"
-
-#~ msgid "Error: "
-#~ msgstr "Napaka: "
+#: data/ui/window.ui:135
+#, fuzzy
+msgid "About Vocalis"
+msgstr "O programu Vokalis"
