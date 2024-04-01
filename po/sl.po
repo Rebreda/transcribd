@@ -8,9 +8,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-03-30 18:08+0100\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-03-30 17:08+0000\n"
+"PO-Revision-Date: 2024-04-01 13:04+0200\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <gnome-si@googlegroups.com>\n"
 "Language: sl\n"
@@ -24,9 +24,8 @@ msgstr ""
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
-#, fuzzy
 msgid "Vocalis"
-msgstr "Vokalis"
+msgstr "Vocalis"
 
 #: data/app.drey.Vocalis.desktop.in.in:5
 msgid "Record sound via the microphone and play it back"
@@ -40,35 +39,25 @@ msgstr ""
 "posnetki;posnetek;"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:6
-#, fuzzy
 msgid "Take notes with your voice"
 msgstr "Beležite opomnike z lastnim glasom"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:10
-#, fuzzy
-#| msgid ""
-#| "Sound Recorder provides a simple and modern interface that provides a "
-#| "straight-forward way to record and play audio. It allows you to do basic "
-#| "editing, and create voice memos."
 msgid ""
 "Vocalis provides a simple and modern interface that provides a straight-"
 "forward way to record and play voice memos."
 msgstr ""
-"Snemalnik zvoka je enostaven in sodoben program, ki omogoča hitro snemanje "
-"in predvajanje zvoka. Omogoča enostavnejše urejanje in ustvarjanje zvočnih "
+"Vocalis je enostaven in sodoben program, ki omogoča hitro snemanje in "
+"predvajanje zvoka. Omogoča enostavnejše urejanje in ustvarjanje zvočnih "
 "opomnikov."
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:14
-#, fuzzy
-#| msgid ""
-#| "Sound Recorder automatically handles the saving process so that you do "
-#| "not need to worry about accidentally discarding the previous recording."
 msgid ""
 "Vocalis automatically handles the saving process so that you do not need to "
 "worry about accidentally discarding the previous recording."
 msgstr ""
-"Snemalnik zvoka samodejno upravlja shranjevanje, zato ni treba skrbeti, da "
-"bi posnetek izgubili."
+"Vocalis samodejno upravlja shranjevanje, zato ni treba skrbeti, da bi "
+"posnetek izgubili."
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:18
 msgid "Supported audio formats:"
@@ -289,6 +278,5 @@ msgid "_Keyboard Shortcuts"
 msgstr "_Tipkovne bližnjice"
 
 #: data/ui/window.ui:135
-#, fuzzy
 msgid "About Vocalis"
-msgstr "O programu Vokalis"
+msgstr "O programu Vocalis"
