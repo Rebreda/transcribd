@@ -2,93 +2,91 @@
 # Copyright (C) 2013 THE gnome-sound-recorder'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-sound-recorder package.
 # יוסף אור בוצ׳קו <yoseforb@gmail.com>, 2013.
-# Yosef Or Boczko <yoseforb@gmail.com>, 2013-2020.
+# Yosef Or Boczko <yoseforb@gmail.com>, 2013-2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder 3.9.91\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
-"issues\n"
-"POT-Creation-Date: 2020-09-09 18:18+0000\n"
-"PO-Revision-Date: 2020-09-29 17:35+0300\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
+"POT-Creation-Date: 2024-03-15 07:11+0000\n"
+"PO-Revision-Date: 2024-04-07 10:04+0300\n"
 "Last-Translator: Yosef Or Boczko <yoseforb@gmail.com>\n"
-"Language-Team: Hebrew <yoseforb@gmail.com>\n"
+"Language-Team: Hebrew\n"
 "Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n>2||n==0) ? 1 : 2\n"
-"X-Generator: Gtranslator 3.36.0\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : n==2 ? 1 : n>10 && n%10==0 ? "
+"2 : 3)\n"
+"X-Generator: Gtranslator 45.3\n"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
-#: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
-#: src/application.js:32
-msgid "Sound Recorder"
-msgstr "רשמקול"
+#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+msgid "Vocalis"
+msgstr "קולי"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
-msgstr "רשמקול פשוט וחדיש עבור GNOME"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:10
-msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
-msgstr ""
-"רשמקול מספק ממשק פשוט וחדיש המספק דרך פשוטה להקלטת ולהאזנה לשמע. הוא מאפשר "
-"לך עריכה בסיסית ויצירת תזכירים קוליים."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:15
-msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
-msgstr ""
-"רשמקול מטפל באופן אוטומטי בתהליך השמירה כך שלא נדרש לדאוג על השלכה בטעות של "
-"הקלטה קודמת."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:19
-msgid "Supported audio formats:"
-msgstr "Supported audio formats:"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:21
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:50
-msgid "The GNOME Project"
-msgstr "מיזם GNOME"
-
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:5
 msgid "Record sound via the microphone and play it back"
 msgstr "להקליט קול באמצעות המיקרופון ולנגן שוב"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "שמע;אודיו;יישום;הקלטה;"
+#: data/app.drey.Vocalis.desktop.in.in:10
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr "שמע;אודיו;יישום;הקלטה;רשמקול;"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "ליצור תזכירים קוליים באמצעות הקול שלך"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
+msgid ""
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
+msgstr ""
+"קולי מספק ממשק פשוט וחדיש המספק דרך פשוטה להקלטת ולהאזנה לשמע. הוא מאפשר לך "
+"עריכה בסיסית ויצירת תזכירים קוליים."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
+msgid ""
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
+msgstr ""
+"קולי מטפל באופן אוטומטי בתהליך השמירה כך שלא נדרש לדאוג על השלכה בטעות של "
+"הקלטה קודמת."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
+msgid "Supported audio formats:"
+msgstr "Supported audio formats:"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
+msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgstr "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
+
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "Window size"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:17
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "Window size (width and height)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "Window position"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:22
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "Window position (x and y)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
 msgstr "Maps media types to audio encoder preset names."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:27
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
@@ -96,11 +94,11 @@ msgstr ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
 msgstr "Available channels"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:32
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
@@ -108,305 +106,284 @@ msgstr ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
 
-#: data/ui/help-overlay.ui:15
+#: data/ui/help-overlay.ui:11
 msgctxt "shortcut window"
 msgid "General"
 msgstr "כללי"
 
-#: data/ui/help-overlay.ui:20
-#| msgid "Record"
+#: data/ui/help-overlay.ui:15
 msgctxt "shortcut window"
 msgid "Record"
 msgstr "הקלטה"
 
-#: data/ui/help-overlay.ui:27
-#| msgid "Recordings"
+#: data/ui/help-overlay.ui:21
 msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "עצירת הקלטה"
 
-#: data/ui/help-overlay.ui:34
+#: data/ui/help-overlay.ui:27
 msgctxt "shortcut window"
 msgid "Play / Pause / Resume"
 msgstr "ניגון / עצירה / המשך"
 
-#: data/ui/help-overlay.ui:42
-#| msgid "Delete"
+#: data/ui/help-overlay.ui:34
 msgctxt "shortcut window"
 msgid "Delete"
 msgstr "מחיקה"
 
-#: data/ui/help-overlay.ui:49
+#: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
-msgid "Open menu"
-msgstr "פתיחת תפריט"
+msgid "Open Main Menu"
+msgstr "פתיחת תפריט ראשי"
 
-#: data/ui/help-overlay.ui:56
+#: data/ui/help-overlay.ui:46
 msgctxt "shortcut window"
-msgid "Keyboard shortcuts"
+msgid "Keyboard Shortcuts"
 msgstr "צירופי מקשים"
 
-#: data/ui/help-overlay.ui:63
-#| msgid "Quit"
+#: data/ui/help-overlay.ui:52
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "יציאה"
 
-#: data/ui/help-overlay.ui:71
-#| msgid "Recordings"
+#: data/ui/help-overlay.ui:59
 msgctxt "shortcut window"
 msgid "Recording"
 msgstr "הקלטה"
 
-#: data/ui/help-overlay.ui:76
+#: data/ui/help-overlay.ui:63
 msgctxt "shortcut window"
 msgid "Seek Backward"
 msgstr "קפיצה קדימה"
 
-#: data/ui/help-overlay.ui:83
+#: data/ui/help-overlay.ui:69
 msgctxt "shortcut window"
 msgid "Seek Forward"
 msgstr "קפיצה לאחור"
 
-#: data/ui/help-overlay.ui:90
+#: data/ui/help-overlay.ui:75
 msgctxt "shortcut window"
 msgid "Rename"
 msgstr "שינוי שם"
 
-#: data/ui/help-overlay.ui:97
+#: data/ui/help-overlay.ui:81
 msgctxt "shortcut window"
 msgid "Export"
 msgstr "ייצוא"
 
-#: data/ui/recorder.ui:72
-#| msgid "Recordings"
+#: data/ui/recorder.ui:43
 msgid "Resume Recording"
 msgstr "המשך הקלטה"
 
-#: data/ui/recorder.ui:96
-#| msgid "Recordings"
+#: data/ui/recorder.ui:61
 msgid "Pause Recording"
 msgstr "השהיית ההקלטה"
 
-#: data/ui/recorder.ui:128
-#| msgid "Recordings"
+#: data/ui/recorder.ui:78
 msgid "Stop Recording"
 msgstr "עצירת ההקלטה"
 
-#: data/ui/recorder.ui:157
-#| msgid "Recordings"
+#: data/ui/recorder.ui:98
 msgid "Delete Recording"
 msgstr "מחיקת ההקלטה"
 
-#: data/ui/row.ui:165 data/ui/row.ui:444
-msgid "Export"
-msgstr "ייצוא"
-
-#: data/ui/row.ui:189 data/ui/row.ui:440
-msgid "Rename"
-msgstr "שינוי שם"
-
-#: data/ui/row.ui:241
-msgid "Save"
-msgstr "שמירה"
-
-#: data/ui/row.ui:278 src/recorderWidget.js:100
+#: data/ui/row.ui:109
 msgid "Delete"
 msgstr "מחיקה"
 
-#: data/ui/row.ui:313
+#: data/ui/row.ui:129
 msgid "Seek 10s Backward"
 msgstr "קפיצה 10 שניות לאחור"
 
-#: data/ui/row.ui:341
+#: data/ui/row.ui:147
 msgid "Play"
 msgstr "ניגון"
 
-#: data/ui/row.ui:367
+#: data/ui/row.ui:171
 msgid "Pause"
 msgstr "עצירה"
 
-#: data/ui/row.ui:399
+#: data/ui/row.ui:194
 msgid "Seek 10s Forward"
 msgstr "קפיצה 10 שניות קדימה"
 
-#: data/ui/window.ui:60
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "ייצוא"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "שינוי שם"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "שמירה"
+
+#: data/ui/window.ui:24
 msgid "Record"
 msgstr "הקלטה"
 
-#: data/ui/window.ui:149
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "תפריט ראשי"
+
+#: data/ui/window.ui:56
 msgid "Add Recordings"
 msgstr "הוספת הקלטות"
 
-#: data/ui/window.ui:166
+#: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "יש להשתמש בכפתור <b>הקלטה</b> כדי להקליט צלילים"
 
-#: data/ui/window.ui:237
-msgid "Undo"
-msgstr "ביטול"
-
-#: data/ui/window.ui:254
-msgid "Close"
-msgstr "סגירה"
-
-#: data/ui/window.ui:290
-#| msgid "Preferred format"
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "תבנית מועדפת"
 
-#: data/ui/window.ui:292
-#| msgid "Ogg Vorbis"
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:297
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:302
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:307
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:312
-msgid "M4A"
-msgstr "M4A"
-
-#: data/ui/window.ui:318
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "ערוץ שמע"
 
-#: data/ui/window.ui:320
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "דו־קולי (סטריאו)"
 
-#: data/ui/window.ui:325
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "חדקולי (מונו)"
 
-#: data/ui/window.ui:332
+#: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
 msgstr "_צירופי מקשים"
 
-#: data/ui/window.ui:337
-msgid "About Sound Recorder"
-msgstr "על אודות רשמקול"
+#: data/ui/window.ui:135
+msgid "About Vocalis"
+msgstr "על אודות קולי"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:129
-msgid "translator-credits"
-msgstr ""
-"יוסף אור בוצ׳קו <yoseforb@gmail.com>\n"
-"<a href=\"https://l10n.gnome.org/teams/he/\">מיזם תרגום GNOME לעברית</a>"
+#~ msgid "Sound Recorder"
+#~ msgstr "רשמקול"
 
-#: src/application.js:131
-msgid "A Sound Recording Application for GNOME"
-msgstr "יישום הקלטת שמע עבור GNOME"
+#~ msgid "A simple, modern sound recorder for GNOME"
+#~ msgstr "רשמקול פשוט וחדיש עבור GNOME"
 
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:113
+#~ msgid "The GNOME Project"
+#~ msgstr "מיזם GNOME"
+
+#~ msgctxt "shortcut window"
+#~ msgid "Keyboard shortcuts"
+#~ msgstr "צירופי מקשים"
+
+#~ msgid "Undo"
+#~ msgstr "ביטול"
+
+#~ msgid "Close"
+#~ msgstr "סגירה"
+
+#~ msgid "M4A"
+#~ msgstr "M4A"
+
+#~ msgid "About Sound Recorder"
+#~ msgstr "על אודות רשמקול"
+
+#~ msgid "translator-credits"
+#~ msgstr ""
+#~ "יוסף אור בוצ׳קו <yoseforb@gmail.com>\n"
+#~ "<a href=\"https://l10n.gnome.org/teams/he/\">מיזם תרגום GNOME לעברית</a>"
+
+#~ msgid "A Sound Recording Application for GNOME"
+#~ msgstr "יישום הקלטת שמע עבור GNOME"
+
 #, javascript-format
-#| msgid "Recording "
-msgid "Recording %d"
-msgstr "הקלטה %d"
+#~| msgid "Recording "
+#~ msgid "Recording %d"
+#~ msgstr "הקלטה %d"
 
-#: src/recorderWidget.js:94
-#| msgid "Unable to play recording"
-msgid "Delete recording?"
-msgstr "מחיקת ההקלטה?"
+#~| msgid "Unable to play recording"
+#~ msgid "Delete recording?"
+#~ msgstr "מחיקת ההקלטה?"
 
-#: src/recorderWidget.js:95
-msgid "This recording will not be saved."
-msgstr "הקלטה זו לא תישמר"
+#~ msgid "This recording will not be saved."
+#~ msgstr "הקלטה זו לא תישמר"
 
-#: src/recorderWidget.js:99
-msgid "Resume"
-msgstr "המשך"
+#~ msgid "Resume"
+#~ msgstr "המשך"
 
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:42
-msgid "Recordings"
-msgstr "הקלטות"
+#~ msgid "Recordings"
+#~ msgstr "הקלטות"
 
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:59
 #, javascript-format
-msgid "%s (Old)"
-msgstr "%s (ישן)"
+#~ msgid "%s (Old)"
+#~ msgstr "%s (ישן)"
 
-#: src/row.js:71
-#| msgid "Recordings"
-msgid "Export Recording"
-msgstr "ייצור הקלטה"
+#~| msgid "Recordings"
+#~ msgid "Export Recording"
+#~ msgstr "ייצור הקלטה"
 
-#: src/row.js:71
-msgid "_Export"
-msgstr "_ייצוא"
+#~ msgid "_Export"
+#~ msgstr "_ייצוא"
 
-#: src/row.js:71
-#| msgid "Cancel"
-msgid "_Cancel"
-msgstr "_ביטול"
+#~| msgid "Cancel"
+#~ msgid "_Cancel"
+#~ msgstr "_ביטול"
 
-#: src/utils.js:48
-msgid "Yesterday"
-msgstr "אתמול"
+#~ msgid "Yesterday"
+#~ msgstr "אתמול"
 
-#: src/utils.js:50
 #, javascript-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "אתמול"
-msgstr[1] "לפני %d ימים"
-msgstr[2] "שלשום"
+#~ msgid "%d day ago"
+#~ msgid_plural "%d days ago"
+#~ msgstr[0] "אתמול"
+#~ msgstr[1] "לפני %d ימים"
+#~ msgstr[2] "שלשום"
 
-#: src/utils.js:52
-msgid "Last week"
-msgstr "לפני שבוע"
+#~ msgid "Last week"
+#~ msgstr "לפני שבוע"
 
-#: src/utils.js:54
 #, javascript-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "לפני שבוע"
-msgstr[1] "לפני %d שבועות"
-msgstr[2] "לפני שבועיים"
+#~ msgid "%d week ago"
+#~ msgid_plural "%d weeks ago"
+#~ msgstr[0] "לפני שבוע"
+#~ msgstr[1] "לפני %d שבועות"
+#~ msgstr[2] "לפני שבועיים"
 
-#: src/utils.js:56
-msgid "Last month"
-msgstr "לפני חודש"
+#~ msgid "Last month"
+#~ msgstr "לפני חודש"
 
-#: src/utils.js:58
 #, javascript-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "לפני חודש"
-msgstr[1] "לפני %d חודשים"
-msgstr[2] "לפני חודשיים"
+#~ msgid "%d month ago"
+#~ msgid_plural "%d months ago"
+#~ msgstr[0] "לפני חודש"
+#~ msgstr[1] "לפני %d חודשים"
+#~ msgstr[2] "לפני חודשיים"
 
-#: src/utils.js:60
-msgid "Last year"
-msgstr "לפני שנה"
+#~ msgid "Last year"
+#~ msgstr "לפני שנה"
 
-#: src/utils.js:62
 #, javascript-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "לפני שנה"
-msgstr[1] "לפני %d שנים"
-msgstr[2] "לפני שנתיים"
+#~ msgid "%d year ago"
+#~ msgid_plural "%d years ago"
+#~ msgstr[0] "לפני שנה"
+#~ msgstr[1] "לפני %d שנים"
+#~ msgstr[2] "לפני שנתיים"
 
-#: src/window.js:71
 #, javascript-format
-msgid "\"%s\" deleted"
-msgstr "‏„%s” נמחק"
+#~ msgid "\"%s\" deleted"
+#~ msgstr "‏„%s” נמחק"
 
 #~ msgid "Microphone volume level"
 #~ msgstr "Microphone volume level"
