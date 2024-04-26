@@ -8,11 +8,8 @@ data/ui/recorder.ui
 data/ui/row.ui
 data/ui/window.ui
 src/application.ts
-src/main.ts
 src/recorder.ts
 src/recorderWidget.ts
-src/recordingList.ts
 src/row.ts
 src/utils.ts
-src/waveform.ts
 src/window.ts
