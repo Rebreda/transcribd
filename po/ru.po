@@ -7,92 +7,88 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
-"issues\n"
-"POT-Creation-Date: 2022-09-07 16:20+0000\n"
-"PO-Revision-Date: 2022-09-21 23:45+0300\n"
-"Last-Translator: David Lapshin <ddaudix@gmail.com>\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
+"POT-Creation-Date: 2024-03-15 07:11+0000\n"
+"PO-Revision-Date: 2024-04-29 20:52+1000\n"
+"Last-Translator: Ser82-png <asvmail.as@gmail.com>\n"
 "Language-Team: Русский <gnome-cyr@gnome.org>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 3.1.1\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 3.0.1\n"
 
-# или "Запись звука" или "Звукозапись"
-#: data/org.gnome.SoundRecorder.desktop.in.in:4
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:5 data/ui/window.ui:10
-#: src/application.js:32
-msgid "Sound Recorder"
-msgstr "Диктофон"
+#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+msgid "Vocalis"
+msgstr "Vocalis"
 
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:5
 msgid "Record sound via the microphone and play it back"
 msgstr "Запись звука с помощью микрофона и последующее его воспроизведение"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Audio;Application;Record;Аудио;Звук;Приложение;Запись;"
+#: data/app.drey.Vocalis.desktop.in.in:10
+#| msgid "Audio;Application;Record;"
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr "Audio;Application;Record;Sound Recorder;Аудио;Звук;Приложение;Запись;"
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
-msgstr "Простое, современное приложения для записи звука в GNOME"
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "Создание голосовых заметок"
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:10
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
 msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
 msgstr ""
-"Диктофон предоставляет простой, современный и дружелюбный интерфейс для "
-"записи и воспроизведения звука, в приложении имеются базовые функции для "
-"редактирования записей и создания голосовых заметок."
+"Vocalis предоставляет простой, современный и дружелюбный интерфейс для "
+"записи и воспроизведения голосовых заметок."
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:15
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
 msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
 msgstr ""
-"Диктофон автоматически выполняет сохранение, поэтому вам не нужно "
-"беспокоиться о том, что вы можете случайно перезаписать предыдущую запись."
+"Vocalis автоматически управляет процессом сохранения, поэтому вам не нужно "
+"беспокоиться о случайном удалении предыдущей записи."
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:19
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
 msgid "Supported audio formats:"
 msgstr "Поддерживаемые аудиоформаты:"
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:21
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
 msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
 msgstr "Ogg Vorbis, Opus, FLAC, MP3 и MOV"
 
-#: data/org.gnome.SoundRecorder.metainfo.xml.in.in:106
-msgid "The GNOME Project"
-msgstr "Проект GNOME"
+#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+msgid "Christopher Davis"
+msgstr "Кристофер Дэвис (Christopher Davis)"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:15
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "Размер окна"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "Размер окна (ширина и высота)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:20
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "Положение окна"
 
 # точку c запятой на "и" не менять
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "Положение окна (x ; y)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:25
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
 msgstr "Соответствие типа данных названию предустановки для кодировщика звука."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
@@ -101,11 +97,11 @@ msgstr ""
 "звука. Если соответствие отсутствует, то кодировщик будет использовать "
 "параметры по умолчанию."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:30
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
 msgstr "Доступные каналы"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
@@ -140,12 +136,12 @@ msgstr "Удалить"
 
 #: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
-msgid "Open menu"
-msgstr "Открыть меню"
+msgid "Open Main Menu"
+msgstr "Открыть главное меню"
 
 #: data/ui/help-overlay.ui:46
 msgctxt "shortcut window"
-msgid "Keyboard shortcuts"
+msgid "Keyboard Shortcuts"
 msgstr "Комбинации клавиш"
 
 #: data/ui/help-overlay.ui:52
@@ -194,7 +190,7 @@ msgstr "Остановить запись"
 msgid "Delete Recording"
 msgstr "Удалить запись"
 
-#: data/ui/row.ui:109 src/recorderWidget.js:100
+#: data/ui/row.ui:109
 msgid "Delete"
 msgstr "Удалить"
 
@@ -226,172 +222,165 @@ msgstr "Переименовать"
 msgid "Save"
 msgstr "Сохранить"
 
-#: data/ui/window.ui:28
+#: data/ui/window.ui:24
 msgid "Record"
 msgstr "Запись"
 
-#: data/ui/window.ui:61
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "Главное меню"
+
+#: data/ui/window.ui:56
 msgid "Add Recordings"
 msgstr "Добавить записи"
 
-#: data/ui/window.ui:62
+#: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "Используйте кнопку <b>Запись</b> для создания звуковых записей"
 
-#: data/ui/window.ui:98
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "Предпочитаемый формат"
 
-#: data/ui/window.ui:100
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:105
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:110
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:115
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:121
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "Аудиоканал"
 
-#: data/ui/window.ui:123
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "Стерео"
 
-#: data/ui/window.ui:128
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "Моно"
 
-#: data/ui/window.ui:135
+#: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
 msgstr "_Комбинации клавиш"
 
-# или "Запись звука" или "Звукозапись"
-#: data/ui/window.ui:140
-msgid "About Sound Recorder"
+#: data/ui/window.ui:135
+msgid "About Vocalis"
 msgstr "О приложении"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:128
-msgid "translator-credits"
-msgstr ""
-"Станислав Соловей <whats_up@tut.by>, 2014-2019.\n"
-"Юрий Мясоедов <ymyasoedov@yandex.ru>, 2014.\n"
-"Ser82-png <sw@atrus.ru>, 2022\n"
-"Давид Лапшин <ddaudix@gmail.com>, 2022"
+# или "Запись звука" или "Звукозапись"
+#~ msgid "Sound Recorder"
+#~ msgstr "Диктофон"
 
-#: src/application.js:130
-msgid "A Sound Recording Application for GNOME"
-msgstr "Приложение для записи звука для GNOME"
+#~ msgid "A simple, modern sound recorder for GNOME"
+#~ msgstr "Простое, современное приложения для записи звука в GNOME"
 
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:113
+#~ msgid "The GNOME Project"
+#~ msgstr "Проект GNOME"
+
+#~ msgctxt "shortcut window"
+#~ msgid "Keyboard shortcuts"
+#~ msgstr "Комбинации клавиш"
+
+# или "Запись звука" или "Звукозапись"
+#~ msgid "About Sound Recorder"
+#~ msgstr "О приложении"
+
+#~ msgid "translator-credits"
+#~ msgstr ""
+#~ "Станислав Соловей <whats_up@tut.by>, 2014-2019.\n"
+#~ "Юрий Мясоедов <ymyasoedov@yandex.ru>, 2014.\n"
+#~ "Ser82-png <sw@atrus.ru>, 2022\n"
+#~ "Давид Лапшин <ddaudix@gmail.com>, 2022"
+
+#~ msgid "A Sound Recording Application for GNOME"
+#~ msgstr "Приложение для записи звука для GNOME"
+
 #, javascript-format
-msgid "Recording %d"
-msgstr "Запись %d"
+#~ msgid "Recording %d"
+#~ msgstr "Запись %d"
 
-#: src/recorderWidget.js:94
-msgid "Delete recording?"
-msgstr "Удалить запись?"
+#~ msgid "Delete recording?"
+#~ msgstr "Удалить запись?"
 
-#: src/recorderWidget.js:95
-msgid "This recording will not be saved."
-msgstr "Эта запись не будет сохранена."
+#~ msgid "This recording will not be saved."
+#~ msgstr "Эта запись не будет сохранена."
 
-#: src/recorderWidget.js:99
-msgid "Resume"
-msgstr "Возобновить"
+#~ msgid "Resume"
+#~ msgstr "Возобновить"
 
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:42
-msgid "Recordings"
-msgstr "Записи"
+#~ msgid "Recordings"
+#~ msgstr "Записи"
 
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:59
 #, javascript-format
-msgid "%s (Old)"
-msgstr "%s (старая)"
+#~ msgid "%s (Old)"
+#~ msgstr "%s (старая)"
 
-#: src/row.js:67
-msgid "Export Recording"
-msgstr "Экспорт запись"
+#~ msgid "Export Recording"
+#~ msgstr "Экспорт запись"
 
-#: src/row.js:67
-msgid "_Export"
-msgstr "_Экспортировать"
+#~ msgid "_Export"
+#~ msgstr "_Экспортировать"
 
-#: src/row.js:67
-msgid "_Cancel"
-msgstr "_Отменить"
+#~ msgid "_Cancel"
+#~ msgstr "_Отменить"
 
-#: src/utils.js:48
-msgid "Yesterday"
-msgstr "Вчера"
+#~ msgid "Yesterday"
+#~ msgstr "Вчера"
 
-#: src/utils.js:50
 #, javascript-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "%d день назад"
-msgstr[1] "%d дня назад"
-msgstr[2] "%d дней назад"
+#~ msgid "%d day ago"
+#~ msgid_plural "%d days ago"
+#~ msgstr[0] "%d день назад"
+#~ msgstr[1] "%d дня назад"
+#~ msgstr[2] "%d дней назад"
 
-#: src/utils.js:52
-msgid "Last week"
-msgstr "На прошлой неделе"
+#~ msgid "Last week"
+#~ msgstr "На прошлой неделе"
 
-#: src/utils.js:54
 #, javascript-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "%d неделю назад"
-msgstr[1] "%d недели назад"
-msgstr[2] "%d недель назад"
+#~ msgid "%d week ago"
+#~ msgid_plural "%d weeks ago"
+#~ msgstr[0] "%d неделю назад"
+#~ msgstr[1] "%d недели назад"
+#~ msgstr[2] "%d недель назад"
 
-#: src/utils.js:56
-msgid "Last month"
-msgstr "В прошлом месяце"
+#~ msgid "Last month"
+#~ msgstr "В прошлом месяце"
 
-#: src/utils.js:58
 #, javascript-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "%d месяц назад"
-msgstr[1] "%d месяца назад"
-msgstr[2] "%d месяцев назад"
+#~ msgid "%d month ago"
+#~ msgid_plural "%d months ago"
+#~ msgstr[0] "%d месяц назад"
+#~ msgstr[1] "%d месяца назад"
+#~ msgstr[2] "%d месяцев назад"
 
-#: src/utils.js:60
-msgid "Last year"
-msgstr "В прошлом году"
+#~ msgid "Last year"
+#~ msgstr "В прошлом году"
 
-#: src/utils.js:62
 #, javascript-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "%d год назад"
-msgstr[1] "%d года назад"
-msgstr[2] "%d лет назад"
+#~ msgid "%d year ago"
+#~ msgid_plural "%d years ago"
+#~ msgstr[0] "%d год назад"
+#~ msgstr[1] "%d года назад"
+#~ msgstr[2] "%d лет назад"
 
-#: src/window.js:69
 #, javascript-format
-msgid "\"%s\" deleted"
-msgstr "\"%s\" удалено"
+#~ msgid "\"%s\" deleted"
+#~ msgstr "\"%s\" удалено"
 
-#: src/window.js:148
-msgid "Undo"
-msgstr "Отменить"
+#~ msgid "Undo"
+#~ msgstr "Отменить"
 
 #~ msgid "Microphone volume level"
 #~ msgstr "Уровень громкости микрофона"
