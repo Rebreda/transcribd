@@ -41,6 +41,7 @@ export class WaveForm extends Gtk.DrawingArea {
     private _position: number;
     private dragGesture?: Gtk.GestureDrag;
     private hcId: number;
+    private accentId: number;
     private lastX?: number;
 
     private waveType: WaveType;
@@ -96,12 +97,13 @@ export class WaveForm extends Gtk.DrawingArea {
             this.add_controller(this.dragGesture);
         }
 
-        this.hcId = Adw.StyleManager.get_default().connect(
-            "notify::high-contrast",
-            () => {
-                this.queue_draw();
-            },
-        );
+        const styleManager = Adw.StyleManager.get_default();
+        this.hcId = styleManager.connect("notify::high-contrast", () => {
+            this.queue_draw();
+        });
+        this.accentId = styleManager.connect("notify::accent-color", () => {
+            this.queue_draw();
+        });
 
         this.set_draw_func(this.drawFunc.bind(this));
     }
@@ -136,14 +138,20 @@ export class WaveForm extends Gtk.DrawingArea {
 
         const rightColor = styleContext.lookup_color("dimmed_color")[1];
 
-        const dividerName =
-            da.waveType === WaveType.Player
-                ? "accent_color"
-                : "destructive_color";
-        const lookupColor = styleContext.lookup_color(dividerName);
-        const ok = lookupColor[0];
-        let dividerColor = lookupColor[1];
-        if (!ok) dividerColor = styleContext.get_color();
+        let dividerColor;
+
+        if (da.waveType === WaveType.Player) {
+            const styleManager = Adw.StyleManager.get_default();
+            const accent = styleManager.accent_color;
+            const dark = styleManager.dark;
+
+            dividerColor = Adw.accent_color_to_standalone_rgba(accent, dark);
+        } else {
+            const lookupColor = styleContext.lookup_color("destructive_color");
+            const ok = lookupColor[0];
+            dividerColor = lookupColor[1];
+            if (!ok) dividerColor = styleContext.get_color();
+        }
 
         // Because the cairo module isn't real, we have to use these to ignore `any`.
         // We keep them to the minimum possible scope to catch real errors.
@@ -235,6 +243,7 @@ export class WaveForm extends Gtk.DrawingArea {
 
     public destroy(): void {
         Adw.StyleManager.get_default().disconnect(this.hcId);
+        Adw.StyleManager.get_default().disconnect(this.accentId);
         this._peaks.length = 0;
         this.queue_draw();
     }
