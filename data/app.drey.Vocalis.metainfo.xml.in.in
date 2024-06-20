@@ -36,7 +36,8 @@
   <launchable type="desktop-id">@app-id@.desktop</launchable>
   <url type="homepage">https://gitlab.gnome.org/World/vocalis/</url>
   <url type="bugtracker">https://gitlab.gnome.org/World/vocalis/issues</url>
-  <url type="translate">https://wiki.gnome.org/TranslationProject</url>
+  <url type="vcs-browser">https://gitlab.gnome.org/World/vocalis/</url>
+  <url type="translate">https://l10n.gnome.org/module/vocalis/</url>
   <developer_name>Christopher Davis</developer_name>
   <update_contact>chistopherdavis_at_gnome.org</update_contact>
   <translation type="gettext">@gettext-package@</translation>
