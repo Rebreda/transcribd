@@ -166,7 +166,7 @@ export class Application extends Adw.Application {
         let appName = GLib.get_application_name();
         if (!appName) appName = _("Vocalis");
 
-        const aboutDialog = new Adw.AboutWindow({
+        const aboutDialog = new Adw.AboutDialog({
             artists: [
                 "Reda Lazri <the.red.shortcut@gmail.com>",
                 "Garrett LeSage <garrettl@gmail.com>",
@@ -190,10 +190,8 @@ export class Application extends Adw.Application {
             issue_url: "https://gitlab.gnome.org/World/vocalis/-/issues",
             copyright:
                 "Copyright 2013-2019 Meg Ford\nCopyright 2019-2020 Bilal Elmoussaoui &amp; Felipe Borges\nCopyright 2024 Christopher Davis",
-            modal: true,
-            transient_for: this.window,
         });
 
-        aboutDialog.show();
+        aboutDialog.present(this.window);
     }
 }
