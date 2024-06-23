@@ -26,7 +26,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* exported main */
 
-import { Application } from './application.js';
+import { Application } from "./application.js";
 
 export function main(argv: string[]): Promise<number> {
     const app = new Application();

@@ -18,61 +18,61 @@
  *
  */
 
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import Gio from 'gi://Gio';
-import Gst from 'gi://Gst';
-import GstPbutils from 'gi://GstPbutils';
+import GLib from "gi://GLib";
+import GObject from "gi://GObject";
+import Gio from "gi://Gio";
+import Gst from "gi://Gst";
+import GstPbutils from "gi://GstPbutils";
 
-import { RecordingsDir, Settings } from './application.js';
-import { Recording } from './recording.js';
+import { RecordingsDir, Settings } from "./application.js";
+import { Recording } from "./recording.js";
 
 // All supported encoding profiles.
 export const EncodingProfiles = [
     {
-        name: 'VORBIS',
-        containerCaps: 'application/ogg;audio/ogg;video/ogg',
-        audioCaps: 'audio/x-vorbis',
-        contentType: 'audio/x-vorbis+ogg',
-        extension: 'ogg',
+        name: "VORBIS",
+        containerCaps: "application/ogg;audio/ogg;video/ogg",
+        audioCaps: "audio/x-vorbis",
+        contentType: "audio/x-vorbis+ogg",
+        extension: "ogg",
     },
 
     {
-        name: 'OPUS',
-        containerCaps: 'application/ogg',
-        audioCaps: 'audio/x-opus',
-        contentType: 'audio/x-opus+ogg',
-        extension: 'opus',
+        name: "OPUS",
+        containerCaps: "application/ogg",
+        audioCaps: "audio/x-opus",
+        contentType: "audio/x-opus+ogg",
+        extension: "opus",
     },
 
     {
-        name: 'FLAC',
-        containerCaps: 'audio/x-flac',
-        audioCaps: 'audio/x-flac',
-        contentType: 'audio/flac',
-        extension: 'flac',
+        name: "FLAC",
+        containerCaps: "audio/x-flac",
+        audioCaps: "audio/x-flac",
+        contentType: "audio/flac",
+        extension: "flac",
     },
 
     {
-        name: 'MP3',
-        containerCaps: 'application/x-id3',
-        audioCaps: 'audio/mpeg,mpegversion=(int)1,layer=(int)3',
-        contentType: 'audio/mpeg',
-        extension: 'mp3',
+        name: "MP3",
+        containerCaps: "application/x-id3",
+        audioCaps: "audio/mpeg,mpegversion=(int)1,layer=(int)3",
+        contentType: "audio/mpeg",
+        extension: "mp3",
     },
 
     {
-        name: 'M4A',
-        containerCaps: 'video/quicktime,variant=(string)iso',
-        audioCaps: 'audio/mpeg,mpegversion=(int)4',
-        contentType: 'video/mp4',
-        extension: 'm4a',
+        name: "M4A",
+        containerCaps: "video/quicktime,variant=(string)iso",
+        audioCaps: "audio/mpeg,mpegversion=(int)4",
+        contentType: "video/mp4",
+        extension: "m4a",
     },
 ];
 
 const AudioChannels = [
-    { name: 'stereo', channels: 2 },
-    { name: 'mono', channels: 1 },
+    { name: "stereo", channels: 2 },
+    { name: "mono", channels: 1 },
 ];
 
 export class Recorder extends GObject.Object {
@@ -96,19 +96,19 @@ export class Recorder extends GObject.Object {
             {
                 Properties: {
                     duration: GObject.ParamSpec.int(
-                        'duration',
-                        'Recording Duration',
-                        'Recording duration in nanoseconds',
+                        "duration",
+                        "Recording Duration",
+                        "Recording duration in nanoseconds",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
                         0,
                         GLib.MAXINT16,
                         0,
                     ),
-                    'current-peak': GObject.ParamSpec.float(
-                        'current-peak',
-                        'Waveform current peak',
-                        'Waveform current peak in float [0, 1]',
+                    "current-peak": GObject.ParamSpec.float(
+                        "current-peak",
+                        "Waveform current peak",
+                        "Waveform current peak in float [0, 1]",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
                         0.0,
@@ -127,19 +127,19 @@ export class Recorder extends GObject.Object {
 
         let srcElement: Gst.Element;
         let audioConvert: Gst.Element;
-        const caps = Gst.Caps.from_string('audio/x-raw');
+        const caps = Gst.Caps.from_string("audio/x-raw");
 
-        this.pipeline = new Gst.Pipeline({ name: 'pipe' });
+        this.pipeline = new Gst.Pipeline({ name: "pipe" });
 
         const elements = [
-            ['pulsesrc', 'srcElement'],
-            ['audioconvert', 'audioConvert'],
-            ['level', 'level'],
-            ['encodebin', 'ebin'],
-            ['filesink', 'filesink'],
+            ["pulsesrc", "srcElement"],
+            ["audioconvert", "audioConvert"],
+            ["level", "level"],
+            ["encodebin", "ebin"],
+            ["filesink", "filesink"],
         ].map(([fac, name]) => {
             const element = Gst.ElementFactory.make(fac, name);
-            if (!element) throw new Error('Not all elements could be created.');
+            if (!element) throw new Error("Not all elements could be created.");
             this.pipeline.add(element);
             return element;
         });
@@ -158,22 +158,22 @@ export class Recorder extends GObject.Object {
             /* Translators: ""Recording %d"" is the default name assigned to a file created
             by the application (for example, "Recording 1"). */
             this.file = RecordingsDir.get_child_for_display_name(
-                _('Recording %d').format(index++),
+                _("Recording %d").format(index++),
             );
         } while (this.file.query_exists(null));
 
         this.recordBus = this.pipeline.get_bus();
         this.recordBus.add_signal_watch();
         this.handlerId = this.recordBus.connect(
-            'message',
+            "message",
             (_, message: Gst.Message) => {
                 if (message) this.onMessageReceived(message);
             },
         );
 
         if (this.ebin && this.level && this.filesink) {
-            this.ebin.set_property('profile', this.getProfile());
-            this.filesink.set_property('location', this.file.get_path());
+            this.ebin.set_property("profile", this.getProfile());
+            this.filesink.set_property("location", this.file.get_path());
             this.level.link(this.ebin);
             this.ebin.link(this.filesink);
         }
@@ -241,9 +241,9 @@ export class Recorder extends GObject.Object {
                 }
 
                 const s = message.get_structure();
-                if (s && s.has_name('level')) {
+                if (s && s.has_name("level")) {
                     const peakVal = s.get_value(
-                        'peak',
+                        "peak",
                     ) as unknown as GObject.ValueArray;
 
                     if (peakVal)
@@ -269,16 +269,16 @@ export class Recorder extends GObject.Object {
     }
 
     private getChannel(): number {
-        const channelIndex = Settings.get_enum('audio-channel');
+        const channelIndex = Settings.get_enum("audio-channel");
         return AudioChannels[channelIndex].channels;
     }
 
     private getProfile(): GstPbutils.EncodingContainerProfile | undefined {
-        const profileIndex = Settings.get_enum('audio-profile');
+        const profileIndex = Settings.get_enum("audio-profile");
         const profile = EncodingProfiles[profileIndex];
 
         const audioCaps = Gst.Caps.from_string(profile.audioCaps);
-        audioCaps?.set_value('channels', this.getChannel());
+        audioCaps?.set_value("channels", this.getChannel());
 
         if (audioCaps) {
             const encodingProfile = GstPbutils.EncodingAudioProfile.new(
@@ -291,7 +291,7 @@ export class Recorder extends GObject.Object {
             if (containerCaps) {
                 const containerProfile =
                     GstPbutils.EncodingContainerProfile.new(
-                        'record',
+                        "record",
                         null,
                         containerCaps,
                         null,
@@ -310,7 +310,7 @@ export class Recorder extends GObject.Object {
 
     public set duration(val: number) {
         this._duration = val;
-        this.notify('duration');
+        this.notify("duration");
     }
 
     public get current_peak(): number {
@@ -323,7 +323,7 @@ export class Recorder extends GObject.Object {
 
             this._current_peak = Math.pow(10, peak / 20);
             this.peaks.push(this._current_peak);
-            this.notify('current-peak');
+            this.notify("current-peak");
         }
     }
 
@@ -337,7 +337,7 @@ export class Recorder extends GObject.Object {
             const ret = this.pipeline.set_state(this.pipeState);
 
             if (ret === Gst.StateChangeReturn.FAILURE)
-                log('Unable to update the recorder pipeline state');
+                log("Unable to update the recorder pipeline state");
         }
     }
 }

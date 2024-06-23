@@ -1,14 +1,14 @@
 /* exported RecordingsListWidget */
-import Adw from 'gi://Adw';
-import GObject from 'gi://GObject';
-import Gst from 'gi://Gst';
-import GstPlayer from 'gi://GstPlayer';
-import Gtk from 'gi://Gtk?version=4.0';
-import Gio from 'gi://Gio';
+import Adw from "gi://Adw";
+import GObject from "gi://GObject";
+import Gst from "gi://Gst";
+import GstPlayer from "gi://GstPlayer";
+import Gtk from "gi://Gtk?version=4.0";
+import Gio from "gi://Gio";
 
-import { Row, RowState } from './row.js';
-import { Recording } from './recording.js';
-import { WaveForm } from './waveform.js';
+import { Row, RowState } from "./row.js";
+import { Recording } from "./recording.js";
+import { WaveForm } from "./waveform.js";
 
 export class RecordingsListWidget extends Adw.Bin {
     private player: GstPlayer.Player;
@@ -20,7 +20,7 @@ export class RecordingsListWidget extends Adw.Bin {
         GObject.registerClass(
             {
                 Signals: {
-                    'row-deleted': {
+                    "row-deleted": {
                         param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT],
                     },
                 },
@@ -38,13 +38,13 @@ export class RecordingsListWidget extends Adw.Bin {
         this.list.margin_top = 12;
         this.list.margin_bottom = 12;
         this.list.activate_on_single_click = true;
-        this.list.add_css_class('boxed-list');
+        this.list.add_css_class("boxed-list");
 
         this.set_child(this.list);
 
         this.player = player;
         this.player.connect(
-            'state-changed',
+            "state-changed",
             (_player: GstPlayer.Player, state: GstPlayer.PlayerState) => {
                 if (
                     state === GstPlayer.PlayerState.STOPPED &&
@@ -60,7 +60,7 @@ export class RecordingsListWidget extends Adw.Bin {
         );
 
         this.player.connect(
-            'position-updated',
+            "position-updated",
             (_player: GstPlayer.Player, pos: number) => {
                 if (this.activePlayingRow) {
                     const duration = this.activePlayingRow.recording.duration;
@@ -73,7 +73,7 @@ export class RecordingsListWidget extends Adw.Bin {
             const recording = item as Recording;
             const row = new Row(recording);
 
-            row.waveform.connect('gesture-pressed', () => {
+            row.waveform.connect("gesture-pressed", () => {
                 if (!this.activePlayingRow || this.activePlayingRow !== row) {
                     if (this.activePlayingRow)
                         this.activePlayingRow.waveform.position = 0.0;
@@ -84,13 +84,13 @@ export class RecordingsListWidget extends Adw.Bin {
             });
 
             row.waveform.connect(
-                'position-changed',
+                "position-changed",
                 (_wave: WaveForm, position: number) => {
                     this.player.seek(position * row.recording.duration);
                 },
             );
 
-            row.connect('play', (_row: Row) => {
+            row.connect("play", (_row: Row) => {
                 if (this.activePlayingRow) {
                     if (this.activePlayingRow !== _row) {
                         this.activePlayingRow.state = RowState.Paused;
@@ -105,11 +105,11 @@ export class RecordingsListWidget extends Adw.Bin {
                 this.player.play();
             });
 
-            row.connect('pause', () => {
+            row.connect("pause", () => {
                 this.player.pause();
             });
 
-            row.connect('seek-backward', (row: Row) => {
+            row.connect("seek-backward", (row: Row) => {
                 let position = this.player.position - 10 * Gst.SECOND;
                 position =
                     position < 0 || position > row.recording.duration
@@ -117,7 +117,7 @@ export class RecordingsListWidget extends Adw.Bin {
                         : position;
                 this.player.seek(position);
             });
-            row.connect('seek-forward', (_row: Row) => {
+            row.connect("seek-forward", (_row: Row) => {
                 let position = this.player.position + 10 * Gst.SECOND;
                 position =
                     position < 0 || position > _row.recording.duration
@@ -126,7 +126,7 @@ export class RecordingsListWidget extends Adw.Bin {
                 this.player.seek(position);
             });
 
-            row.connect('deleted', () => {
+            row.connect("deleted", () => {
                 if (row === this.activeRow) this.activeRow = null;
 
                 if (row === this.activePlayingRow) {
@@ -136,13 +136,13 @@ export class RecordingsListWidget extends Adw.Bin {
 
                 const index = row.get_index();
                 this.isolateAt(index, false);
-                this.emit('row-deleted', row.recording, index);
+                this.emit("row-deleted", row.recording, index);
             });
 
             return row;
         });
 
-        this.list.connect('row-activated', this.rowActivated.bind(this));
+        this.list.connect("row-activated", this.rowActivated.bind(this));
     }
 
     private rowActivated(_list: Gtk.ListBox, row: Row): void {
@@ -170,13 +170,13 @@ export class RecordingsListWidget extends Adw.Bin {
         const after = this.list.get_row_at_index(index + 1);
 
         if (expanded) {
-            if (current) current.add_css_class('expanded');
-            if (before) before.add_css_class('expanded-before');
-            if (after) after.add_css_class('expanded-after');
+            if (current) current.add_css_class("expanded");
+            if (before) before.add_css_class("expanded-before");
+            if (after) after.add_css_class("expanded-after");
         } else {
-            if (current) current.remove_css_class('expanded');
-            if (before) before.remove_css_class('expanded-before');
-            if (after) after.remove_css_class('expanded-after');
+            if (current) current.remove_css_class("expanded");
+            if (before) before.remove_css_class("expanded-before");
+            if (after) after.remove_css_class("expanded-after");
         }
     }
 }

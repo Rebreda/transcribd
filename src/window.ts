@@ -18,20 +18,20 @@
  *
  */
 
-import Adw from 'gi://Adw';
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import Gst from 'gi://Gst';
-import GstPlayer from 'gi://GstPlayer';
-import Gtk from 'gi://Gtk?version=4.0';
+import Adw from "gi://Adw";
+import Gio from "gi://Gio";
+import GLib from "gi://GLib";
+import GObject from "gi://GObject";
+import Gst from "gi://Gst";
+import GstPlayer from "gi://GstPlayer";
+import Gtk from "gi://Gtk?version=4.0";
 
-import { Recorder } from './recorder.js';
-import { RecordingList } from './recordingList.js';
-import { RecordingsListWidget } from './recordingListWidget.js';
-import { RecorderWidget } from './recorderWidget.js';
-import { Recording } from './recording.js';
-import { Row } from './row.js';
+import { Recorder } from "./recorder.js";
+import { RecordingList } from "./recordingList.js";
+import { RecordingsListWidget } from "./recordingListWidget.js";
+import { RecorderWidget } from "./recorderWidget.js";
+import { Recording } from "./recording.js";
+import { Row } from "./row.js";
 
 enum WindowState {
     Empty,
@@ -63,13 +63,13 @@ export class Window extends Adw.ApplicationWindow {
     static {
         GObject.registerClass(
             {
-                Template: 'resource:///app/drey/Vocalis/ui/window.ui',
+                Template: "resource:///app/drey/Vocalis/ui/window.ui",
                 InternalChildren: [
-                    'mainStack',
-                    'emptyPage',
-                    'column',
-                    'toastOverlay',
-                    'toolbarView',
+                    "mainStack",
+                    "emptyPage",
+                    "column",
+                    "toastOverlay",
+                    "toolbarView",
                 ],
             },
             this,
@@ -84,15 +84,15 @@ export class Window extends Adw.ApplicationWindow {
 
         this.recorder = new Recorder();
         this.recorderWidget = new RecorderWidget(this.recorder);
-        this._mainStack.add_named(this.recorderWidget, 'recorder');
+        this._mainStack.add_named(this.recorderWidget, "recorder");
 
         const dispatcher =
             GstPlayer.PlayerGMainContextSignalDispatcher.new(null);
         this.player = GstPlayer.Player.new(null, dispatcher);
-        this.player.connect('end-of-stream', () => this.player.stop());
+        this.player.connect("end-of-stream", () => this.player.stop());
 
         this.recordingList = new RecordingList();
-        this.itemsSignalId = this.recordingList.connect('items-changed', () => {
+        this.itemsSignalId = this.recordingList.connect("items-changed", () => {
             if (this.state !== WindowState.Recorder) {
                 if (this.recordingList.get_n_items() === 0)
                     this.state = WindowState.Empty;
@@ -106,14 +106,14 @@ export class Window extends Adw.ApplicationWindow {
         );
 
         this.recordingListWidget.connect(
-            'row-deleted',
+            "row-deleted",
             (_listBox: Gtk.ListBox, recording: Recording, index: number) => {
                 this.recordingList.remove(index);
                 let message: string;
                 if (recording.name) {
                     message = _('"%s" deleted').format(recording.name);
                 } else {
-                    message = _('Recording deleted');
+                    message = _("Recording deleted");
                 }
                 this.sendNotification(message, recording, index);
             },
@@ -122,33 +122,33 @@ export class Window extends Adw.ApplicationWindow {
         this.toastUndo = false;
         this.undoSignalID = null;
         this.undoToasts = [];
-        this.undoAction = new Gio.SimpleAction({ name: 'undo' });
+        this.undoAction = new Gio.SimpleAction({ name: "undo" });
         this.add_action(this.undoAction);
 
         const openMenuAction = new Gio.SimpleAction({
-            name: 'open-primary-menu',
-            state: new GLib.Variant('b', true),
+            name: "open-primary-menu",
+            state: new GLib.Variant("b", true),
         });
-        openMenuAction.connect('activate', (action) => {
+        openMenuAction.connect("activate", (action) => {
             const state = action.get_state()?.get_boolean();
-            action.state = new GLib.Variant('b', !state);
+            action.state = new GLib.Variant("b", !state);
         });
         this.add_action(openMenuAction);
         this._column.set_child(this.recordingListWidget);
 
         this.recorderWidget.connect(
-            'started',
+            "started",
             this.onRecorderStarted.bind(this),
         );
         this.recorderWidget.connect(
-            'canceled',
+            "canceled",
             this.onRecorderCanceled.bind(this),
         );
         this.recorderWidget.connect(
-            'stopped',
+            "stopped",
             this.onRecorderStopped.bind(this),
         );
-        this.insert_action_group('recorder', this.recorderWidget.actionsGroup);
+        this.insert_action_group("recorder", this.recorderWidget.actionsGroup);
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
     }
 
@@ -203,7 +203,7 @@ export class Window extends Adw.ApplicationWindow {
         index: number,
     ): void {
         const toast = Adw.Toast.new(message);
-        toast.connect('dismissed', () => {
+        toast.connect("dismissed", () => {
             if (!this.toastUndo) void recording.delete();
 
             this.toastUndo = false;
@@ -215,13 +215,13 @@ export class Window extends Adw.ApplicationWindow {
         if (this.undoSignalID !== null)
             this.undoAction.disconnect(this.undoSignalID);
 
-        this.undoSignalID = this.undoAction.connect('activate', () => {
+        this.undoSignalID = this.undoAction.connect("activate", () => {
             this.recordingList.insert(index, recording);
             this.toastUndo = true;
         });
 
-        toast.set_action_name('win.undo');
-        toast.set_button_label(_('Undo'));
+        toast.set_action_name("win.undo");
+        toast.set_button_label(_("Undo"));
         this._toastOverlay.add_toast(toast);
         this.undoToasts.push(toast);
     }
@@ -232,14 +232,14 @@ export class Window extends Adw.ApplicationWindow {
 
         switch (state) {
             case WindowState.Recorder:
-                visibleChild = 'recorder';
+                visibleChild = "recorder";
                 isHeaderVisible = false;
                 break;
             case WindowState.List:
-                visibleChild = 'recordings';
+                visibleChild = "recordings";
                 break;
             case WindowState.Empty:
-                visibleChild = 'empty';
+                visibleChild = "empty";
                 break;
         }
 

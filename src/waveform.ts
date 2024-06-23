@@ -22,12 +22,12 @@
 
 // based on code from Pitivi
 
-import Adw from 'gi://Adw';
-import GObject from 'gi://GObject';
-import Gdk from 'gi://Gdk?version=4.0';
-import Gtk from 'gi://Gtk?version=4.0';
+import Adw from "gi://Adw";
+import GObject from "gi://GObject";
+import Gdk from "gi://Gdk?version=4.0";
+import Gtk from "gi://Gtk?version=4.0";
 // @ts-expect-error This module doesn't import nicely
-import Cairo from 'cairo';
+import Cairo from "cairo";
 
 export enum WaveType {
     Recorder,
@@ -50,9 +50,9 @@ export class WaveForm extends Gtk.DrawingArea {
             {
                 Properties: {
                     position: GObject.ParamSpec.float(
-                        'position',
-                        'Waveform position',
-                        'Waveform position',
+                        "position",
+                        "Waveform position",
+                        "Waveform position",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
                         0.0,
@@ -60,9 +60,9 @@ export class WaveForm extends Gtk.DrawingArea {
                         0.0,
                     ),
                     peak: GObject.ParamSpec.float(
-                        'peak',
-                        'Waveform current peak',
-                        'Waveform current peak in float [0, 1]',
+                        "peak",
+                        "Waveform current peak",
+                        "Waveform current peak in float [0, 1]",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
                         0.0,
@@ -71,8 +71,8 @@ export class WaveForm extends Gtk.DrawingArea {
                     ),
                 },
                 Signals: {
-                    'position-changed': { param_types: [GObject.TYPE_DOUBLE] },
-                    'gesture-pressed': {},
+                    "position-changed": { param_types: [GObject.TYPE_DOUBLE] },
+                    "gesture-pressed": {},
                 },
             },
             this,
@@ -90,14 +90,14 @@ export class WaveForm extends Gtk.DrawingArea {
 
         if (this.waveType === WaveType.Player) {
             this.dragGesture = Gtk.GestureDrag.new();
-            this.dragGesture.connect('drag-begin', this.dragBegin.bind(this));
-            this.dragGesture.connect('drag-update', this.dragUpdate.bind(this));
-            this.dragGesture.connect('drag-end', this.dragEnd.bind(this));
+            this.dragGesture.connect("drag-begin", this.dragBegin.bind(this));
+            this.dragGesture.connect("drag-update", this.dragUpdate.bind(this));
+            this.dragGesture.connect("drag-end", this.dragEnd.bind(this));
             this.add_controller(this.dragGesture);
         }
 
         this.hcId = Adw.StyleManager.get_default().connect(
-            'notify::high-contrast',
+            "notify::high-contrast",
             () => {
                 this.queue_draw();
             },
@@ -108,7 +108,7 @@ export class WaveForm extends Gtk.DrawingArea {
 
     private dragBegin(gesture: Gtk.GestureDrag): void {
         gesture.set_state(Gtk.EventSequenceState.CLAIMED);
-        this.emit('gesture-pressed');
+        this.emit("gesture-pressed");
     }
 
     private dragUpdate(_gesture: Gtk.GestureDrag, offsetX: number): void {
@@ -120,7 +120,7 @@ export class WaveForm extends Gtk.DrawingArea {
 
     private dragEnd(): void {
         this.lastX = this._position;
-        this.emit('position-changed', this.position);
+        this.emit("position-changed", this.position);
     }
 
     private drawFunc(superDa: Gtk.DrawingArea, ctx: Cairo.Context) {
@@ -134,12 +134,12 @@ export class WaveForm extends Gtk.DrawingArea {
         const styleContext = da.get_style_context();
         const leftColor = styleContext.get_color();
 
-        const rightColor = styleContext.lookup_color('dimmed_color')[1];
+        const rightColor = styleContext.lookup_color("dimmed_color")[1];
 
         const dividerName =
             da.waveType === WaveType.Player
-                ? 'accent_color'
-                : 'destructive_color';
+                ? "accent_color"
+                : "destructive_color";
         const lookupColor = styleContext.lookup_color(dividerName);
         const ok = lookupColor[0];
         let dividerColor = lookupColor[1];
@@ -209,7 +209,7 @@ export class WaveForm extends Gtk.DrawingArea {
             this._position = this.clamped(-pos * this._peaks.length * GUTTER);
             this.lastX = this._position;
             this.queue_draw();
-            this.notify('position');
+            this.notify("position");
         }
     }
 

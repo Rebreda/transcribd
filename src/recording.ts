@@ -1,15 +1,15 @@
 /* exported Recording */
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import Gst from 'gi://Gst';
-import GstPbutils from 'gi://GstPbutils';
+import Gio from "gi://Gio";
+import GLib from "gi://GLib";
+import GObject from "gi://GObject";
+import Gst from "gi://Gst";
+import GstPbutils from "gi://GstPbutils";
 
-import { CacheDir } from './application.js';
-import { EncodingProfiles } from './recorder.js';
+import { CacheDir } from "./application.js";
+import { EncodingProfiles } from "./recorder.js";
 
 function isNumArray(input: unknown): input is number[] {
-    return Array.isArray(input) && input.every((i) => typeof i === 'number');
+    return Array.isArray(input) && input.every((i) => typeof i === "number");
 }
 
 export class Recording extends GObject.Object {
@@ -27,14 +27,14 @@ export class Recording extends GObject.Object {
         GObject.registerClass(
             {
                 Signals: {
-                    'peaks-updated': {},
-                    'peaks-loading': {},
+                    "peaks-updated": {},
+                    "peaks-loading": {},
                 },
                 Properties: {
                     duration: GObject.ParamSpec.int(
-                        'duration',
-                        'Recording Duration',
-                        'Recording duration in nanoseconds',
+                        "duration",
+                        "Recording Duration",
+                        "Recording duration in nanoseconds",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
                         0,
@@ -42,12 +42,12 @@ export class Recording extends GObject.Object {
                         0,
                     ),
                     name: GObject.ParamSpec.string(
-                        'name',
-                        'Recording Name',
-                        'Recording name in string',
+                        "name",
+                        "Recording Name",
+                        "Recording name in string",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
-                        '',
+                        "",
                     ),
                 },
             },
@@ -63,11 +63,11 @@ export class Recording extends GObject.Object {
         this.loadedPeaks = [];
 
         const info = file.query_info(
-            'time::created,time::modified,standard::content-type',
+            "time::created,time::modified,standard::content-type",
             0,
             null,
         );
-        const contentType = info.get_attribute_string('standard::content-type');
+        const contentType = info.get_attribute_string("standard::content-type");
 
         for (const profile of EncodingProfiles) {
             if (profile.contentType === contentType) {
@@ -76,17 +76,17 @@ export class Recording extends GObject.Object {
             }
         }
 
-        const timeModified = info.get_attribute_uint64('time::modified');
-        const timeCreated = info.get_attribute_uint64('time::created');
+        const timeModified = info.get_attribute_uint64("time::modified");
+        const timeCreated = info.get_attribute_uint64("time::created");
         this._timeModified = GLib.DateTime.new_from_unix_local(timeModified);
         this._timeCreated = GLib.DateTime.new_from_unix_local(timeCreated);
 
         const discoverer = new GstPbutils.Discoverer();
         discoverer.start();
-        discoverer.connect('discovered', (_discoverer, audioInfo) => {
+        discoverer.connect("discovered", (_discoverer, audioInfo) => {
             this._duration = audioInfo.get_duration();
 
-            this.notify('duration');
+            this.notify("duration");
         });
 
         discoverer.discover_uri_async(this.uri);
@@ -99,7 +99,7 @@ export class Recording extends GObject.Object {
     public set name(filename: string | null) {
         if (filename && filename !== this.name) {
             this._file = this._file.set_display_name(filename, null);
-            this.notify('name');
+            this.notify("name");
         }
     }
 
@@ -131,7 +131,7 @@ export class Recording extends GObject.Object {
     public set peaks(data: number[]) {
         if (data.length > 0) {
             this._peaks = data;
-            this.emit('peaks-updated');
+            this.emit("peaks-updated");
             const enc = new TextEncoder();
             const contents = enc.encode(JSON.stringify(data));
             this.waveformCache.replace_contents_async(
@@ -162,7 +162,7 @@ export class Recording extends GObject.Object {
             null,
             null,
             (obj: Gio.File | null, res: Gio.AsyncResult) => {
-                if (obj?.copy_finish(res)) log('Exporting file: done');
+                if (obj?.copy_finish(res)) log("Exporting file: done");
             },
         );
     }
@@ -174,7 +174,7 @@ export class Recording extends GObject.Object {
     public async loadPeaks(): Promise<void> {
         try {
             const bytes = (await this.waveformCache.load_bytes_async(null))[0];
-            const decoder = new TextDecoder('utf-8');
+            const decoder = new TextDecoder("utf-8");
             if (bytes) {
                 const data = bytes.get_data();
                 if (data) {
@@ -183,10 +183,10 @@ export class Recording extends GObject.Object {
                     );
                     if (isNumArray(parsedJSON)) {
                         this._peaks = parsedJSON;
-                        this.emit('peaks-updated');
+                        this.emit("peaks-updated");
                     } else {
                         throw new GLib.NumberParserError({
-                            message: 'Failed to parse waveform',
+                            message: "Failed to parse waveform",
                             code: GLib.NumberParserError.INVALID,
                         });
                     }
@@ -202,7 +202,7 @@ export class Recording extends GObject.Object {
                         GLib.NumberParserError.INVALID,
                     )
                 ) {
-                    this.emit('peaks-loading');
+                    this.emit("peaks-loading");
                     this.generatePeaks();
                 }
             }
@@ -211,27 +211,27 @@ export class Recording extends GObject.Object {
 
     private generatePeaks(): void {
         this.pipeline = Gst.parse_launch(
-            'uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked',
+            "uridecodebin name=uridecodebin ! audioconvert ! audio/x-raw,channels=1 ! level name=level ! fakesink name=faked",
         ) as Gst.Bin;
 
-        const uridecodebin = this.pipeline.get_by_name('uridecodebin');
-        uridecodebin?.set_property('uri', this.uri);
+        const uridecodebin = this.pipeline.get_by_name("uridecodebin");
+        uridecodebin?.set_property("uri", this.uri);
 
-        const fakesink = this.pipeline.get_by_name('faked');
-        fakesink?.set_property('qos', false);
-        fakesink?.set_property('sync', true);
+        const fakesink = this.pipeline.get_by_name("faked");
+        fakesink?.set_property("qos", false);
+        fakesink?.set_property("sync", true);
 
         const bus = this.pipeline.get_bus();
         this.pipeline.set_state(Gst.State.PLAYING);
         bus?.add_signal_watch();
 
-        bus?.connect('message', (_bus: Gst.Bus, message: Gst.Message) => {
+        bus?.connect("message", (_bus: Gst.Bus, message: Gst.Message) => {
             switch (message.type) {
                 case Gst.MessageType.ELEMENT: {
                     const s = message.get_structure();
-                    if (s && s.has_name('level')) {
+                    if (s && s.has_name("level")) {
                         const peakVal = s.get_value(
-                            'peak',
+                            "peak",
                         ) as unknown as GObject.ValueArray;
 
                         if (peakVal) {

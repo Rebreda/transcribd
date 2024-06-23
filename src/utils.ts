@@ -17,17 +17,17 @@
  * Author: Meg Ford <megford@gnome.org>
  *
  */
-import Gettext from 'gettext';
-import GLib from 'gi://GLib';
-import Gst from 'gi://Gst';
+import Gettext from "gettext";
+import GLib from "gi://GLib";
+import Gst from "gi://Gst";
 
 export function formatTime(nanoSeconds: number): string {
     const time = new Date(0, 0, 0, 0, 0, 0, nanoSeconds / Gst.MSECOND);
 
     const miliseconds = (time.getMilliseconds() / 100).toString();
-    const seconds = time.getSeconds().toString().padStart(2, '0');
-    const minutes = time.getMinutes().toString().padStart(2, '0');
-    const hours = time.getHours().toString().padStart(2, '0');
+    const seconds = time.getSeconds().toString().padStart(2, "0");
+    const minutes = time.getMinutes().toString().padStart(2, "0");
+    const hours = time.getHours().toString().padStart(2, "0");
 
     // eslint-disable-next-line no-irregular-whitespace
     return `${hours} ∶ ${minutes} ∶ ${seconds} . <small>${miliseconds}</small>`;
@@ -44,30 +44,30 @@ export function displayDateTime(time: GLib.DateTime): string {
     const years = Math.floor(difference / (365 * DAY));
 
     if (difference < DAY) {
-        const formattedTime = time.format('%X');
+        const formattedTime = time.format("%X");
         // The fallback here should never be seen, but we want it here
         // for type safety purposes
-        return formattedTime ? formattedTime : _('Less than a day ago');
+        return formattedTime ? formattedTime : _("Less than a day ago");
     } else if (difference < 2 * DAY) {
-        return _('Yesterday');
+        return _("Yesterday");
     } else if (difference < 7 * DAY) {
         ``;
-        return Gettext.ngettext('%d day ago', '%d days ago', days).format(days);
+        return Gettext.ngettext("%d day ago", "%d days ago", days).format(days);
     } else if (difference < 14 * DAY) {
-        return _('Last week');
+        return _("Last week");
     } else if (difference < 28 * DAY) {
-        return Gettext.ngettext('%d week ago', '%d weeks ago', weeks).format(
+        return Gettext.ngettext("%d week ago", "%d weeks ago", weeks).format(
             weeks,
         );
     } else if (difference < 60 * DAY) {
-        return _('Last month');
+        return _("Last month");
     } else if (difference < 360 * DAY) {
-        return Gettext.ngettext('%d month ago', '%d months ago', months).format(
+        return Gettext.ngettext("%d month ago", "%d months ago", months).format(
             months,
         );
     } else if (difference < 730 * DAY) {
-        return _('Last year');
+        return _("Last year");
     }
 
-    return Gettext.ngettext('%d year ago', '%d years ago', years).format(years);
+    return Gettext.ngettext("%d year ago", "%d years ago", years).format(years);
 }

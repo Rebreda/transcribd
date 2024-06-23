@@ -1,10 +1,10 @@
 /* exported RecordingList */
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
+import Gio from "gi://Gio";
+import GLib from "gi://GLib";
+import GObject from "gi://GObject";
 
-import { RecordingsDir } from './application.js';
-import { Recording } from './recording.js';
+import { RecordingsDir } from "./application.js";
+import { Recording } from "./recording.js";
 
 export class RecordingList extends Gio.ListStore {
     private enumerator?: Gio.FileEnumerator;
@@ -25,7 +25,7 @@ export class RecordingList extends Gio.ListStore {
             this.cancellable,
         );
         this.dirMonitor.connect(
-            'changed',
+            "changed",
             (_dirMonitor, file1, file2, eventType) => {
                 const index = this.getIndex(file1);
 
@@ -42,7 +42,7 @@ export class RecordingList extends Gio.ListStore {
         );
 
         void RecordingsDir.enumerate_children_async(
-            'standard::name',
+            "standard::name",
             Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
             GLib.PRIORITY_LOW,
             this.cancellable,
@@ -56,7 +56,7 @@ export class RecordingList extends Gio.ListStore {
     ): Promise<void> {
         this.enumerator = enumerator;
         if (this.enumerator === null) {
-            log('The contents of the Recordings directory were not indexed.');
+            log("The contents of the Recordings directory were not indexed.");
             return;
         }
 
