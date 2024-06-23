@@ -17,7 +17,7 @@
     </p>
     <p>Supported audio formats:</p>
     <ul>
-      <li>Ogg Vorbis, Opus, FLAC, MP3 and MOV</li>
+      <li>Opus, FLAC, MP3 and MOV</li>
     </ul>
   </description>
   <screenshots>
@@ -41,6 +41,10 @@
   <developer_name>Christopher Davis</developer_name>
   <update_contact>chistopherdavis_at_gnome.org</update_contact>
   <translation type="gettext">@gettext-package@</translation>
+  <branding>
+    <color type="primary" scheme_preference="light">#f7796b</color>
+    <color type="primary" scheme_preference="dark">#a51d2d</color>
+  </branding>
   <recommends>
     <control>touch</control>
     <control>keyboard</control>
