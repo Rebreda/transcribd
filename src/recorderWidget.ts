@@ -135,10 +135,9 @@ export class RecorderWidget extends Gtk.Box {
 
     private onCancel(): void {
         this.onPause();
-        const dialog = new Adw.MessageDialog({
+        const dialog = new Adw.AlertDialog({
             heading: _("Delete Recording?"),
             body: _("This recording will not be saved."),
-            transient_for: this.root as Gtk.Window,
         });
 
         dialog.add_response("close", _("_Resume"));
@@ -162,7 +161,7 @@ export class RecorderWidget extends Gtk.Box {
 
         dialog.connect("response::close", this.onResume.bind(this));
 
-        dialog.present();
+        dialog.present(this.root as Gtk.Window);
     }
 
     private onStop(): void {
