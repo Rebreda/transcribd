@@ -1,17 +1,15 @@
-@define-color dimmed_color alpha(currentColor, .55);
-
 .recorder-time-label {
   font-size: 32pt;
   font-weight: 300;
 }
 
 @keyframes clocks-blink {
-  0% { color: @dimmed_color; }
-  100% { color: @destructive_color; }
+  0% { color: color-mix(in srgb, currentColor var(--dim-opacity), transparent); }
+  100% { color: var(--destructive-color); }
 }
 
 .recorder-time-label {
-  color: @dimmed_color;
+  color: color-mix(in srgb, currentColor var(--dim-opacity), transparent);
 }
 
 .recorder-time-label.paused {
