@@ -4,16 +4,16 @@
 }
 
 @keyframes clocks-blink {
-  0% { color: color-mix(in srgb, currentColor var(--dim-opacity), transparent); }
+  0% { color: color-mix(in srgb, var(--window-fg-color) var(--dim-opacity), transparent); }
   100% { color: var(--destructive-color); }
 }
 
-.recorder-time-label {
-  color: color-mix(in srgb, currentColor var(--dim-opacity), transparent);
+.recorder-time-bin.paused {
+  color: var(--destructive-color);
 }
 
-.recorder-time-label.paused {
-	color: @destructive_color;
+.recorder-time-bin.paused .recorder-time-label {
+  color: inherit;
 	animation-name: clocks-blink;
 	animation-iteration-count: infinite;
 	animation-timing-function: cubic-bezier(1.0,0,0,1.0);

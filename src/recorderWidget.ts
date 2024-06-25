@@ -17,6 +17,7 @@ enum RecorderState {
 export class RecorderWidget extends Gtk.Box {
     private _recorderBox!: Gtk.Box;
     private _playbackStack!: Gtk.Stack;
+    private _recorderTimeBin!: Adw.Bin;
     private _recorderTime!: Gtk.Label;
     private _pauseBtn!: Gtk.Button;
     private _resumeBtn!: Gtk.Button;
@@ -32,6 +33,7 @@ export class RecorderWidget extends Gtk.Box {
                 InternalChildren: [
                     "recorderBox",
                     "playbackStack",
+                    "recorderTimeBin",
                     "recorderTime",
                     "pauseBtn",
                     "resumeBtn",
@@ -188,7 +190,7 @@ export class RecorderWidget extends Gtk.Box {
                 pauseAction.enabled = false;
                 resumeAction.enabled = true;
                 this._resumeBtn.grab_focus();
-                this._recorderTime.add_css_class("paused");
+                this._recorderTimeBin.add_css_class("paused");
                 break;
             case RecorderState.Recording:
                 startAction.enabled = false;
@@ -196,7 +198,7 @@ export class RecorderWidget extends Gtk.Box {
                 resumeAction.enabled = false;
                 pauseAction.enabled = true;
                 this._pauseBtn.grab_focus();
-                this._recorderTime.remove_css_class("paused");
+                this._recorderTimeBin.remove_css_class("paused");
                 break;
             case RecorderState.Stopped:
                 startAction.enabled = true;
