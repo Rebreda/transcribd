@@ -133,24 +133,25 @@ export class WaveForm extends Gtk.DrawingArea {
 
         let pointer = horizCenter + da._position;
 
-        const styleContext = da.get_style_context();
-        const leftColor = styleContext.get_color();
+        const styleManager = Adw.StyleManager.get_default();
 
-        const rightColor = styleContext.lookup_color("dimmed_color")[1];
+        const leftColor = da.get_color();
+        const rightColor = da.get_color();
+        rightColor.alpha *= styleManager.high_contrast ? 0.9 : 0.55;
 
         let dividerColor;
 
         if (da.waveType === WaveType.Player) {
-            const styleManager = Adw.StyleManager.get_default();
             const accent = styleManager.accent_color;
             const dark = styleManager.dark;
 
             dividerColor = Adw.accent_color_to_standalone_rgba(accent, dark);
         } else {
+            const styleContext = da.get_style_context();
             const lookupColor = styleContext.lookup_color("destructive_color");
             const ok = lookupColor[0];
             dividerColor = lookupColor[1];
-            if (!ok) dividerColor = styleContext.get_color();
+            if (!ok) dividerColor = da.get_color();
         }
 
         // Because the cairo module isn't real, we have to use these to ignore `any`.
