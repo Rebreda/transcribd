@@ -1,24 +1,26 @@
 # Georgian translation for gnome-sound-recorder.
 # Copyright (C) 2023 gnome-sound-recorder's COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-sound-recorder package.
-# Ekaterine Papava <papava.e@gtu.ge>, 2023.
+# Ekaterine Papava <papava.e@gtu.ge>, 2023-2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-03-21 05:04+0100\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-06-23 21:53+0000\n"
+"PO-Revision-Date: 2024-06-25 05:30+0200\n"
 "Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
 "Language-Team: Georgian <ka@li.org>\n"
 "Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.3.2\n"
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "Vocalis"
 
@@ -28,7 +30,6 @@ msgstr "ჩაიწერეთ ხმა მიკროფონიდან 
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: data/app.drey.Vocalis.desktop.in.in:10
-#| msgid "Audio;Application;Record;"
 msgid "Audio;Application;Record;Sound Recorder;"
 msgstr ""
 "Audio;Application;Record;Sound Recorder;აუდიო;აპლიკაცია;ჩაწერა;ხმისჩაწერა;"
@@ -58,10 +59,11 @@ msgid "Supported audio formats:"
 msgstr "მხარდაჭერილი აუდიო ფორმატები:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+#| msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 და MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "Christopher Davis"
 
@@ -233,7 +235,7 @@ msgstr "ჩანაწერების დამატება"
 #: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr ""
-"გამოიყენეთ <b>ჩაწერის</b> ღილაკი, თქვენი ხმოვანი ჩანაწერების შესაქმნელად."
+"გამოიყენეთ <b>ჩაწერის</b> ღილაკი, თქვენი ხმოვანი ჩანაწერების შესაქმნელად"
 
 #: data/ui/window.ui:93
 msgid "Preferred Format"
@@ -274,6 +276,102 @@ msgstr "_კლავიატურის მალსახმობები"
 #: data/ui/window.ui:135
 msgid "About Vocalis"
 msgstr "Vocalis-ის შესახებ"
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr "temuri Doghonadze"
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "%d-ის ჩაწერა"
+
+#: src/recorderWidget.ts:139
+msgid "Delete Recording?"
+msgstr "წავშალო ჩანაწერი?"
+
+#: src/recorderWidget.ts:140
+msgid "This recording will not be saved."
+msgstr "ჩანაწერი არ შეინახება."
+
+#: src/recorderWidget.ts:143
+msgid "_Resume"
+msgstr "_გაგრძელება"
+
+#: src/recorderWidget.ts:144
+msgid "_Delete"
+msgstr "_წაშლა"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "ჩანაწერის გატანა"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "_გატანა"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "გაუ_ქმება"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "დღეზე ნაკლების წინ"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "გუშინ"
+
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "%d დღის წინ"
+msgstr[1] "%d დღის წინ"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "წინა კვირაში"
+
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "%d კვირის წინ"
+msgstr[1] "%d კვირის წინ"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "წინა თვეში"
+
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "%d თვის წინ"
+msgstr[1] "%d თვის წინ"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "შარშან"
+
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "%d წლის წინ"
+msgstr[1] "%d წლის წინ"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "ჩანაწერი წაშლილია"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "დაბრუნება"
 
 #~ msgid "Sound Recorder"
 #~ msgstr "ხმის ჩამწერი"
