@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
-"POT-Creation-Date: 2024-03-30 17:08+0000\n"
-"PO-Revision-Date: 2024-04-01 13:04+0200\n"
+"POT-Creation-Date: 2024-06-23 21:53+0000\n"
+"PO-Revision-Date: 2024-06-25 15:52+0200\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <gnome-si@googlegroups.com>\n"
 "Language: sl\n"
@@ -24,6 +24,7 @@ msgstr ""
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "Vocalis"
 
@@ -64,10 +65,10 @@ msgid "Supported audio formats:"
 msgstr "Podprti zvočni zapisi:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 in MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 in MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "Christopher Davis"
 
@@ -280,3 +281,107 @@ msgstr "_Tipkovne bližnjice"
 #: data/ui/window.ui:135
 msgid "About Vocalis"
 msgstr "O programu Vocalis"
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr "Martin Srebotnjak <miles@filmsi.net>"
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "Snemanje %d"
+
+#: src/recorderWidget.ts:139
+msgid "Delete Recording?"
+msgstr "Ali želite izbrisati posnetek?"
+
+#: src/recorderWidget.ts:140
+msgid "This recording will not be saved."
+msgstr "Ta posnetek ne bo shranjen."
+
+#: src/recorderWidget.ts:143
+msgid "_Resume"
+msgstr "Na_daljuj"
+
+#: src/recorderWidget.ts:144
+msgid "_Delete"
+msgstr "_Izbriši"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "Izvozi posnetek"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "I_zvozi"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "Pre_kliči"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "Pred manj kot enim dnem"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "Včeraj"
+
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "Pred %d dnevi"
+msgstr[1] "Pred %d dnevom"
+msgstr[2] "Pred %d dnevoma"
+msgstr[3] "Pred %d dnevi"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "Prejšnji teden"
+
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "Pred %d tedni"
+msgstr[1] "Pred %d tednom"
+msgstr[2] "Pred %d tednoma"
+msgstr[3] "Pred %d tedni"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "Prejšnji mesec"
+
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "Pred %d meseci"
+msgstr[1] "Pred %d mesecem"
+msgstr[2] "Pred %d mesecema"
+msgstr[3] "Pred %d meseci"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "Lani"
+
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "Pred %d leti"
+msgstr[1] "Pred %d letom"
+msgstr[2] "Pred %d letoma"
+msgstr[3] "Pred %d leti"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "Posnetek izbrisan"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "Razveljavi"
