@@ -8,11 +8,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-04-15 09:33+0530\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-06-23 21:53+0000\n"
+"PO-Revision-Date: 2024-06-25 14:50+0530\n"
 "Last-Translator: Scrambled777 <weblate.scrambled777@simplelogin.com>\n"
-"Language-Team: Hindi\n"
+"Language-Team: Hindi <indlinux-hindi@lists.sourceforge.net>\n"
 "Language: hi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,10 +23,11 @@ msgstr ""
 "X-DL-Branch: master\n"
 "X-DL-Domain: po\n"
 "X-DL-State: Translating\n"
-"X-Generator: Gtranslator 46.0\n"
+"X-Generator: Gtranslator 46.1\n"
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "वोकलिस"
 
@@ -37,7 +38,7 @@ msgstr "माइक्रोफोन के माध्यम से ध्�
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: data/app.drey.Vocalis.desktop.in.in:10
 msgid "Audio;Application;Record;Sound Recorder;"
-msgstr "Audio;Application;Record;ऑडियो;अनुप्रयोग;रिकॉर्ड;साउंड रिकॉर्डर;"
+msgstr "ऑडियो;अनुप्रयोग;रिकॉर्ड;ध्वनि रिकॉर्डर;"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:6
 msgid "Take notes with your voice"
@@ -64,28 +65,28 @@ msgid "Supported audio formats:"
 msgstr "समर्थित ऑडियो प्रारूप:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 और MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 और MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "क्रिस्टोफर डेविस"
 
 #: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
-msgstr "विंडो का आकार"
+msgstr "खिड़की का आकार"
 
 #: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
-msgstr "विंडो का आकार (चौड़ाई और ऊँचाई)"
+msgstr "खिड़की का आकर (चौड़ाई और ऊंचाई)"
 
 #: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
-msgstr "विंडो का स्थान"
+msgstr "खिड़की का स्थान"
 
 #: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
-msgstr "विंडो का स्थान (x और y)"
+msgstr "खिड़की का स्थान (x और y)।"
 
 # Exact translation is not done, as it looks weird. Instead, this translation describes what the dconf setting would actually do (this string is displayed in apps like dconf-editor)
 #: data/app.drey.Vocalis.gschema.xml.in:25
@@ -133,12 +134,12 @@ msgstr "रिकॉर्डिंग रोकें"
 #: data/ui/help-overlay.ui:27
 msgctxt "shortcut window"
 msgid "Play / Pause / Resume"
-msgstr "बजाएँ / ठहरें / वहीं से शुरू करें"
+msgstr "बजाएं / ठहरें / वहीं से शुरू करें"
 
 #: data/ui/help-overlay.ui:34
 msgctxt "shortcut window"
 msgid "Delete"
-msgstr "मिटाएँ"
+msgstr "मिटाएं"
 
 #: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
@@ -163,12 +164,12 @@ msgstr "रिकार्डिंग"
 #: data/ui/help-overlay.ui:63
 msgctxt "shortcut window"
 msgid "Seek Backward"
-msgstr "पीछे पहुँचाएँ"
+msgstr "पीछे पहुंचाएं"
 
 #: data/ui/help-overlay.ui:69
 msgctxt "shortcut window"
 msgid "Seek Forward"
-msgstr "आगे पहुँचाएँ"
+msgstr "आगे पहुंचाएं"
 
 #: data/ui/help-overlay.ui:75
 msgctxt "shortcut window"
@@ -186,7 +187,7 @@ msgstr "रिकॉर्डिंग को वहीं से शुरू �
 
 #: data/ui/recorder.ui:61
 msgid "Pause Recording"
-msgstr "रिकॉर्डिंग ठहराएँ"
+msgstr "रिकॉर्डिंग ठहराएं"
 
 #: data/ui/recorder.ui:78
 msgid "Stop Recording"
@@ -194,11 +195,11 @@ msgstr "रिकॉर्डिंग रोकें"
 
 #: data/ui/recorder.ui:98
 msgid "Delete Recording"
-msgstr "रिकॉर्डिंग हटाएँ"
+msgstr "रिकॉर्डिंग मिटाएं"
 
 #: data/ui/row.ui:109
 msgid "Delete"
-msgstr "हटाएँ"
+msgstr "मिटाएं"
 
 #: data/ui/row.ui:129
 msgid "Seek 10s Backward"
@@ -206,7 +207,7 @@ msgstr "10 सेकेंड पीछे करें"
 
 #: data/ui/row.ui:147
 msgid "Play"
-msgstr "बजाएँ"
+msgstr "बजाएं"
 
 #: data/ui/row.ui:171
 msgid "Pause"
@@ -238,11 +239,11 @@ msgstr "मुख्य मेनू"
 
 #: data/ui/window.ui:56
 msgid "Add Recordings"
-msgstr "रिकॉर्डिंग जोङें"
+msgstr "रिकॉर्डिंग जोड़ें"
 
 #: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
-msgstr "<b>रिकार्ड करें</b> बटन का प्रयोग कर ध्वनि की रिकॉर्डिंग करें।"
+msgstr "ध्वनि रिकॉर्डिंग करने के लिए <b>रिकार्ड करें</b> बटन का उपयोग करें"
 
 #: data/ui/window.ui:93
 msgid "Preferred Format"
@@ -270,11 +271,11 @@ msgstr "ऑडियो चैनल"
 
 #: data/ui/window.ui:118
 msgid "Stereo"
-msgstr "द्वैध (स्टीरियो)"
+msgstr "स्टीरियो"
 
 #: data/ui/window.ui:123
 msgid "Mono"
-msgstr "एकल (मोनो)"
+msgstr "मोनो"
 
 #: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
@@ -284,97 +285,101 @@ msgstr "कुंजीपट शार्टकट (_K)"
 msgid "About Vocalis"
 msgstr "वोकलिस के बारे में"
 
-#~ msgid "Sound Recorder"
-#~ msgstr "ध्वनि रिकॉर्डर"
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr ""
+"Hemish (हेमिश) <hemish04082005@gmail.com>\n"
+"Scrambled777 <weblate.scrambled777@simplelogin.com>, 2024"
 
-#~ msgid "A simple, modern sound recorder for GNOME"
-#~ msgstr "गनोम के लिए एक सरल और आधुनिक ध्वनि रिकॉर्डर"
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "रिकॉर्डिंग %d"
 
-#~ msgid "The GNOME Project"
-#~ msgstr "दी गनोम प्रॉजेक्ट"
+#: src/recorderWidget.ts:139
+msgid "Delete Recording?"
+msgstr "रिकॉर्डिंग मिटाएं?"
 
-#~ msgctxt "shortcut window"
-#~ msgid "Keyboard shortcuts"
-#~ msgstr "कुंजीपटल शार्टकट"
+#: src/recorderWidget.ts:140
+msgid "This recording will not be saved."
+msgstr "यह रिकॉर्डिंग नहीं सहेजी जाएगी।"
 
-#~ msgid "About Sound Recorder"
-#~ msgstr "'ध्वनि रिकॉर्डर' का परिचय"
+#: src/recorderWidget.ts:143
+msgid "_Resume"
+msgstr "पुनः आरंभ (_R)"
 
-#~ msgid "translator-credits"
-#~ msgstr "Hemish (हेमिश) <hemish04082005@gmail.com>"
+#: src/recorderWidget.ts:144
+msgid "_Delete"
+msgstr "मिटाएं (_D)"
 
-#~ msgid "A Sound Recording Application for GNOME"
-#~ msgstr "गनोम के लिए एक ध्वनि रिकॉर्ड करने की एप्लिकेशन"
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "रिकॉर्डिंग निर्यात करें"
 
-#, javascript-format
-#~ msgid "Recording %d"
-#~ msgstr "रिकॉर्डिंग %d"
+#: src/row.ts:142
+msgid "_Export"
+msgstr "निर्यात करें (_E)"
 
-#~ msgid "Delete recording?"
-#~ msgstr "रिकॉर्डिंग हटाएँ?"
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "रद्द करें (_C)"
 
-#~ msgid "This recording will not be saved."
-#~ msgstr "यह रिकॉर्डिंग नहीं सहेजी जाएगी।"
-
-#~ msgid "Resume"
-#~ msgstr "पुनः आरंभ"
-
-#~ msgid "Recordings"
-#~ msgstr "रिकॉर्डिंग"
-
-#, javascript-format
-#~ msgid "%s (Old)"
-#~ msgstr "%s (पुरानी)"
-
-#~ msgid "Export Recording"
-#~ msgstr "रिकॉर्डिंग निर्यात करें"
-
-#~ msgid "_Export"
-#~ msgstr "निर्यात करें (_E)"
-
-#~ msgid "_Cancel"
-#~ msgstr "रद्द (_C)"
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "एक दिन से भी कम समय पहले"
 
 # As there is no possibility of a recording done in future (also no future 'tomorrow' string is provided), we need not specify that this 'कल' refers to 'yesterday'
-#~ msgid "Yesterday"
-#~ msgstr "कल"
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "बिता कल"
 
-#, javascript-format
-#~ msgid "%d day ago"
-#~ msgid_plural "%d days ago"
-#~ msgstr[0] "%d दिन पहले अपडेट किया गया।"
-#~ msgstr[1] "%d दिन पहले"
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "%d दिन पहले"
+msgstr[1] "%d दिनों पहले"
 
-#~ msgid "Last week"
-#~ msgstr "पिछले हफ़्ते"
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "पिछले हफ़्ते"
 
-#, javascript-format
-#~ msgid "%d week ago"
-#~ msgid_plural "%d weeks ago"
-#~ msgstr[0] "%d सप्ताह पहले अपडेट किया गया।"
-#~ msgstr[1] "%d सप्ताह पहले"
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "%d हफ्ता पहले"
+msgstr[1] "%d हफ्तों पहले"
 
-#~ msgid "Last month"
-#~ msgstr "पिछले महीने"
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "पिछले महीने"
 
-#, javascript-format
-#~ msgid "%d month ago"
-#~ msgid_plural "%d months ago"
-#~ msgstr[0] "%d महीने पहले"
-#~ msgstr[1] "%d महीने पहले"
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "%d महीने पहले"
+msgstr[1] "%d महीने पहले"
 
-#~ msgid "Last year"
-#~ msgstr "पिछले साल"
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "पिछले साल"
 
-#, javascript-format
-#~ msgid "%d year ago"
-#~ msgid_plural "%d years ago"
-#~ msgstr[0] "%d साल पहले"
-#~ msgstr[1] "%d साल पहले"
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "%d साल पहले"
+msgstr[1] "%d साल पहले"
 
-#, javascript-format
-#~ msgid "\"%s\" deleted"
-#~ msgstr "\"%s\" को मिटा दिया गया"
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "रिकॉर्डिंग मिटाई गई"
 
-#~ msgid "Undo"
-#~ msgstr "पहले जैसा"
+#: src/window.ts:224
+msgid "Undo"
+msgstr "पूर्ववत करें"
