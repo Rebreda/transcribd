@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder 3.9.91\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-04-07 10:04+0300\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-06-23 21:53+0000\n"
+"PO-Revision-Date: 2024-07-10 23:49+0300\n"
 "Last-Translator: Yosef Or Boczko <yoseforb@gmail.com>\n"
 "Language-Team: Hebrew\n"
 "Language: he\n"
@@ -18,10 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : n==2 ? 1 : n>10 && n%10==0 ? "
 "2 : 3)\n"
-"X-Generator: Gtranslator 45.3\n"
+"X-Generator: Gtranslator 46.1\n"
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "קולי"
 
@@ -56,31 +57,31 @@ msgstr ""
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:18
 msgid "Supported audio formats:"
-msgstr "Supported audio formats:"
+msgstr "תבניות שמע נתמכות:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "‏Opus, FLAC, MP3 ו־MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "Christopher Davis"
 
 #: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
-msgstr "Window size"
+msgstr "גודל החלון"
 
 #: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
-msgstr "Window size (width and height)."
+msgstr "גודל החלון (רוחב וגובה)."
 
 #: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
-msgstr "Window position"
+msgstr "מיקום החלון"
 
 #: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
-msgstr "Window position (x and y)."
+msgstr "מיקום החלון (צירים x ו־y)"
 
 #: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
@@ -275,6 +276,116 @@ msgstr "_צירופי מקשים"
 msgid "About Vocalis"
 msgstr "על אודות קולי"
 
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr ""
+"יוסף אור בוצ׳קו <yoseforb@gmail.com>\n"
+"<a href=\"https://l10n.gnome.org/teams/he/\">מיזם תרגום GNOME לעברית</a>"
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "הקלטה %d"
+
+#: src/recorderWidget.ts:139
+msgid "Delete Recording?"
+msgstr "למחוק את ההקלטה?"
+
+#: src/recorderWidget.ts:140
+msgid "This recording will not be saved."
+msgstr "הקלטה זו לא תישמר"
+
+#: src/recorderWidget.ts:143
+msgid "_Resume"
+msgstr "לה_משיך"
+
+#: src/recorderWidget.ts:144
+msgid "_Delete"
+msgstr "_מחיקה"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "ייצור הקלטה"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "_ייצוא"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "_ביטול"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "פחות מיום"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "אתמול"
+
+#: src/utils.ts:55
+#, c-format
+# msgid_plural "%d days ago"
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "אתמול"
+msgstr[1] "שלשום"
+msgstr[2] "לפני %d ימים"
+msgstr[3] "לפני %d ימים"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "לפני שבוע"
+
+#: src/utils.ts:59
+#, c-format
+# msgid_plural "%d weeks ago"
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "שבוע שעבר"
+msgstr[1] "לפני שבועיים"
+msgstr[2] "לפני %d שבועות"
+msgstr[3] "לפני %d שבועות"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "לפני חודש"
+
+#: src/utils.ts:65
+#, c-format
+# msgid_plural "%d months ago"
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "לפני חודש"
+msgstr[1] "לפני חודשיים"
+msgstr[2] "לפני %d חודשים"
+msgstr[3] "לפני %d חודשים"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "לפני שנה"
+
+#: src/utils.ts:72
+#, c-format
+# msgid_plural "%d years ago"
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "לפני שנה"
+msgstr[1] "לפני שנתיים"
+msgstr[2] "לפני %d שנים"
+msgstr[3] "לפני %d שנים"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "נמחקה הקלטה"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "ביטול"
+
 #~ msgid "Sound Recorder"
 #~ msgstr "רשמקול"
 
@@ -288,9 +399,6 @@ msgstr "על אודות קולי"
 #~ msgid "Keyboard shortcuts"
 #~ msgstr "צירופי מקשים"
 
-#~ msgid "Undo"
-#~ msgstr "ביטול"
-
 #~ msgid "Close"
 #~ msgstr "סגירה"
 
@@ -300,28 +408,12 @@ msgstr "על אודות קולי"
 #~ msgid "About Sound Recorder"
 #~ msgstr "על אודות רשמקול"
 
-#~ msgid "translator-credits"
-#~ msgstr ""
-#~ "יוסף אור בוצ׳קו <yoseforb@gmail.com>\n"
-#~ "<a href=\"https://l10n.gnome.org/teams/he/\">מיזם תרגום GNOME לעברית</a>"
-
 #~ msgid "A Sound Recording Application for GNOME"
 #~ msgstr "יישום הקלטת שמע עבור GNOME"
-
-#, javascript-format
-#~| msgid "Recording "
-#~ msgid "Recording %d"
-#~ msgstr "הקלטה %d"
 
 #~| msgid "Unable to play recording"
 #~ msgid "Delete recording?"
 #~ msgstr "מחיקת ההקלטה?"
-
-#~ msgid "This recording will not be saved."
-#~ msgstr "הקלטה זו לא תישמר"
-
-#~ msgid "Resume"
-#~ msgstr "המשך"
 
 #~ msgid "Recordings"
 #~ msgstr "הקלטות"
@@ -329,57 +421,6 @@ msgstr "על אודות קולי"
 #, javascript-format
 #~ msgid "%s (Old)"
 #~ msgstr "%s (ישן)"
-
-#~| msgid "Recordings"
-#~ msgid "Export Recording"
-#~ msgstr "ייצור הקלטה"
-
-#~ msgid "_Export"
-#~ msgstr "_ייצוא"
-
-#~| msgid "Cancel"
-#~ msgid "_Cancel"
-#~ msgstr "_ביטול"
-
-#~ msgid "Yesterday"
-#~ msgstr "אתמול"
-
-#, javascript-format
-#~ msgid "%d day ago"
-#~ msgid_plural "%d days ago"
-#~ msgstr[0] "אתמול"
-#~ msgstr[1] "לפני %d ימים"
-#~ msgstr[2] "שלשום"
-
-#~ msgid "Last week"
-#~ msgstr "לפני שבוע"
-
-#, javascript-format
-#~ msgid "%d week ago"
-#~ msgid_plural "%d weeks ago"
-#~ msgstr[0] "לפני שבוע"
-#~ msgstr[1] "לפני %d שבועות"
-#~ msgstr[2] "לפני שבועיים"
-
-#~ msgid "Last month"
-#~ msgstr "לפני חודש"
-
-#, javascript-format
-#~ msgid "%d month ago"
-#~ msgid_plural "%d months ago"
-#~ msgstr[0] "לפני חודש"
-#~ msgstr[1] "לפני %d חודשים"
-#~ msgstr[2] "לפני חודשיים"
-
-#~ msgid "Last year"
-#~ msgstr "לפני שנה"
-
-#, javascript-format
-#~ msgid "%d year ago"
-#~ msgid_plural "%d years ago"
-#~ msgstr[0] "לפני שנה"
-#~ msgstr[1] "לפני %d שנים"
-#~ msgstr[2] "לפני שנתיים"
 
 #, javascript-format
 #~ msgid "\"%s\" deleted"
