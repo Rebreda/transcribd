@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vocalis main\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-03-15 09:00+0100\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-06-23 21:53+0000\n"
+"PO-Revision-Date: 2024-06-24 00:27+0200\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -21,6 +21,7 @@ msgstr ""
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "Vocalis"
 
@@ -58,10 +59,10 @@ msgid "Supported audio formats:"
 msgstr "Ljudformat som stöds:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 och MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 och MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "Christopher Davis"
 
@@ -274,6 +275,107 @@ msgstr "_Tangentbordsgenvägar"
 msgid "About Vocalis"
 msgstr "Om Vocalis"
 
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr ""
+"Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
+"Sebastian Rasmussen <sebras@gmail.com>\n"
+"\n"
+"Skicka synpunkter på översättningen till\n"
+"<tp-sv@listor.tp-sv.se>."
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "Inspelning %d"
+
+#: src/recorderWidget.ts:139
+msgid "Delete Recording?"
+msgstr "Ta bort inspelning?"
+
+#: src/recorderWidget.ts:140
+msgid "This recording will not be saved."
+msgstr "Denna inspelning kommer inte att sparas."
+
+#: src/recorderWidget.ts:143
+msgid "_Resume"
+msgstr "Åte_ruppta"
+
+#: src/recorderWidget.ts:144
+msgid "_Delete"
+msgstr "_Ta bort"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "Exportera inspelning"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "_Exportera"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "A_vbryt"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "Mindre än en dag sedan"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "Igår"
+
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "%d dag sedan"
+msgstr[1] "%d dagar sedan"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "Förra veckan"
+
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "%d vecka sedan"
+msgstr[1] "%d veckor sedan"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "Förra månaden"
+
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "%d månad sedan"
+msgstr[1] "%d månader sedan"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "Förra året"
+
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "%d år sedan"
+msgstr[1] "%d år sedan"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "Inspelning borttagen"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "Ångra"
+
 #~ msgid "Sound Recorder"
 #~ msgstr "Ljudinspelare"
 
@@ -287,9 +389,6 @@ msgstr "Om Vocalis"
 #~ msgid "Keyboard shortcuts"
 #~ msgstr "Tangentbordsgenvägar"
 
-#~ msgid "Undo"
-#~ msgstr "Ångra"
-
 #~ msgid "Close"
 #~ msgstr "Stäng"
 
@@ -299,29 +398,11 @@ msgstr "Om Vocalis"
 #~ msgid "About Sound Recorder"
 #~ msgstr "Om Ljudinspelare"
 
-#~ msgid "translator-credits"
-#~ msgstr ""
-#~ "Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
-#~ "Sebastian Rasmussen <sebras@gmail.com>\n"
-#~ "\n"
-#~ "Skicka synpunkter på översättningen till\n"
-#~ "<tp-sv@listor.tp-sv.se>."
-
 #~ msgid "A Sound Recording Application for GNOME"
 #~ msgstr "Ett ljudinspelningsprogram för GNOME"
 
-#, javascript-format
-#~ msgid "Recording %d"
-#~ msgstr "Inspelning %d"
-
 #~ msgid "Delete recording?"
 #~ msgstr "Ta bort inspelning?"
-
-#~ msgid "This recording will not be saved."
-#~ msgstr "Denna inspelning kommer inte att sparas."
-
-#~ msgid "Resume"
-#~ msgstr "Återuppta"
 
 #~ msgid "Recordings"
 #~ msgstr "Inspelningar"
@@ -329,51 +410,6 @@ msgstr "Om Vocalis"
 #, javascript-format
 #~ msgid "%s (Old)"
 #~ msgstr "%s (Gammal)"
-
-#~ msgid "Export Recording"
-#~ msgstr "Exportera inspelning"
-
-#~ msgid "_Export"
-#~ msgstr "_Exportera"
-
-#~ msgid "_Cancel"
-#~ msgstr "A_vbryt"
-
-#~ msgid "Yesterday"
-#~ msgstr "Igår"
-
-#, javascript-format
-#~ msgid "%d day ago"
-#~ msgid_plural "%d days ago"
-#~ msgstr[0] "%d dag sedan"
-#~ msgstr[1] "%d dagar sedan"
-
-#~ msgid "Last week"
-#~ msgstr "Förra veckan"
-
-#, javascript-format
-#~ msgid "%d week ago"
-#~ msgid_plural "%d weeks ago"
-#~ msgstr[0] "%d vecka sedan"
-#~ msgstr[1] "%d veckor sedan"
-
-#~ msgid "Last month"
-#~ msgstr "Förra månaden"
-
-#, javascript-format
-#~ msgid "%d month ago"
-#~ msgid_plural "%d months ago"
-#~ msgstr[0] "%d månad sedan"
-#~ msgstr[1] "%d månader sedan"
-
-#~ msgid "Last year"
-#~ msgstr "Förra året"
-
-#, javascript-format
-#~ msgid "%d year ago"
-#~ msgid_plural "%d years ago"
-#~ msgstr[0] "%d år sedan"
-#~ msgstr[1] "%d år sedan"
 
 #, javascript-format
 #~ msgid "\"%s\" deleted"
