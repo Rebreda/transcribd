@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-03-17 12:22+0200\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-06-23 21:53+0000\n"
+"PO-Revision-Date: 2024-08-05 20:26+0300\n"
 "Last-Translator: Jiri Grönroos <jiri.gronroos+l10n@iki.fi>\n"
 "Language-Team: suomi <lokalisointi-lista@googlegroups.com>\n"
 "Language: fi\n"
@@ -17,10 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 3.4.4\n"
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "Vocalis"
 
@@ -30,7 +31,6 @@ msgstr "Tallenna ääntä mikrofonilta ja toista tallenteita"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: data/app.drey.Vocalis.desktop.in.in:10
-#| msgid "Audio;Application;Record;"
 msgid "Audio;Application;Record;Sound Recorder;"
 msgstr "Audio;Application;Record;Sound Recorder;ääni;nauhoitus;"
 
@@ -59,10 +59,11 @@ msgid "Supported audio formats:"
 msgstr "Tuetut äänimuodot:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 ja MOV"
+#| msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 ja MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "Christopher Davis"
 
@@ -275,6 +276,104 @@ msgstr "_Pikanäppäimet"
 msgid "About Vocalis"
 msgstr "Tietoja - Vocalis"
 
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr ""
+"Juhani Numminen, 2014\n"
+"Jiri Grönroos, 2013-2024"
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "Nauhoitus %d"
+
+#: src/recorderWidget.ts:139
+msgid "Delete Recording?"
+msgstr "Poistetaanko nauhoitus?"
+
+#: src/recorderWidget.ts:140
+msgid "This recording will not be saved."
+msgstr "Tätä nauhoitusta ei tallenneta."
+
+#: src/recorderWidget.ts:143
+msgid "_Resume"
+msgstr "_Jatka"
+
+#: src/recorderWidget.ts:144
+msgid "_Delete"
+msgstr "_Poista"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "Vie nauhoitus"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "_Vie"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "_Peru"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "Alle päivä sitten"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "Eilen"
+
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "%d päivä sitten"
+msgstr[1] "%d päivää sitten"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "Viime viikolla"
+
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "%d viikko sitten"
+msgstr[1] "%d viikkoa sitten"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "Viime kuussa"
+
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "%d kuukausi sitten"
+msgstr[1] "%d kuukautta sitten"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "Viime vuonna"
+
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "%d vuosi sitten"
+msgstr[1] "%d vuotta sitten"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "Nauhoitus poistettu"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "Kumoa"
+
 #~ msgid "Sound Recorder"
 #~ msgstr "Ääninauhuri"
 
@@ -288,9 +387,6 @@ msgstr "Tietoja - Vocalis"
 #~ msgid "Keyboard shortcuts"
 #~ msgstr "Pikanäppäimet"
 
-#~ msgid "Undo"
-#~ msgstr "Kumoa"
-
 #~ msgid "Close"
 #~ msgstr "Sulje"
 
@@ -300,26 +396,11 @@ msgstr "Tietoja - Vocalis"
 #~ msgid "About Sound Recorder"
 #~ msgstr "Tietoja - Ääninauhuri"
 
-#~ msgid "translator-credits"
-#~ msgstr ""
-#~ "Juhani Numminen, 2014\n"
-#~ "Jiri Grönroos, 2013-2020"
-
 #~ msgid "A Sound Recording Application for GNOME"
 #~ msgstr "Äänen nauhoittamiseen tarkoitettu sovellus Gnomelle"
 
-#, javascript-format
-#~ msgid "Recording %d"
-#~ msgstr "Nauhoitus %d"
-
 #~ msgid "Delete recording?"
 #~ msgstr "Poistetaanko nauhoitus?"
-
-#~ msgid "This recording will not be saved."
-#~ msgstr "Tätä nauhoitusta ei tallenneta."
-
-#~ msgid "Resume"
-#~ msgstr "Jatka"
 
 #~ msgid "Recordings"
 #~ msgstr "Nauhoitukset"
@@ -327,51 +408,6 @@ msgstr "Tietoja - Vocalis"
 #, javascript-format
 #~ msgid "%s (Old)"
 #~ msgstr "%s (vanha)"
-
-#~ msgid "Export Recording"
-#~ msgstr "Vie nauhoitus"
-
-#~ msgid "_Export"
-#~ msgstr "_Vie"
-
-#~ msgid "_Cancel"
-#~ msgstr "_Peru"
-
-#~ msgid "Yesterday"
-#~ msgstr "Eilen"
-
-#, javascript-format
-#~ msgid "%d day ago"
-#~ msgid_plural "%d days ago"
-#~ msgstr[0] "%d päivä sitten"
-#~ msgstr[1] "%d päivää sitten"
-
-#~ msgid "Last week"
-#~ msgstr "Viime viikolla"
-
-#, javascript-format
-#~ msgid "%d week ago"
-#~ msgid_plural "%d weeks ago"
-#~ msgstr[0] "%d viikko sitten"
-#~ msgstr[1] "%d viikkoa sitten"
-
-#~ msgid "Last month"
-#~ msgstr "Viime kuussa"
-
-#, javascript-format
-#~ msgid "%d month ago"
-#~ msgid_plural "%d months ago"
-#~ msgstr[0] "%d kuukausi sitten"
-#~ msgstr[1] "%d kuukautta sitten"
-
-#~ msgid "Last year"
-#~ msgstr "Viime vuonna"
-
-#, javascript-format
-#~ msgid "%d year ago"
-#~ msgid_plural "%d years ago"
-#~ msgstr[0] "%d vuosi sitten"
-#~ msgstr[1] "%d vuotta sitten"
 
 #, javascript-format
 #~ msgid "\"%s\" deleted"
