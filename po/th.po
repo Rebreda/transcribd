@@ -1,0 +1,485 @@
+# Thai translation for gnome-sound-recorder.
+# Copyright (C) 2018 gnome-sound-recorder's COPYRIGHT HOLDER
+# This file is distributed under the same license as the gnome-sound-recorder package.
+# Aefgh39622 <aefgh39622@gmail.com>, 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnome-sound-recorder master\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-07-08 14:41+0000\n"
+"PO-Revision-Date: 2024-09-10 15:27+0700\n"
+"Last-Translator: \n"
+"Language-Team: Thai <thai-l10n@googlegroups.com>\n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.5\n"
+
+#: data/app.drey.Vocalis.desktop.in.in:4 data/app.drey.Vocalis.metainfo.xml.in.in:5
+#: data/ui/window.ui:10 src/application.ts:50 src/application.ts:167
+msgid "Vocalis"
+msgstr "Vocalis"
+
+#: data/app.drey.Vocalis.desktop.in.in:5
+msgid "Record sound via the microphone and play it back"
+msgstr "บันทึกเสียงผ่านไมโครโฟนและเล่นเสียง"
+
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/app.drey.Vocalis.desktop.in.in:10
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr "เสียง;แอปพลิเคชัน;บันทึก;โปรแกรมบันทึกเสียง;"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "จดบันทึกด้วยเสียงของคุณเอง"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
+msgid ""
+"Vocalis provides a simple and modern interface that provides a straight-forward way to "
+"record and play voice memos."
+msgstr "Vocalis มีส่วนติดต่อที่เรียบง่ายและทันสมัยที่สามารถบันทึกและเล่นไฟล์เสียงได้อย่างล้ำหน้า"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
+msgid ""
+"Vocalis automatically handles the saving process so that you do not need to worry "
+"about accidentally discarding the previous recording."
+msgstr ""
+"Vocalis จะจัดการกระบวนการการบันทึกโดยอัตโนมัติ "
+"คุณจึงไม่ต้องกังวลว่าเสียงที่คุณบันทึกไว้ก่อนหน้านี้จะถูกละทิ้งไปอย่างไม่ได้ตั้งใจ"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
+msgid "Supported audio formats:"
+msgstr "รูปแบบเสียงที่รองรับ:"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 และ MOV"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
+
+#: data/app.drey.Vocalis.gschema.xml.in:15
+msgid "Window size"
+msgstr "ขนาดหน้าต่าง"
+
+#: data/app.drey.Vocalis.gschema.xml.in:16
+msgid "Window size (width and height)."
+msgstr "ขนาดหน้าต่าง (ความกว้างและความสูง)"
+
+#: data/app.drey.Vocalis.gschema.xml.in:20
+msgid "Window position"
+msgstr "ตำแหน่งหน้าต่าง"
+
+#: data/app.drey.Vocalis.gschema.xml.in:21
+msgid "Window position (x and y)."
+msgstr "ตำแหน่งหน้าต่าง (แกน x และ y)"
+
+#: data/app.drey.Vocalis.gschema.xml.in:25
+msgid "Maps media types to audio encoder preset names."
+msgstr "แมปประเภทสื่อเข้ากับชื่อค่าที่ตั้งไว้ของตัวเข้ารหัสเสียง"
+
+#: data/app.drey.Vocalis.gschema.xml.in:26
+msgid ""
+"Maps media types to audio encoder preset names. If there is no mapping set, the "
+"default encoder settings will be used."
+msgstr ""
+"แมปประเภทสื่อเข้ากับชื่อค่าที่ตั้งไว้ของตัวเข้ารหัสเสียง หากไม่มีการกำหนดการแมปไว้ "
+"การตั้งค่าตัวเข้ารหัสปริยายจะถูกใช้แทน"
+
+#: data/app.drey.Vocalis.gschema.xml.in:30
+msgid "Available channels"
+msgstr "ช่องที่พร้อมใช้งาน"
+
+#: data/app.drey.Vocalis.gschema.xml.in:31
+msgid ""
+"Maps available channels. If there is not no mapping set, stereo channel will be used "
+"by default."
+msgstr "แมปช่องที่พร้อมใช้งาน หากไม่มีการกำหนดการแมปไว้ ช่องสเตอริโอจะถูกใช้ตามค่าปริยาย"
+
+#: data/ui/help-overlay.ui:11
+msgctxt "shortcut window"
+msgid "General"
+msgstr "ทั่วไป"
+
+#: data/ui/help-overlay.ui:15
+msgctxt "shortcut window"
+msgid "Record"
+msgstr "บันทึก"
+
+#: data/ui/help-overlay.ui:21
+msgctxt "shortcut window"
+msgid "Stop Recording"
+msgstr "หยุดบันทึก"
+
+#: data/ui/help-overlay.ui:27
+msgctxt "shortcut window"
+msgid "Play / Pause / Resume"
+msgstr "เล่น / พัก / ต่อ"
+
+#: data/ui/help-overlay.ui:34
+msgctxt "shortcut window"
+msgid "Delete"
+msgstr "ลบ"
+
+#: data/ui/help-overlay.ui:40
+msgctxt "shortcut window"
+msgid "Open Main Menu"
+msgstr "เปิดเมนูหลัก"
+
+#: data/ui/help-overlay.ui:46
+msgctxt "shortcut window"
+msgid "Keyboard Shortcuts"
+msgstr "ปุ่มลัดแป้นพิมพ์"
+
+#: data/ui/help-overlay.ui:52
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "ออก"
+
+#: data/ui/help-overlay.ui:59
+msgctxt "shortcut window"
+msgid "Recording"
+msgstr "เสียงบันทึก"
+
+#: data/ui/help-overlay.ui:63
+msgctxt "shortcut window"
+msgid "Seek Backward"
+msgstr "กรอย้อนกลับ"
+
+#: data/ui/help-overlay.ui:69
+msgctxt "shortcut window"
+msgid "Seek Forward"
+msgstr "กรอไปข้างหน้า"
+
+#: data/ui/help-overlay.ui:75
+msgctxt "shortcut window"
+msgid "Rename"
+msgstr "เปลี่ยนชื่อ"
+
+#: data/ui/help-overlay.ui:81
+msgctxt "shortcut window"
+msgid "Export"
+msgstr "ส่งออก"
+
+#: data/ui/recorder.ui:50
+msgid "Resume Recording"
+msgstr "บันทึกต่อ"
+
+#: data/ui/recorder.ui:68
+msgid "Pause Recording"
+msgstr "พักการบันทึก"
+
+#: data/ui/recorder.ui:85
+msgid "Stop Recording"
+msgstr "หยุดบันทึก"
+
+#: data/ui/recorder.ui:105
+msgid "Delete Recording"
+msgstr "ลบเสียงบันทึก"
+
+#: data/ui/row.ui:109
+msgid "Delete"
+msgstr "ลบ"
+
+#: data/ui/row.ui:129
+msgid "Seek 10s Backward"
+msgstr "กรอย้อนกลับ 10 วินาที"
+
+#: data/ui/row.ui:147
+msgid "Play"
+msgstr "เล่น"
+
+#: data/ui/row.ui:171
+msgid "Pause"
+msgstr "พัก"
+
+#: data/ui/row.ui:194
+msgid "Seek 10s Forward"
+msgstr "กรอไปข้างหน้า 10 วินาที"
+
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "ส่งออก"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "เปลี่ยนชื่อ"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "บันทึก"
+
+#: data/ui/window.ui:24
+msgid "Record"
+msgstr "บันทึก"
+
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "เมนูหลัก"
+
+#: data/ui/window.ui:56
+msgid "Add Recordings"
+msgstr "เพิ่มเสียงบันทึก"
+
+#: data/ui/window.ui:57
+msgid "Use the <b>Record</b> button to make sound recordings"
+msgstr "กดปุ่ม <b>บันทึก</b> เพื่อเริ่มบันทึกเสียง"
+
+#: data/ui/window.ui:93
+msgid "Preferred Format"
+msgstr "รูปแบบที่ต้องการ"
+
+#: data/ui/window.ui:95
+msgid "Vorbis"
+msgstr "Vorbis"
+
+#: data/ui/window.ui:100
+msgid "Opus"
+msgstr "Opus"
+
+#: data/ui/window.ui:105
+msgid "FLAC"
+msgstr "FLAC"
+
+#: data/ui/window.ui:110
+msgid "MP3"
+msgstr "MP3"
+
+#: data/ui/window.ui:116
+msgid "Audio Channel"
+msgstr "ช่องเสียง"
+
+#: data/ui/window.ui:118
+msgid "Stereo"
+msgstr "สเตอริโอ"
+
+#: data/ui/window.ui:123
+msgid "Mono"
+msgstr "โมโน"
+
+#: data/ui/window.ui:130
+msgid "_Keyboard Shortcuts"
+msgstr "ปุ่_มลัดแป้นพิมพ์"
+
+#: data/ui/window.ui:135
+msgid "About Vocalis"
+msgstr "เกี่ยวกับ Vocalis"
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr "Aefgh39622 <aefgh39622@gmail.com>"
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "เสียงบันทึก %d"
+
+#: src/recorderWidget.ts:141
+msgid "Delete Recording?"
+msgstr "ต้องการลบเสียงบันทึกหรือไม่?"
+
+#: src/recorderWidget.ts:142
+msgid "This recording will not be saved."
+msgstr "เสียงบันทึกนี้จะไม่ถูกบันทึกไว้"
+
+#: src/recorderWidget.ts:145
+msgid "_Resume"
+msgstr "_บันทึกต่อ"
+
+#: src/recorderWidget.ts:146
+msgid "_Delete"
+msgstr "_ลบ"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "ส่งออกเสียงบันทึก"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "_ส่งออก"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "_ยกเลิก"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "ไม่ถึงหนึ่งวันที่แล้ว"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "เมื่อวาน"
+
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "%d วันที่แล้ว"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "สัปดาห์ที่แล้ว"
+
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "%d สัปดาห์ที่แล้ว"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "เดือนที่แล้ว"
+
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "%d เดือนที่แล้ว"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "ปีที่แล้ว"
+
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "%d ปีที่แล้ว"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "ลบเสียงบันทึกแล้ว"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "เรียกคืน"
+
+#~ msgid "Sound Recorder"
+#~ msgstr "โปรแกรมบันทึกเสียง"
+
+#~ msgid "A simple, modern sound recorder for GNOME"
+#~ msgstr "โปรแกรมบันทึกเสียงที่เรียบง่ายและทันสมัยสำหรับ GNOME"
+
+#~ msgid "The GNOME Project"
+#~ msgstr "โครงการ GNOME"
+
+#~ msgid "Microphone volume level"
+#~ msgstr "ระดับเสียงไมโครโฟน"
+
+#~ msgid "Microphone volume level."
+#~ msgstr "ระดับเสียงไมโครโฟน"
+
+#~ msgid "Speaker volume level"
+#~ msgstr "ระดับเสียงลำโพง"
+
+#~ msgid "Speaker volume level."
+#~ msgstr "ระดับเสียงลำโพง"
+
+#~ msgid "org.gnome.SoundRecorder"
+#~ msgstr "org.gnome.SoundRecorder"
+
+#~ msgid "SoundRecorder"
+#~ msgstr "SoundRecorder"
+
+#~ msgid "Sound Recorder started"
+#~ msgstr "เริ่มโปรแกรมบันทึกเสียงแล้ว"
+
+#~ msgid "Info"
+#~ msgstr "ข้อมูล"
+
+#~ msgid "Done"
+#~ msgstr "เสร็จสิ้น"
+
+#~ msgctxt "File Name"
+#~ msgid "Name"
+#~ msgstr "ชื่อ"
+
+#~ msgid "Source"
+#~ msgstr "ต้นฉบับ"
+
+#~ msgid "Date Modified"
+#~ msgstr "วันที่ปรับเปลี่ยน"
+
+#~ msgid "Date Created"
+#~ msgstr "วันที่สร้าง"
+
+#~ msgctxt "Media Type"
+#~ msgid "Type"
+#~ msgstr "ชนิด"
+
+#~ msgid "Unknown"
+#~ msgstr "ไม่รู้จัก"
+
+#~ msgid "Preferences"
+#~ msgstr "ค่าปรับแต่ง"
+
+#~ msgid "About Sound Recorder"
+#~ msgstr "เกี่ยวกับโปรแกรมบันทึกเสียง"
+
+#~ msgid "Recording…"
+#~ msgstr "กำลังบันทึก…"
+
+#, javascript-format
+#~ msgid "%d Recorded Sound"
+#~ msgid_plural "%d Recorded Sounds"
+#~ msgstr[0] "เสียงที่บันทึกไว้ %d แฟ้ม"
+
+#~ msgid "No Recorded Sounds"
+#~ msgstr "ไม่มีเสียงที่บันทึกไว้"
+
+#~ msgid "MOV"
+#~ msgstr "MOV"
+
+#~ msgid "Load More"
+#~ msgstr "โหลดเพิ่มเติม"
+
+#~ msgid "Unable to play recording"
+#~ msgstr "ไม่สามารถเล่นเสียงบันทึกได้"
+
+#~ msgid "Default mode"
+#~ msgstr "โหมดปริยาย"
+
+#~ msgid "Volume"
+#~ msgstr "ระดับเสียง"
+
+#~ msgid "Microphone"
+#~ msgstr "ไมโครโฟน"
+
+#~ msgid "Unable to create Recordings directory."
+#~ msgstr "ไม่สามารถสร้างไดเรกทอรี \"เสียงบันทึก\" ได้"
+
+#~ msgid "Please install the GStreamer 1.0 PulseAudio plugin."
+#~ msgstr "โปรดติดตั้งปลั๊กอิน GStreamer 1.0 PulseAudio"
+
+#~ msgid "Your audio capture settings are invalid."
+#~ msgstr "ค่าตั้งการจับเสียงของคุณไม่ถูกต้อง"
+
+#~ msgid "Not all elements could be created."
+#~ msgstr "ไม่สามารถสร้างอิลิเมนต์ได้ทั้งหมด"
+
+#~ msgid "Not all of the elements were linked."
+#~ msgstr "ไม่สามารถเชื่อมโยงอิลิเมนต์ได้ทั้งหมด"
+
+#~ msgid "No Media Profile was set."
+#~ msgstr "ไม่ได้กำหนดโพรไฟล์สื่อไว้"
+
+#~ msgid ""
+#~ "Unable to set the pipeline \n"
+#~ " to the recording state."
+#~ msgstr ""
+#~ "ไม่สามารถกำหนดไปป์ไลน์\n"
+#~ "ให้อยู่ในสถานะ \"กำลังบันทึก\" ได้"
+
+#, javascript-format
+#~ msgid "Clip %d"
+#~ msgstr "คลิป %d"
+
+#~ msgid "About"
+#~ msgstr "เกี่ยวกับ"
