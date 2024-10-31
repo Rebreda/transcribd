@@ -1,95 +1,93 @@
 # Indonesian translation for gnome-sound-recorder.
 # Copyright (C) 2014 gnome-sound-recorder's COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-sound-recorder package.
-# Andika Triwidada <andika@gmail.com>, 2014.
+# Andika Triwidada <andika@gmail.com>, 2014-2016, 2024.
 # Kukuh Syafaat <kukuhsyafaat@gnome.org>, 2017, 2019, 2020.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
-"issues\n"
-"POT-Creation-Date: 2020-09-09 18:18+0000\n"
-"PO-Revision-Date: 2020-09-11 22:29+0700\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-08-05 17:27+0000\n"
+"PO-Revision-Date: 2024-10-31 07:09+0700\n"
 "Last-Translator: Kukuh Syafaat <kukuhsyafaat@gnome.org>\n"
 "Language-Team: Indonesian <gnome-l10n-id@googlegroups.com>\n"
 "Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural= n!=1;\n"
-"X-Generator: Poedit 2.4.1\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.5\n"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
-#: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
-#: src/application.js:32
-msgid "Sound Recorder"
-msgstr "Perekam Suara"
+#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
+msgid "Vocalis"
+msgstr "Vocalis"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
-msgstr "Suatu perekam suara modern yang sederhana bagi GNOME"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:10
-msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
-msgstr ""
-"Perekam Suara menyediakan antar muka yang modern dan sederhana yang memberi "
-"cara singkat untuk merekam dan memutar audio. Itu memungkinkan Anda "
-"melakukan penyuntingan dasar dan membuat memo suara."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:15
-msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
-msgstr ""
-"Perekam Suara secara otomatis menangani proses penyimpanan sehingga Anda tak "
-"perlu khawatir secara tak sengaja membuang rekaman sebelumnya."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:19
-msgid "Supported audio formats:"
-msgstr "Format audio yang didukung:"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:21
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3, dan MOV"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:50
-msgid "The GNOME Project"
-msgstr "Proyek GNOME"
-
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:5
 msgid "Record sound via the microphone and play it back"
 msgstr "Rekam suara melalui mikrofon dan putar ulang"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Audio;Aplikasi;Rekam;"
+#: data/app.drey.Vocalis.desktop.in.in:10
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr "Audio;Aplikasi;Rekam;Perekam Suara;"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "Buat catatan dengan suara Anda"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
+msgid ""
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
+msgstr ""
+"Vocalis menyediakan antar muka yang modern dan sederhana yang memberi cara "
+"langsung untuk merekam dan memutar memo suara."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
+msgid ""
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
+msgstr ""
+"Vocalis secara otomatis menangani proses penyimpanan sehingga Anda tak perlu "
+"khawatir secara tak sengaja membuang rekaman sebelumnya."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
+msgid "Supported audio formats:"
+msgstr "Format audio yang didukung:"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
+#| msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3, dan MOV"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
+
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "Ukuran jendela"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:17
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "Ukuran jendela (lebar dan tinggi)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "Posisi jendela"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:22
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "Posisi jendela (x dan y)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
 msgstr "Memetakan tipe media ke nama pratata enkoder audio."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:27
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
@@ -97,11 +95,11 @@ msgstr ""
 "Memetakan tipe media ke nama pratata enkoder audio. Bila tidak ada pemetaan "
 "yang ditata, pengaturan enkoder baku akan dipakai."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
 msgstr "Kanal yang tersedia"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:32
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
@@ -109,399 +107,265 @@ msgstr ""
 "Petakan kanal yang tersedia. Bila tidak ada pemetaan yang ditata, secara "
 "baku akan dipakai kanal stereo."
 
-#: data/ui/help-overlay.ui:15
+#: data/ui/help-overlay.ui:11
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Umum"
 
-#: data/ui/help-overlay.ui:20
+#: data/ui/help-overlay.ui:15
 msgctxt "shortcut window"
 msgid "Record"
 msgstr "Rekam"
 
-#: data/ui/help-overlay.ui:27
+#: data/ui/help-overlay.ui:21
 msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "Berhenti Merekam"
 
-#: data/ui/help-overlay.ui:34
+#: data/ui/help-overlay.ui:27
 msgctxt "shortcut window"
 msgid "Play / Pause / Resume"
 msgstr "Putar / Jeda / Lanjutkan"
 
-#: data/ui/help-overlay.ui:42
+#: data/ui/help-overlay.ui:34
 msgctxt "shortcut window"
 msgid "Delete"
 msgstr "Hapus"
 
-#: data/ui/help-overlay.ui:49
+#: data/ui/help-overlay.ui:40
 msgctxt "shortcut window"
-msgid "Open menu"
-msgstr "Buka menu"
+msgid "Open Main Menu"
+msgstr "Buka Menu Utama"
 
-#: data/ui/help-overlay.ui:56
+#: data/ui/help-overlay.ui:46
 msgctxt "shortcut window"
-msgid "Keyboard shortcuts"
-msgstr "Pintasan papan tik"
+msgid "Keyboard Shortcuts"
+msgstr "Pintasan Papan Tik"
 
-#: data/ui/help-overlay.ui:63
+#: data/ui/help-overlay.ui:52
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Keluar"
 
-#: data/ui/help-overlay.ui:71
+#: data/ui/help-overlay.ui:59
 msgctxt "shortcut window"
 msgid "Recording"
 msgstr "Merekam"
 
-#: data/ui/help-overlay.ui:76
+#: data/ui/help-overlay.ui:63
 msgctxt "shortcut window"
 msgid "Seek Backward"
 msgstr "Cari Mundur"
 
-#: data/ui/help-overlay.ui:83
+#: data/ui/help-overlay.ui:69
 msgctxt "shortcut window"
 msgid "Seek Forward"
 msgstr "Cari Maju"
 
-#: data/ui/help-overlay.ui:90
+#: data/ui/help-overlay.ui:75
 msgctxt "shortcut window"
 msgid "Rename"
 msgstr "Ganti nama"
 
-#: data/ui/help-overlay.ui:97
+#: data/ui/help-overlay.ui:81
 msgctxt "shortcut window"
 msgid "Export"
 msgstr "Ekspor"
 
-#: data/ui/recorder.ui:72
+#: data/ui/recorder.ui:50
 msgid "Resume Recording"
 msgstr "Lanjutkan Merekam"
 
-#: data/ui/recorder.ui:96
+#: data/ui/recorder.ui:68
 msgid "Pause Recording"
 msgstr "Jeda Merekam"
 
-#: data/ui/recorder.ui:128
+#: data/ui/recorder.ui:85
 msgid "Stop Recording"
 msgstr "Berhenti Merekam"
 
-#: data/ui/recorder.ui:157
+#: data/ui/recorder.ui:105
 msgid "Delete Recording"
 msgstr "Hapus Rekaman"
 
-#: data/ui/row.ui:165 data/ui/row.ui:444
-msgid "Export"
-msgstr "Ekspor"
-
-#: data/ui/row.ui:189 data/ui/row.ui:440
-msgid "Rename"
-msgstr "Ganti nama"
-
-#: data/ui/row.ui:241
-msgid "Save"
-msgstr "Simpan"
-
-#: data/ui/row.ui:278 src/recorderWidget.js:100
+#: data/ui/row.ui:109
 msgid "Delete"
 msgstr "Hapus"
 
-#: data/ui/row.ui:313
+#: data/ui/row.ui:129
 msgid "Seek 10s Backward"
 msgstr "Cari 10s Mundur"
 
-#: data/ui/row.ui:341
+#: data/ui/row.ui:147
 msgid "Play"
 msgstr "Putar"
 
-#: data/ui/row.ui:367
+#: data/ui/row.ui:171
 msgid "Pause"
 msgstr "Jeda"
 
-#: data/ui/row.ui:399
+#: data/ui/row.ui:194
 msgid "Seek 10s Forward"
 msgstr "Cari 10s Maju"
 
-#: data/ui/window.ui:60
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "Ekspor"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "Ganti nama"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "Simpan"
+
+#: data/ui/window.ui:24
 msgid "Record"
 msgstr "Rekam"
 
-#: data/ui/window.ui:149
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "Menu Utama"
+
+#: data/ui/window.ui:56
 msgid "Add Recordings"
 msgstr "Tambah Rekaman"
 
-#: data/ui/window.ui:166
+#: data/ui/window.ui:57
 msgid "Use the <b>Record</b> button to make sound recordings"
 msgstr "Pakai tombol <b>Rekam</b> untuk membuat rekaman suara"
 
-#: data/ui/window.ui:237
-msgid "Undo"
-msgstr "Tak jadi"
-
-#: data/ui/window.ui:254
-msgid "Close"
-msgstr "Tutup"
-
-#: data/ui/window.ui:290
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "Format yang Disukai"
 
-#: data/ui/window.ui:292
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:297
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:302
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:307
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:312
-msgid "M4A"
-msgstr "M4A"
-
-#: data/ui/window.ui:318
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "Kanal Audio"
 
-#: data/ui/window.ui:320
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "Stereo"
 
-#: data/ui/window.ui:325
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "Mono"
 
-#: data/ui/window.ui:332
+#: data/ui/window.ui:130
 msgid "_Keyboard Shortcuts"
 msgstr "Pintasan Papan Ti_k"
 
-#: data/ui/window.ui:337
-msgid "About Sound Recorder"
-msgstr "Tentang Perekam Suara"
+#: data/ui/window.ui:135
+msgid "About Vocalis"
+msgstr "Tentang Vocalis"
 
 #. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:129
+#: src/application.ts:184
 msgid "translator-credits"
 msgstr ""
-"Andika Triwidada <andika@gmail.com>, 2014, 2016.\n"
+"Andika Triwidada <andika@gmail.com>, 2014-2016, 2024.\n"
 "Kukuh Syafaat <kukuhsyafaat@gnome.org>, 2017, 2019, 2020."
 
-#: src/application.js:131
-msgid "A Sound Recording Application for GNOME"
-msgstr "Aplikasi Perekam Suara untuk GNOME"
-
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:113
-#, javascript-format
+#: src/recorder.ts:161
+#, c-format
 msgid "Recording %d"
 msgstr "Merekam %d"
 
-#: src/recorderWidget.js:94
-msgid "Delete recording?"
+#: src/recorderWidget.ts:141
+msgid "Delete Recording?"
 msgstr "Hapus Rekaman?"
 
-#: src/recorderWidget.js:95
+#: src/recorderWidget.ts:142
 msgid "This recording will not be saved."
 msgstr "Rekaman ini tidak akan disimpan."
 
-#: src/recorderWidget.js:99
-msgid "Resume"
-msgstr "Lanjutkan"
+#: src/recorderWidget.ts:145
+msgid "_Resume"
+msgstr "_Lanjutkan"
 
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:42
-msgid "Recordings"
-msgstr "Rekaman"
+#: src/recorderWidget.ts:146
+msgid "_Delete"
+msgstr "_Hapus"
 
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:59
-#, javascript-format
-msgid "%s (Old)"
-msgstr "%s (lama)"
-
-#: src/row.js:71
+#: src/row.ts:139
 msgid "Export Recording"
 msgstr "Ekspor Rekaman"
 
-#: src/row.js:71
+#: src/row.ts:142
 msgid "_Export"
 msgstr "_Ekspor"
 
-#: src/row.js:71
+#: src/row.ts:143
 msgid "_Cancel"
 msgstr "_Batal"
 
-#: src/utils.js:48
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "Kurang dari sehari yang lalu"
+
+#: src/utils.ts:52
 msgid "Yesterday"
 msgstr "Kemarin"
 
-#: src/utils.js:50
-#, javascript-format
+#: src/utils.ts:55
+#, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d hari yang lalu"
-msgstr[1] "%d hari yang lalu"
 
-#: src/utils.js:52
+#: src/utils.ts:57
 msgid "Last week"
 msgstr "Minggu lalu"
 
-#: src/utils.js:54
-#, javascript-format
+#: src/utils.ts:59
+#, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d minggu yang lalu"
-msgstr[1] "%d minggu yang lalu"
 
-#: src/utils.js:56
+#: src/utils.ts:63
 msgid "Last month"
 msgstr "Bulan lalu"
 
-#: src/utils.js:58
-#, javascript-format
+#: src/utils.ts:65
+#, c-format
 msgid "%d month ago"
 msgid_plural "%d months ago"
 msgstr[0] "%d bulan yang lalu"
-msgstr[1] "%d bulan yang lalu"
 
-#: src/utils.js:60
+#: src/utils.ts:69
 msgid "Last year"
 msgstr "Tahun lalu"
 
-#: src/utils.js:62
-#, javascript-format
+#: src/utils.ts:72
+#, c-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
 msgstr[0] "%d tahun yang lalu"
-msgstr[1] "%d tahun yang lalu"
 
-#: src/window.js:71
-#, javascript-format
-msgid "\"%s\" deleted"
-msgstr "\"%s\" dihapus"
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "Rekaman dihapus"
 
-#~ msgid "Cancel Recording"
-#~ msgstr "Batalkan Merekam"
-
-#~ msgid "Sound Recorder started"
-#~ msgstr "Perekam Suara dimulai"
-
-#~ msgid "Recording from %F %A at %T"
-#~ msgstr "Rekaman dari %F %A pada %T"
-
-#~ msgid "Microphone volume level"
-#~ msgstr "Tingkat volume mikrofon"
-
-#~ msgid "Microphone volume level."
-#~ msgstr "Tingkat volume mikrofon."
-
-#~ msgid "Speaker volume level"
-#~ msgstr "Tingkat volume speaker"
-
-#~ msgid "Speaker volume level."
-#~ msgstr "Tingkat volume speaker."
-
-#~ msgid "org.gnome.SoundRecorder"
-#~ msgstr "org.gnome.SoundRecorder"
-
-#~ msgid "SoundRecorder"
-#~ msgstr "SoundRecorder"
-
-#~ msgid "Info"
-#~ msgstr "Info"
-
-#~ msgid "Done"
-#~ msgstr "Selesai"
-
-#~ msgctxt "File Name"
-#~ msgid "Name"
-#~ msgstr "Nama"
-
-#~ msgid "Source"
-#~ msgstr "Sumber"
-
-#~ msgid "Date Modified"
-#~ msgstr "Tanggal Diubah"
-
-#~ msgid "Date Created"
-#~ msgstr "Tanggal Dibuat"
-
-#~ msgctxt "Media Type"
-#~ msgid "Type"
-#~ msgstr "Tipe"
-
-#~ msgid "Unknown"
-#~ msgstr "Tak dikenal"
-
-#~ msgid "Preferences"
-#~ msgstr "Preferensi"
-
-#~ msgid "Recording…"
-#~ msgstr "Merekam…"
-
-#~ msgid "%d Recorded Sound"
-#~ msgid_plural "%d Recorded Sounds"
-#~ msgstr[0] "%d Rekaman Suara"
-#~ msgstr[1] "%d Rekaman Suara"
-
-#~ msgid "No Recorded Sounds"
-#~ msgstr "Tidak Ada Suara yang Direkam"
-
-#~ msgid "MOV"
-#~ msgstr "MOV"
-
-#~ msgid "Load More"
-#~ msgstr "Muat Lebih Banyak"
-
-#~ msgid "Unable to play recording"
-#~ msgstr "Tak bisa memutar rekaman"
-
-#~ msgid "Default mode"
-#~ msgstr "Mode baku"
-
-#~ msgid "Volume"
-#~ msgstr "Volume"
-
-#~ msgid "Microphone"
-#~ msgstr "Mikrofon"
-
-#~ msgid "Unable to create Recordings directory."
-#~ msgstr "Tak bisa membuat direktori Rekaman."
-
-#~ msgid "Please install the GStreamer 1.0 PulseAudio plugin."
-#~ msgstr "Silakan memasang pengaya GStreamer 1.0 PulseAudio."
-
-#~ msgid "Your audio capture settings are invalid."
-#~ msgstr "Pengaturan penangkapan audio Anda tak valid."
-
-#~ msgid "Not all elements could be created."
-#~ msgstr "Tak semua elemen dapat dibuat."
-
-#~ msgid "Not all of the elements were linked."
-#~ msgstr "Tak semua elemen ditaut."
-
-#~ msgid "No Media Profile was set."
-#~ msgstr "Tak ada Profil Media yang ditata."
-
-#~ msgid ""
-#~ "Unable to set the pipeline \n"
-#~ " to the recording state."
-#~ msgstr ""
-#~ "Tak bisa menata jalur pipa \n"
-#~ " ke keadaan perekaman."
-
-#~ msgid "Clip %d"
-#~ msgstr "Klip %d"
-
-#~ msgid "About"
-#~ msgstr "Tentang"
+#: src/window.ts:224
+msgid "Undo"
+msgstr "Tak jadi"
