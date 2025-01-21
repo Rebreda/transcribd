@@ -8,9 +8,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-03-16 17:03+0100\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2024-08-05 17:27+0000\n"
+"PO-Revision-Date: 2024-09-25 17:19+0200\n"
 "Last-Translator: Alan Mortensen <alanmortensen.am@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -18,10 +18,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "Vocalis"
 
@@ -59,10 +60,11 @@ msgid "Supported audio formats:"
 msgstr "Understøttede lydformater:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 og MOV"
+#| msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 og MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "Christopher Davis"
 
@@ -171,19 +173,19 @@ msgctxt "shortcut window"
 msgid "Export"
 msgstr "Eksportér"
 
-#: data/ui/recorder.ui:43
+#: data/ui/recorder.ui:50
 msgid "Resume Recording"
 msgstr "Genoptag optagelse"
 
-#: data/ui/recorder.ui:61
+#: data/ui/recorder.ui:68
 msgid "Pause Recording"
 msgstr "Sæt optagelse på pause"
 
-#: data/ui/recorder.ui:78
+#: data/ui/recorder.ui:85
 msgid "Stop Recording"
 msgstr "Stop optagelse"
 
-#: data/ui/recorder.ui:98
+#: data/ui/recorder.ui:105
 msgid "Delete Recording"
 msgstr "Slet optagelse"
 
@@ -275,6 +277,109 @@ msgstr "_Tastaturgenveje"
 msgid "About Vocalis"
 msgstr "Om Vocalis"
 
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr ""
+"Ask Hjorth Larsen\n"
+"Kris Thomsen\n"
+"Alan Mortensen\n"
+"\n"
+"Dansk-gruppen\n"
+"Websted http://dansk-gruppen.dk\n"
+"E-mail <dansk@dansk-gruppen.dk>"
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "Optagelse %d"
+
+#: src/recorderWidget.ts:141
+msgid "Delete Recording?"
+msgstr "Slet optagelse?"
+
+#: src/recorderWidget.ts:142
+msgid "This recording will not be saved."
+msgstr "Optagelsen gemmes ikke."
+
+#: src/recorderWidget.ts:145
+msgid "_Resume"
+msgstr "_Genoptag"
+
+#: src/recorderWidget.ts:146
+msgid "_Delete"
+msgstr "_Slet"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "Eksportér optagelse"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "_Eksportér"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "_Annuller"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "Mindre end en dag siden"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "I går"
+
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "%d dag siden"
+msgstr[1] "%d dage siden"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "Sidste uge"
+
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "%d uge siden"
+msgstr[1] "%d uger siden"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "Sidste måned"
+
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "%d måned siden"
+msgstr[1] "%d måneder siden"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "Sidste år"
+
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "%d år siden"
+msgstr[1] "%d år siden"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "Optagelse slettet"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "Fortryd"
+
 #~ msgid "Sound Recorder"
 #~ msgstr "Lydoptagelse"
 
@@ -288,9 +393,6 @@ msgstr "Om Vocalis"
 #~ msgid "Keyboard shortcuts"
 #~ msgstr "Tastaturgenveje"
 
-#~ msgid "Undo"
-#~ msgstr "Fortryd"
-
 #~ msgid "Close"
 #~ msgstr "Luk"
 
@@ -300,31 +402,12 @@ msgstr "Om Vocalis"
 #~ msgid "About Sound Recorder"
 #~ msgstr "Om Lydoptagelse"
 
-#~ msgid "translator-credits"
-#~ msgstr ""
-#~ "Ask Hjorth Larsen\n"
-#~ "Kris Thomsen\n"
-#~ "\n"
-#~ "Dansk-gruppen\n"
-#~ "Websted http://dansk-gruppen.dk\n"
-#~ "E-mail <dansk@dansk-gruppen.dk>"
-
 #~ msgid "A Sound Recording Application for GNOME"
 #~ msgstr "Et lydoptagelsesprogram til GNOME"
-
-#, javascript-format
-#~ msgid "Recording %d"
-#~ msgstr "Optagelse %d"
 
 #~| msgid "Resume Recording"
 #~ msgid "Delete recording?"
 #~ msgstr "Slet optagelse?"
-
-#~ msgid "This recording will not be saved."
-#~ msgstr "Optagelsen gemmes ikke."
-
-#~ msgid "Resume"
-#~ msgstr "Genoptag"
 
 #~ msgid "Recordings"
 #~ msgstr "Lydoptagelser"
@@ -332,52 +415,6 @@ msgstr "Om Vocalis"
 #, javascript-format
 #~ msgid "%s (Old)"
 #~ msgstr "%s (gammel)"
-
-#~| msgid "Stop Recording"
-#~ msgid "Export Recording"
-#~ msgstr "Eksportér optagelse"
-
-#~ msgid "_Export"
-#~ msgstr "_Eksportér"
-
-#~ msgid "_Cancel"
-#~ msgstr "_Annuller"
-
-#~ msgid "Yesterday"
-#~ msgstr "I går"
-
-#, javascript-format
-#~ msgid "%d day ago"
-#~ msgid_plural "%d days ago"
-#~ msgstr[0] "%d dag siden"
-#~ msgstr[1] "%d dage siden"
-
-#~ msgid "Last week"
-#~ msgstr "Sidste uge"
-
-#, javascript-format
-#~ msgid "%d week ago"
-#~ msgid_plural "%d weeks ago"
-#~ msgstr[0] "%d uge siden"
-#~ msgstr[1] "%d uger siden"
-
-#~ msgid "Last month"
-#~ msgstr "Sidste måned"
-
-#, javascript-format
-#~ msgid "%d month ago"
-#~ msgid_plural "%d months ago"
-#~ msgstr[0] "%d måned siden"
-#~ msgstr[1] "%d måneder siden"
-
-#~ msgid "Last year"
-#~ msgstr "Sidste år"
-
-#, javascript-format
-#~ msgid "%d year ago"
-#~ msgid_plural "%d years ago"
-#~ msgstr[0] "%d år siden"
-#~ msgstr[1] "%d år siden"
 
 #, javascript-format
 #~ msgid "\"%s\" deleted"
