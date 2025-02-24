@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/-/issues\n"
-"POT-Creation-Date: 2024-03-15 07:11+0000\n"
-"PO-Revision-Date: 2024-03-16 23:18+0200\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2025-02-13 05:49+0000\n"
+"PO-Revision-Date: 2025-02-24 22:43+0200\n"
 "Last-Translator: Aurimas Černius <aurisc4@gmail.com>\n"
 "Language-Team: Lietuvių <gnome-lt@lists.akl.lt>\n"
 "Language: lt\n"
@@ -18,10 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "(n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 3.5\n"
 
 #: data/app.drey.Vocalis.desktop.in.in:4
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "Vocalis"
 
@@ -59,10 +60,10 @@ msgid "Supported audio formats:"
 msgstr "Palaikomi garso formatai:"
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:20
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 ir MOV"
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 ir MOV"
 
-#: data/app.drey.Vocalis.metainfo.xml.in.in:40
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
 msgid "Christopher Davis"
 msgstr "Christopher Davis"
 
@@ -171,19 +172,19 @@ msgctxt "shortcut window"
 msgid "Export"
 msgstr "Eksportuoti"
 
-#: data/ui/recorder.ui:43
+#: data/ui/recorder.ui:50
 msgid "Resume Recording"
 msgstr "Tęsti įrašymą"
 
-#: data/ui/recorder.ui:61
+#: data/ui/recorder.ui:68
 msgid "Pause Recording"
 msgstr "Pristabdyti įrašymą"
 
-#: data/ui/recorder.ui:78
+#: data/ui/recorder.ui:85
 msgid "Stop Recording"
 msgstr "Sustabdyti įrašymą"
 
-#: data/ui/recorder.ui:98
+#: data/ui/recorder.ui:105
 msgid "Delete Recording"
 msgstr "Ištrinti įrašą"
 
@@ -275,6 +276,108 @@ msgstr "_Klaviatūros trumpiniai"
 msgid "About Vocalis"
 msgstr "Apie Vocalis"
 
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/application.ts:184
+msgid "translator-credits"
+msgstr ""
+"Išvertė:\n"
+"Aurimas Černius <aurisc4@gmail.com>"
+
+#: src/recorder.ts:161
+#, c-format
+msgid "Recording %d"
+msgstr "Įrašas %d"
+
+#: src/recorderWidget.ts:141
+msgid "Delete Recording?"
+msgstr "Ištrinti įrašą?"
+
+#: src/recorderWidget.ts:142
+msgid "This recording will not be saved."
+msgstr "Šis įrašas nebus įrašytas."
+
+#: src/recorderWidget.ts:145
+msgid "_Resume"
+msgstr "_Tęsti"
+
+#: src/recorderWidget.ts:146
+msgid "_Delete"
+msgstr "Iš_trinti"
+
+#: src/row.ts:139
+msgid "Export Recording"
+msgstr "Eksportuoti įrašą"
+
+#: src/row.ts:142
+msgid "_Export"
+msgstr "_Eksportuoti"
+
+#: src/row.ts:143
+msgid "_Cancel"
+msgstr "_Atsisakyti"
+
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "Mažiau nei prieš dieną"
+
+#: src/utils.ts:52
+msgid "Yesterday"
+msgstr "Vakar"
+
+#: src/utils.ts:55
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "Prieš %d dieną"
+msgstr[1] "Prieš %d dienas"
+msgstr[2] "Prieš %d dienų"
+
+#: src/utils.ts:57
+msgid "Last week"
+msgstr "Praeitą savaitę"
+
+#: src/utils.ts:59
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "Prieš %d savaitę"
+msgstr[1] "Prieš %d savaites"
+msgstr[2] "Prieš %d savaičių"
+
+#: src/utils.ts:63
+msgid "Last month"
+msgstr "Praeitą mėnesį"
+
+#: src/utils.ts:65
+#, c-format
+msgid "%d month ago"
+msgid_plural "%d months ago"
+msgstr[0] "Prieš %d mėnesį"
+msgstr[1] "Prieš %d mėnesius"
+msgstr[2] "Prieš %d mėnesių"
+
+#: src/utils.ts:69
+msgid "Last year"
+msgstr "Praeitais metais"
+
+#: src/utils.ts:72
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] "Prieš %d metus"
+msgstr[1] "Prieš %d metus"
+msgstr[2] "Prieš %d metų"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "Įrašas ištrintas"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "Atšaukti"
+
 #~ msgid "Sound Recorder"
 #~ msgstr "Garso įrašymas"
 
@@ -288,9 +391,6 @@ msgstr "Apie Vocalis"
 #~ msgid "Keyboard shortcuts"
 #~ msgstr "Klaviatūros trumpiniai"
 
-#~ msgid "Undo"
-#~ msgstr "Atšaukti"
-
 #~ msgid "Close"
 #~ msgstr "Užverti"
 
@@ -300,27 +400,12 @@ msgstr "Apie Vocalis"
 #~ msgid "About Sound Recorder"
 #~ msgstr "Apie garso įrašymą"
 
-#~ msgid "translator-credits"
-#~ msgstr ""
-#~ "Išvertė:\n"
-#~ "Aurimas Černius <aurisc4@gmail.com>"
-
 #~ msgid "A Sound Recording Application for GNOME"
 #~ msgstr "Garso įrašymo programa GNOME aplinkai"
-
-#, javascript-format
-#~ msgid "Recording %d"
-#~ msgstr "Įrašas %d"
 
 #~| msgid "Resume Recording"
 #~ msgid "Delete recording?"
 #~ msgstr "Ištrinti įrašą?"
-
-#~ msgid "This recording will not be saved."
-#~ msgstr "Šis įrašas nebus įrašytas."
-
-#~ msgid "Resume"
-#~ msgstr "Tęsti"
 
 #~ msgid "Recordings"
 #~ msgstr "Įrašai"
@@ -328,55 +413,6 @@ msgstr "Apie Vocalis"
 #, javascript-format
 #~ msgid "%s (Old)"
 #~ msgstr "%s (senas)"
-
-#~ msgid "Export Recording"
-#~ msgstr "Eksportuoti įrašą"
-
-#~ msgid "_Export"
-#~ msgstr "_Eksportuoti"
-
-#~ msgid "_Cancel"
-#~ msgstr "_Atsisakyti"
-
-#~ msgid "Yesterday"
-#~ msgstr "Vakar"
-
-#, javascript-format
-#~ msgid "%d day ago"
-#~ msgid_plural "%d days ago"
-#~ msgstr[0] "Prieš %d dieną"
-#~ msgstr[1] "Prieš %d dienas"
-#~ msgstr[2] "Prieš %d dienų"
-
-#~ msgid "Last week"
-#~ msgstr "Praeitą savaitę"
-
-#, javascript-format
-#~ msgid "%d week ago"
-#~ msgid_plural "%d weeks ago"
-#~ msgstr[0] "Prieš %d savaitę"
-#~ msgstr[1] "Prieš %d savaites"
-#~ msgstr[2] "Prieš %d savaičių"
-
-#~ msgid "Last month"
-#~ msgstr "Praeitą mėnesį"
-
-#, javascript-format
-#~ msgid "%d month ago"
-#~ msgid_plural "%d months ago"
-#~ msgstr[0] "Prieš %d mėnesį"
-#~ msgstr[1] "Prieš %d mėnesius"
-#~ msgstr[2] "Prieš %d mėnesių"
-
-#~ msgid "Last year"
-#~ msgstr "Praeitais metais"
-
-#, javascript-format
-#~ msgid "%d year ago"
-#~ msgid_plural "%d years ago"
-#~ msgstr[0] "Prieš %d metus"
-#~ msgstr[1] "Prieš %d metus"
-#~ msgstr[2] "Prieš %d metų"
 
 #, javascript-format
 #~ msgid "\"%s\" deleted"
