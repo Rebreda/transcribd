@@ -26,7 +26,6 @@ import Adw from "gi://Adw";
 import GObject from "gi://GObject";
 import Gdk from "gi://Gdk?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
-// @ts-expect-error This module doesn't import nicely
 import Cairo from "cairo";
 
 export enum WaveType {
@@ -81,7 +80,7 @@ export class WaveForm extends Gtk.DrawingArea {
     }
 
     constructor(
-        params: Partial<Gtk.DrawingArea.ConstructorProperties> | undefined,
+        params: Partial<Gtk.DrawingArea.ConstructorProps> | undefined,
         type: WaveType,
     ) {
         super(params);
@@ -105,6 +104,7 @@ export class WaveForm extends Gtk.DrawingArea {
             this.queue_draw();
         });
 
+        // @ts-expect-error ts-for-gir doesn't handle the cairo Context properly
         this.set_draw_func(this.drawFunc.bind(this));
     }
 
@@ -154,10 +154,6 @@ export class WaveForm extends Gtk.DrawingArea {
             if (!ok) dividerColor = da.get_color();
         }
 
-        // Because the cairo module isn't real, we have to use these to ignore `any`.
-        // We keep them to the minimum possible scope to catch real errors.
-        /* eslint-disable @typescript-eslint/no-unsafe-call */
-        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
         ctx.setLineCap(Cairo.LineCap.SQUARE);
         ctx.setAntialias(Cairo.Antialias.NONE);
         ctx.setLineWidth(1);
@@ -169,8 +165,6 @@ export class WaveForm extends Gtk.DrawingArea {
         ctx.stroke();
 
         ctx.setLineWidth(2);
-        /* eslint-enable @typescript-eslint/no-unsafe-call */
-        /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
         for (const peak of da._peaks) {
             // don't try to render peaks outside the widget's width
@@ -184,13 +178,9 @@ export class WaveForm extends Gtk.DrawingArea {
                     da.setSourceRGBA(ctx, rightColor);
                 else da.setSourceRGBA(ctx, leftColor);
 
-                /* eslint-disable @typescript-eslint/no-unsafe-call */
-                /* eslint-disable @typescript-eslint/no-unsafe-member-access */
                 ctx.moveTo(pointer, vertiCenter + peak * maxHeight);
                 ctx.lineTo(pointer, vertiCenter - peak * maxHeight);
                 ctx.stroke();
-                /* eslint-enable @typescript-eslint/no-unsafe-call */
-                /* eslint-enable @typescript-eslint/no-unsafe-member-access */
             }
 
             if (da.waveType === WaveType.Player) pointer += GUTTER;
@@ -235,11 +225,7 @@ export class WaveForm extends Gtk.DrawingArea {
     }
 
     private setSourceRGBA(cr: Cairo.Context, rgba: Gdk.RGBA): void {
-        /* eslint-disable @typescript-eslint/no-unsafe-call */
-        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
         cr.setSourceRGBA(rgba.red, rgba.green, rgba.blue, rgba.alpha);
-        /* eslint-enable @typescript-eslint/no-unsafe-call */
-        /* eslint-enable @typescript-eslint/no-unsafe-member-access */
     }
 
     public destroy(): void {

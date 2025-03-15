@@ -24,7 +24,7 @@
         ],
     },
     "include": [
-        "gi-types/gi.d.ts",
+        "gi-types/index.d.ts",
         "types/ambient.d.ts",
         "src/*",
     ],

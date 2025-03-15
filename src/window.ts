@@ -76,7 +76,7 @@ export class Window extends Adw.ApplicationWindow {
         );
     }
 
-    constructor(params: Partial<Adw.Application.ConstructorProperties>) {
+    constructor(params: Partial<Adw.ApplicationWindow.ConstructorProps>) {
         super(params);
 
         this.iconName = pkg.name;
