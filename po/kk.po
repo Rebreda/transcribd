@@ -6,10 +6,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-sound-recorder master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-sound-recorder/"
-"issues\n"
-"POT-Creation-Date: 2020-08-16 15:08+0000\n"
-"PO-Revision-Date: 2020-08-17 15:32+0500\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
+"POT-Creation-Date: 2025-03-15 23:19+0000\n"
+"PO-Revision-Date: 2026-01-26 19:40+0500\n"
 "Last-Translator: Baurzhan Muftakhidinov <baurthefirst@gmail.com>\n"
 "Language-Team: Kazakh <kk_KZ@googlegroups.com>\n"
 "Language: kk\n"
@@ -17,78 +16,77 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.4.1\n"
+"X-Generator: Poedit 3.8\n"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:5
-#: data/org.gnome.SoundRecorder.desktop.in.in:4 data/ui/window.ui:28
-#: src/application.js:32
-msgid "Sound Recorder"
-msgstr "Дыбыстарды жазу қолданбасы"
+#: data/app.drey.Vocalis.desktop.in.in:3
+#: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
+#: src/application.ts:50 src/application.ts:167
+msgid "Vocalis"
+msgstr "Vocalis"
 
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:6
-msgid "A simple, modern sound recorder for GNOME"
-msgstr "GNOME үшін жеңіл әрі заманауи дыбыстарды жазу қолданбасы"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:10
-msgid ""
-"Sound Recorder provides a simple and modern interface that provides a "
-"straight-forward way to record and play audio. It allows you to do basic "
-"editing, and create voice memos."
-msgstr ""
-"Дыбыстарды жазу қолданбасы аудионы жазу және ойнатуға арналған жеңіл, "
-"заманауи әрі түсінікті интерфейсті ұсынады. Ол қарапайым түзетуді, әрі "
-"дыбыстық жазбаларды жасауды мүмкін етеді."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:15
-msgid ""
-"Sound Recorder automatically handles the saving process so that you do not "
-"need to worry about accidentally discarding the previous recording."
-msgstr ""
-"Дыбыстарды жазу қолданбасы сақтауды өзі орындайды, сол себептен, жасалған "
-"дыбыстық жазбалар жоғала ма деп уайымдау керек емес."
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:19
-msgid "Supported audio formats:"
-msgstr "Қолдауы бар аудио пішімдері:"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:21
-msgid "Ogg Vorbis, Opus, FLAC, MP3 and MOV"
-msgstr "Ogg Vorbis, Opus, FLAC, MP3 және MOV"
-
-#: data/appdata/org.gnome.SoundRecorder.metainfo.xml.in.in:47
-msgid "The GNOME Project"
-msgstr "GNOME жобасы"
-
-#: data/org.gnome.SoundRecorder.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:4
 msgid "Record sound via the microphone and play it back"
 msgstr "Дыбыстарды микрофон көмегімен жазып алып, оларды ойнату"
 
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/org.gnome.SoundRecorder.desktop.in.in:10
-msgid "Audio;Application;Record;"
-msgstr "Audio;Application;Record;Аудио;Қолданба;Жазба;"
+#. Translators: Search terms to find this application. Do NOT translate or
+#. localize the semicolons! The list MUST also end with a semicolon!
+#: data/app.drey.Vocalis.desktop.in.in:9
+msgid "Audio;Application;Record;Sound Recorder;"
+msgstr "Аудио;Қолданба;Жазу;Дыбыс жазу;"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:16
+#: data/app.drey.Vocalis.metainfo.xml.in.in:6
+msgid "Take notes with your voice"
+msgstr "Дауыспен жазбалар жасау"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:10
+msgid ""
+"Vocalis provides a simple and modern interface that provides a straight-"
+"forward way to record and play voice memos."
+msgstr ""
+"Vocalis дауыстық жазбаларды жазу мен ойнатудың қарапайым әрі заманауи "
+"интерфейсін ұсынады."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:14
+msgid ""
+"Vocalis automatically handles the saving process so that you do not need to "
+"worry about accidentally discarding the previous recording."
+msgstr ""
+"Vocalis сақтау процесін автоматты түрде өңдейді, сондықтан алдыңғы жазбаны "
+"кездейсоқ өшіріп алу туралы уайымдамасаңыз болады."
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:18
+msgid "Supported audio formats:"
+msgstr "Қолдауы бар аудио пішімдері:"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:20
+msgid "Opus, FLAC, MP3 and MOV"
+msgstr "Opus, FLAC, MP3 және MOV"
+
+#: data/app.drey.Vocalis.metainfo.xml.in.in:41
+msgid "Christopher Davis"
+msgstr "Christopher Davis"
+
+#: data/app.drey.Vocalis.gschema.xml.in:15
 msgid "Window size"
 msgstr "Терезе өлшемі"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:17
+#: data/app.drey.Vocalis.gschema.xml.in:16
 msgid "Window size (width and height)."
 msgstr "Терезе өлшемі (ені мен биіктігі)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:21
+#: data/app.drey.Vocalis.gschema.xml.in:20
 msgid "Window position"
 msgstr "Терезе орны"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:22
+#: data/app.drey.Vocalis.gschema.xml.in:21
 msgid "Window position (x and y)."
 msgstr "Терезе орны (x және y)."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:26
+#: data/app.drey.Vocalis.gschema.xml.in:25
 msgid "Maps media types to audio encoder preset names."
 msgstr "Медиа түрлерін кодтаушының сақталған баптауларымен сәйкестеу."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:27
+#: data/app.drey.Vocalis.gschema.xml.in:26
 msgid ""
 "Maps media types to audio encoder preset names. If there is no mapping set, "
 "the default encoder settings will be used."
@@ -96,211 +94,308 @@ msgstr ""
 "Медиа түрлерін кодтаушының сақталған баптауларымен сәйкестеу. Сәйкестеу "
 "орнатылмаса, үнсіз келісім кодтаушысы қолданылатын болады."
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:31
+#: data/app.drey.Vocalis.gschema.xml.in:30
 msgid "Available channels"
-msgstr "Қолжетерлік арналар"
+msgstr "Қолжетімді арналар"
 
-#: data/org.gnome.SoundRecorder.gschema.xml.in:32
+#: data/app.drey.Vocalis.gschema.xml.in:31
 msgid ""
 "Maps available channels. If there is not no mapping set, stereo channel will "
 "be used by default."
 msgstr ""
-"Қолжетерлік арналарды байланыстырады. Байланыстыру орнатылмаса, үнсіз "
-"келісім бойынша стерео арна қолданылатын болады."
+"Қолжетімді арналарды байланыстырады. Байланыстыру орнатылмаса, үнсіз келісім "
+"бойынша стерео арна қолданылатын болады."
 
-#: data/ui/row.ui:159 data/ui/row.ui:442
-msgid "Export"
-msgstr "Экспорттау"
+#: data/ui/help-overlay.ui:11
+msgctxt "shortcut window"
+msgid "General"
+msgstr "Жалпы"
 
-#: data/ui/row.ui:184 data/ui/row.ui:438
-msgid "Rename"
-msgstr "Атын өзгерту"
-
-#: data/ui/row.ui:238
-msgid "Save"
-msgstr "Сақтау"
-
-#: data/ui/row.ui:275
-msgid "Delete"
-msgstr "Өшіру"
-
-#: data/ui/row.ui:310
-msgid "Seek 10s Backward"
-msgstr "10 сек артқа жылжу"
-
-#: data/ui/row.ui:338
-msgid "Play"
-msgstr "Ойнату"
-
-#: data/ui/row.ui:364
-msgid "Pause"
-msgstr "Аялдату"
-
-#: data/ui/row.ui:396
-msgid "Seek 10s Forward"
-msgstr "10 сек алға жылжу"
-
-#: data/ui/window.ui:63
+#: data/ui/help-overlay.ui:15
+msgctxt "shortcut window"
 msgid "Record"
-msgstr "Жазып алу"
+msgstr "Жазу"
 
-#: data/ui/window.ui:144
-msgid "Add Recordings"
-msgstr "Жазбаларды қосу"
-
-#: data/ui/window.ui:156
-msgid "Use the <b>Record</b> button to make sound recordings"
-msgstr "Дыбыстарды жазып алу үшін <b>Жазып алу</b> батырмасын қолданыңыз"
-
-#: data/ui/window.ui:253
-msgid "Resume Recording"
-msgstr "Жазуды жалғастыру"
-
-#: data/ui/window.ui:278
-msgid "Pause Recording"
-msgstr "Жазуды аялдату"
-
-#: data/ui/window.ui:309
+#: data/ui/help-overlay.ui:21
+msgctxt "shortcut window"
 msgid "Stop Recording"
 msgstr "Жазуды тоқтату"
 
-#: data/ui/window.ui:337
-msgid "Cancel Recording"
-msgstr "Жазудан бас тарту"
+#: data/ui/help-overlay.ui:27
+msgctxt "shortcut window"
+msgid "Play / Pause / Resume"
+msgstr "Ойнату / Аялдату / Жалғастыру"
 
-#: data/ui/window.ui:395
-msgid "Undo"
-msgstr "Болдырмау"
+#: data/ui/help-overlay.ui:34
+msgctxt "shortcut window"
+msgid "Delete"
+msgstr "Өшіру"
 
-#: data/ui/window.ui:405
-msgid "Close"
-msgstr "Жабу"
+#: data/ui/help-overlay.ui:40
+msgctxt "shortcut window"
+msgid "Open Main Menu"
+msgstr "Бас мәзірді ашу"
 
-#: data/ui/window.ui:430
+#: data/ui/help-overlay.ui:46
+msgctxt "shortcut window"
+msgid "Keyboard Shortcuts"
+msgstr "Пернетақта жарлықтары"
+
+#: data/ui/help-overlay.ui:52
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "Шығу"
+
+#: data/ui/help-overlay.ui:59
+msgctxt "shortcut window"
+msgid "Recording"
+msgstr "Жазу"
+
+#: data/ui/help-overlay.ui:63
+msgctxt "shortcut window"
+msgid "Seek Backward"
+msgstr "Артқа айналдыру"
+
+#: data/ui/help-overlay.ui:69
+msgctxt "shortcut window"
+msgid "Seek Forward"
+msgstr "Алға айналдыру"
+
+#: data/ui/help-overlay.ui:75
+msgctxt "shortcut window"
+msgid "Rename"
+msgstr "Атын өзгерту"
+
+#: data/ui/help-overlay.ui:81
+msgctxt "shortcut window"
+msgid "Export"
+msgstr "Экспорттау"
+
+#: data/ui/recorder.ui:50
+msgid "Resume Recording"
+msgstr "Жазуды жалғастыру"
+
+#: data/ui/recorder.ui:68
+msgid "Pause Recording"
+msgstr "Жазуды аялдату"
+
+#: data/ui/recorder.ui:85
+msgid "Stop Recording"
+msgstr "Жазуды тоқтату"
+
+#: data/ui/recorder.ui:105
+msgid "Delete Recording"
+msgstr "Жазуды өшіру"
+
+#: data/ui/row.ui:109
+msgid "Delete"
+msgstr "Өшіру"
+
+#: data/ui/row.ui:129
+msgid "Seek 10s Backward"
+msgstr "10 сек артқа жылжу"
+
+#: data/ui/row.ui:147
+msgid "Play"
+msgstr "Ойнату"
+
+#: data/ui/row.ui:171
+msgid "Pause"
+msgstr "Аялдату"
+
+#: data/ui/row.ui:194
+msgid "Seek 10s Forward"
+msgstr "10 сек алға жылжу"
+
+#: data/ui/row.ui:221 data/ui/row.ui:298
+msgid "Export"
+msgstr "Экспорттау"
+
+#: data/ui/row.ui:234 data/ui/row.ui:294
+msgid "Rename"
+msgstr "Атын өзгерту"
+
+#: data/ui/row.ui:268
+msgid "Save"
+msgstr "Сақтау"
+
+#: data/ui/window.ui:24
+msgid "Record"
+msgstr "Жазып алу"
+
+#: data/ui/window.ui:37
+msgid "Main Menu"
+msgstr "Бас мәзір"
+
+#: data/ui/window.ui:56
+msgid "Add Recordings"
+msgstr "Жазбаларды қосу"
+
+#: data/ui/window.ui:57
+msgid "Use the <b>Record</b> button to make sound recordings"
+msgstr "Дыбыстарды жазып алу үшін <b>Жазып алу</b> батырмасын қолданыңыз"
+
+#: data/ui/window.ui:93
 msgid "Preferred Format"
 msgstr "Таңдамалы пішімі"
 
-#: data/ui/window.ui:432
+#: data/ui/window.ui:95
 msgid "Vorbis"
 msgstr "Vorbis"
 
-#: data/ui/window.ui:437
+#: data/ui/window.ui:100
 msgid "Opus"
 msgstr "Opus"
 
-#: data/ui/window.ui:442
+#: data/ui/window.ui:105
 msgid "FLAC"
 msgstr "FLAC"
 
-#: data/ui/window.ui:447
+#: data/ui/window.ui:110
 msgid "MP3"
 msgstr "MP3"
 
-#: data/ui/window.ui:452
-msgid "M4A"
-msgstr "M4A"
-
-#: data/ui/window.ui:458
+#: data/ui/window.ui:116
 msgid "Audio Channel"
 msgstr "Аудио арнасы"
 
-#: data/ui/window.ui:460
+#: data/ui/window.ui:118
 msgid "Stereo"
 msgstr "Стерео"
 
-#: data/ui/window.ui:465
+#: data/ui/window.ui:123
 msgid "Mono"
 msgstr "Моно"
 
-#: data/ui/window.ui:473
-msgid "About Sound Recorder"
-msgstr "Дыбыстарды жазу қолданбасы туралы"
+#: data/ui/window.ui:130
+msgid "_Keyboard Shortcuts"
+msgstr "_Пернетақта жарлықтары"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.js:167
+#: data/ui/window.ui:135
+msgid "About Vocalis"
+msgstr "Vocalis туралы"
+
+#. Translators: Replace "translator-credits" with your names, one name per
+#. line
+#: src/application.ts:184
 msgid "translator-credits"
 msgstr "Baurzhan Muftakhidinov <baurthefirst@gmail.com>"
 
-#: src/application.js:169
-msgid "A Sound Recording Application for GNOME"
-msgstr "GNOME үшін дыбыс жазуға арналған қолданба"
-
-#. Translators: ""Recording %d"" is the default name assigned to a file created
-#. by the application (for example, "Recording 1").
-#: src/recorder.js:108
+#: src/recorder.ts:161
 #, javascript-format
 msgid "Recording %d"
 msgstr "Жазба %d"
 
-#. Necessary code to move old recordings into the new location for few releases
-#. FIXME: Remove by 3.40/3.42
-#: src/recordingList.js:41
-msgid "Recordings"
-msgstr "Жазбалар"
+#: src/recorderWidget.ts:141
+msgid "Delete Recording?"
+msgstr "Жазуды өшіру керек пе?"
 
-#. Translators: ""%s (Old)"" is the new name assigned to a file moved from
-#. the old recordings location
-#: src/recordingList.js:57
-#, javascript-format
-msgid "%s (Old)"
-msgstr "%s (Ескі)"
+#: src/recorderWidget.ts:142
+msgid "This recording will not be saved."
+msgstr "Бұл жазба сақталмайды."
 
-#: src/row.js:67
+#: src/recorderWidget.ts:145
+msgid "_Resume"
+msgstr "_Жалғастыру"
+
+#: src/recorderWidget.ts:146
+msgid "_Delete"
+msgstr "Ө_шіру"
+
+#: src/row.ts:139
 msgid "Export Recording"
 msgstr "Жазуды экспорттау"
 
-#: src/row.js:67
+#: src/row.ts:142
 msgid "_Export"
 msgstr "_Экспорттау"
 
-#: src/row.js:67
+#: src/row.ts:143
 msgid "_Cancel"
 msgstr "Ба_с тарту"
 
-#: src/utils.js:45
+#. The fallback here should never be seen, but we want it here
+#. for type safety purposes
+#: src/utils.ts:50
+msgid "Less than a day ago"
+msgstr "Бір күннен аз уақыт бұрын"
+
+#: src/utils.ts:52
 msgid "Yesterday"
 msgstr "Кеше"
 
-#: src/utils.js:47
-#, javascript-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "%d күн бұрын"
-
-#: src/utils.js:49
+#: src/utils.ts:57
 msgid "Last week"
 msgstr "Өткен аптада"
 
-#: src/utils.js:51
-#, javascript-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "%d апта бұрын"
-
-#: src/utils.js:53
+#: src/utils.ts:63
 msgid "Last month"
 msgstr "Өткен айда"
 
-#: src/utils.js:55
-#, javascript-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "%d ай бұрын"
-
-#: src/utils.js:57
+#: src/utils.ts:69
 msgid "Last year"
 msgstr "Былтыр"
 
-#: src/utils.js:59
-#, javascript-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "%d жыл бұрын"
-
-#: src/window.js:85
+#: src/window.ts:114
 #, javascript-format
 msgid "\"%s\" deleted"
 msgstr "\"%s\" өшірілді"
+
+#: src/window.ts:116
+msgid "Recording deleted"
+msgstr "Жазу өшірілді"
+
+#: src/window.ts:224
+msgid "Undo"
+msgstr "Болдырмау"
+
+#~ msgid "Sound Recorder"
+#~ msgstr "Дыбыстарды жазу қолданбасы"
+
+#~ msgid "A simple, modern sound recorder for GNOME"
+#~ msgstr "GNOME үшін жеңіл әрі заманауи дыбыстарды жазу қолданбасы"
+
+#~ msgid "The GNOME Project"
+#~ msgstr "GNOME жобасы"
+
+#~ msgid "Cancel Recording"
+#~ msgstr "Жазудан бас тарту"
+
+#~ msgid "Close"
+#~ msgstr "Жабу"
+
+#~ msgid "M4A"
+#~ msgstr "M4A"
+
+#~ msgid "About Sound Recorder"
+#~ msgstr "Дыбыстарды жазу қолданбасы туралы"
+
+#~ msgid "A Sound Recording Application for GNOME"
+#~ msgstr "GNOME үшін дыбыс жазуға арналған қолданба"
+
+#, javascript-format
+#~ msgid "%s (Old)"
+#~ msgstr "%s (Ескі)"
+
+#, javascript-format
+#~ msgid "%d day ago"
+#~ msgid_plural "%d days ago"
+#~ msgstr[0] "%d күн бұрын"
+
+#, javascript-format
+#~ msgid "%d week ago"
+#~ msgid_plural "%d weeks ago"
+#~ msgstr[0] "%d апта бұрын"
+
+#, javascript-format
+#~ msgid "%d month ago"
+#~ msgid_plural "%d months ago"
+#~ msgstr[0] "%d ай бұрын"
+
+#, javascript-format
+#~ msgid "%d year ago"
+#~ msgid_plural "%d years ago"
+#~ msgstr[0] "%d жыл бұрын"
 
 #~ msgid "Sound Recorder started"
 #~ msgstr "Дыбыстарды жазу қолданбасы іске қосылды"
@@ -317,7 +412,6 @@ msgstr "\"%s\" өшірілді"
 #~ msgid "Speaker volume level."
 #~ msgstr "Динамик дыбысының деңгейі."
 
-#~| msgid "SoundRecorder"
 #~ msgid "org.gnome.SoundRecorder"
 #~ msgstr "org.gnome.SoundRecorder"
 
@@ -411,9 +505,6 @@ msgstr "\"%s\" өшірілді"
 
 #~ msgid "About"
 #~ msgstr "Осы туралы"
-
-#~ msgid "Quit"
-#~ msgstr "Шығу"
 
 #~ msgid "%Y-%m-%d %H:%M:%S"
 #~ msgstr "%Y-%m-%d %H:%M:%S"
