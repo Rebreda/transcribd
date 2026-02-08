@@ -13,30 +13,30 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vocalis master\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/vocalis/issues/\n"
-"POT-Creation-Date: 2024-09-10 08:28+0000\n"
-"PO-Revision-Date: 2024-09-18 08:00+0300\n"
-"Last-Translator: Emin Tufan Çetin <etcetin@gmail.com>\n"
+"POT-Creation-Date: 2025-03-15 23:19+0000\n"
+"PO-Revision-Date: 2026-01-30 01:17+0300\n"
+"Last-Translator: Sabri Ünal <yakushabb@gmail.com>\n"
 "Language-Team: Türkçe <takim@gnome.org.tr>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.8\n"
 "X-Project-Style: gnome\n"
 
-#: data/app.drey.Vocalis.desktop.in.in:4
+#: data/app.drey.Vocalis.desktop.in.in:3
 #: data/app.drey.Vocalis.metainfo.xml.in.in:5 data/ui/window.ui:10
 #: src/application.ts:50 src/application.ts:167
 msgid "Vocalis"
 msgstr "Vocalis"
 
-#: data/app.drey.Vocalis.desktop.in.in:5
+#: data/app.drey.Vocalis.desktop.in.in:4
 msgid "Record sound via the microphone and play it back"
 msgstr "Mikrofonla ses kaydet ve yeniden oynat"
 
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: data/app.drey.Vocalis.desktop.in.in:10
+#: data/app.drey.Vocalis.desktop.in.in:9
 msgid "Audio;Application;Record;Sound Recorder;"
 msgstr ""
 "Vocalis;Audio;Application;Record;Sound Recorder;Ses;Uygulama;Kayıt;Ses "
@@ -51,8 +51,8 @@ msgid ""
 "Vocalis provides a simple and modern interface that provides a straight-"
 "forward way to record and play voice memos."
 msgstr ""
-"Vocalis, kolayca sesli not kaydedip oynatmanız için yalın ve çağdaş "
-"arayüz sağlar."
+"Vocalis, kolayca sesli not kaydedip oynatmanız için yalın ve çağdaş arayüz "
+"sağlar."
 
 #: data/app.drey.Vocalis.metainfo.xml.in.in:14
 msgid ""
@@ -292,7 +292,7 @@ msgstr ""
 "Sabri Ünal <yakushabb@gmail.com>"
 
 #: src/recorder.ts:161
-#, c-format
+#, javascript-format
 msgid "Recording %d"
 msgstr "Kayıt %d"
 
@@ -334,41 +334,22 @@ msgstr "Bir günden daha önce"
 msgid "Yesterday"
 msgstr "Dün"
 
-#: src/utils.ts:55
-#, c-format
-msgid "%d day ago"
-msgid_plural "%d days ago"
-msgstr[0] "%d gün önce"
-
 #: src/utils.ts:57
 msgid "Last week"
 msgstr "Geçen hafta"
-
-#: src/utils.ts:59
-#, c-format
-msgid "%d week ago"
-msgid_plural "%d weeks ago"
-msgstr[0] "%d hafta önce"
 
 #: src/utils.ts:63
 msgid "Last month"
 msgstr "Geçen ay"
 
-#: src/utils.ts:65
-#, c-format
-msgid "%d month ago"
-msgid_plural "%d months ago"
-msgstr[0] "%d ay önce"
-
 #: src/utils.ts:69
 msgid "Last year"
 msgstr "Geçen yıl"
 
-#: src/utils.ts:72
-#, c-format
-msgid "%d year ago"
-msgid_plural "%d years ago"
-msgstr[0] "%d yıl önce"
+#: src/window.ts:114
+#, javascript-format
+msgid "\"%s\" deleted"
+msgstr "\"%s\" silindi"
 
 #: src/window.ts:116
 msgid "Recording deleted"
@@ -377,3 +358,23 @@ msgstr "Kayıt silindi"
 #: src/window.ts:224
 msgid "Undo"
 msgstr "Geri Al"
+
+#, c-format
+#~ msgid "%d day ago"
+#~ msgid_plural "%d days ago"
+#~ msgstr[0] "%d gün önce"
+
+#, c-format
+#~ msgid "%d week ago"
+#~ msgid_plural "%d weeks ago"
+#~ msgstr[0] "%d hafta önce"
+
+#, c-format
+#~ msgid "%d month ago"
+#~ msgid_plural "%d months ago"
+#~ msgstr[0] "%d ay önce"
+
+#, c-format
+#~ msgid "%d year ago"
+#~ msgid_plural "%d years ago"
+#~ msgstr[0] "%d yıl önce"
