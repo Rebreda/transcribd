@@ -1,12 +1,12 @@
 icon_dir = 'icons' / 'hicolor' / 'scalable' / 'apps'
 install_data(
-  'icons' / 'app.rebreda.Transcribd.svg',
+  'icons' / 'app.drey.Vocalis.svg',
   install_dir:  transcribd_datadir / icon_dir
 )
 
 icon_dir = 'icons' / 'hicolor' / 'symbolic' / 'apps'
 install_data(
-  'icons' / 'app.rebreda.Transcribd-symbolic.svg',
+  'icons' / 'app.drey.Vocalis-symbolic.svg',
   rename: '@0@-symbolic.svg'.format(application_id),
   install_dir: transcribd_datadir / icon_dir
 )
@@ -15,7 +15,7 @@ desktop_conf = configuration_data()
 desktop_conf.set('app-id', application_id)
 desktop_file = i18n.merge_file(
   input: configure_file(
-  input: 'app.rebreda.Transcribd.desktop.in.in',
+	input: 'app.drey.Vocalis.desktop.in.in',
   	output: '@BASENAME@',
   	configuration: desktop_conf
   ),
@@ -40,7 +40,7 @@ gsettings_conf = configuration_data()
 gsettings_conf.set('app-id', application_id)
 gsettings_conf.set('gettext-package', gettext_package)
 configure_file(
-  input: 'app.rebreda.Transcribd.gschema.xml.in',
+  input: 'app.drey.Vocalis.gschema.xml.in',
   output: '@0@.gschema.xml'.format(application_id),
   configuration: gsettings_conf,
   install: true,
@@ -49,7 +49,7 @@ configure_file(
 
 data_res = gnome.compile_resources(
   application_id + '.data',
-  'app.rebreda.Transcribd.data.gresource.xml',
+  'app.drey.Vocalis.data.gresource.xml',
   gresource_bundle: true,
   install_dir: transcribd_pkgdatadir,
   install: true
@@ -61,7 +61,7 @@ metainfo_conf.set('gettext-package', gettext_package)
 
 metainfo_file = i18n.merge_file(
   input: configure_file(
-  	input: 'app.rebreda.Transcribd.metainfo.xml.in.in',
+  input: 'app.drey.Vocalis.metainfo.xml.in.in',
   	output: '@BASENAME@',
   	configuration: metainfo_conf
 	),

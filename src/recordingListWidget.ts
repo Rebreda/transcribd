@@ -10,6 +10,8 @@ import { Recording } from "./recording.js";
 export class RecordingsListWidget extends Adw.Bin {
     public list: Gtk.ListBox;
     private searchTerm = "";
+    private model: Gio.ListModel;
+    private itemsChangedId: number;
 
     static {
         GObject.registerClass(
@@ -28,6 +30,7 @@ export class RecordingsListWidget extends Adw.Bin {
 
     constructor(model: Gio.ListModel) {
         super();
+        this.model = model;
         this.list = Gtk.ListBox.new();
         this.list.valign = Gtk.Align.START;
         this.list.margin_start = 8;
@@ -36,15 +39,6 @@ export class RecordingsListWidget extends Adw.Bin {
         this.list.margin_bottom = 8;
         this.list.activate_on_single_click = true;
         this.list.add_css_class("boxed-list");
-
-        this.list.set_filter_func((row: Gtk.ListBoxRow) => {
-            if (this.searchTerm.length === 0) return true;
-            const r = row as Row;
-            const name = (r.recording.name ?? "").toLowerCase();
-            const cat = (r.recording.category ?? "").toLowerCase();
-            const term = this.searchTerm.toLowerCase();
-            return name.includes(term) || cat.includes(term);
-        });
 
         const placeholder = new Gtk.Label({
             label: _("No recordings yet"),
@@ -56,12 +50,10 @@ export class RecordingsListWidget extends Adw.Bin {
 
         this.set_child(this.list);
 
-        this.list.bind_model(model, (item: GObject.Object) => {
-            const recording = item as Recording;
-            const row = new Row(recording);
-
-            return row;
+        this.itemsChangedId = this.model.connect("items-changed", () => {
+            this._refreshRows();
         });
+        this._refreshRows();
 
         this.list.connect(
             "row-activated",
@@ -73,6 +65,27 @@ export class RecordingsListWidget extends Adw.Bin {
 
     public filterBySearch(term: string): void {
         this.searchTerm = term;
-        this.list.invalidate_filter();
+        this._refreshRows();
+    }
+
+    private _refreshRows(): void {
+        let child = this.list.get_first_child();
+        while (child) {
+            const next = child.get_next_sibling();
+            this.list.remove(child as Gtk.Widget);
+            child = next;
+        }
+
+        const term = this.searchTerm.trim().toLowerCase();
+        for (let i = 0; i < this.model.get_n_items(); i++) {
+            const recording = this.model.get_item(i) as Recording;
+            const name = (recording.name ?? "").toLowerCase();
+            const cat = (recording.category ?? "").toLowerCase();
+            if (term.length > 0 && !name.includes(term) && !cat.includes(term)) {
+                continue;
+            }
+
+            this.list.append(new Row(recording));
+        }
     }
 }

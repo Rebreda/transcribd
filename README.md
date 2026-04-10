@@ -34,6 +34,56 @@ To build the development version of Transcribd and hack on the code
 see the [general guide](https://wiki.gnome.org/Newcomers/BuildProject)
 for building GNOME apps with Flatpak and GNOME Builder.
 
+### Contributor Quick Start
+
+Use this if you want to get productive quickly on Linux.
+
+1. Install system dependencies (GNOME + build tools): `meson`, `ninja`, `gjs`, `gtk4`, `libadwaita`, `gstreamer`, `glib2`, Node.js.
+2. Install JS dependencies:
+
+```bash
+npm install
+```
+
+3. Configure the development build:
+
+```bash
+meson setup build -Dprofile=development
+```
+
+4. Build:
+
+```bash
+ninja -C build
+```
+
+5. Run in development mode:
+
+```bash
+GSETTINGS_SCHEMA_DIR=$PWD/build/data ninja -C build run
+```
+
+6. Validate code before opening a PR:
+
+```bash
+npm run typecheck
+npm run lint
+npm run test:local-api
+```
+
+If `meson setup` fails because the build dir is stale, recreate it:
+
+```bash
+rm -rf build
+meson setup build -Dprofile=development
+```
+
+### Developer Docs
+
+- [Contributing Guide](CONTRIBUTING.md)
+- [Development Guide](docs/DEVELOPMENT.md)
+- [Architecture Overview](docs/ARCHITECTURE.md)
+
 ### Configuration
 
 Set the transcription server URL in the app preferences:
