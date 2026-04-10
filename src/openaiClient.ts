@@ -3,18 +3,16 @@ import GLib from "gi://GLib";
 import Gst from "gi://Gst";
 import Soup from "gi://Soup?version=3.0";
 
-const NON_SPEECH_TOKEN = /^\s*\[(?:blank_audio|silence)\]\s*$/i;
+import {
+    buildTranscriptionEndpoints,
+    extractTranscriptionResult,
+    type TranscriptionResult,
+} from "./transcriptionParsing.js";
 
-export interface TranscriptionSegmentResult {
-    startMs: number;
-    endMs: number;
-    text: string;
-}
-
-export interface TranscriptionResult {
-    text: string;
-    segments: TranscriptionSegmentResult[];
-}
+export type {
+    TranscriptionResult,
+    TranscriptionSegmentResult,
+} from "./transcriptionParsing.js";
 
 export interface OpenAICompatibleClientOptions {
     baseUrl: string;
@@ -74,7 +72,7 @@ export class OpenAICompatibleClient {
             parts.push(encoder.encode(`\r\n--${boundary}--\r\n`));
             const body = this.concatBytes(parts);
 
-            const endpoints = this.buildTranscriptionEndpoints();
+            const endpoints = buildTranscriptionEndpoints(this.baseUrl);
             let lastError = "Unknown transcription error";
 
             for (const endpoint of endpoints) {
@@ -100,7 +98,7 @@ export class OpenAICompatibleClient {
                     `[OpenAIClient] HTTP status ${msg.statusCode} from ${endpoint}`,
                 );
                 if (msg.statusCode >= 200 && msg.statusCode < 300) {
-                    const extracted = this.extractTranscriptionResult(decoded);
+                    const extracted = extractTranscriptionResult(decoded);
                     if (extracted.text.length > 0) return extracted;
                 }
                 lastError =
@@ -185,120 +183,6 @@ export class OpenAICompatibleClient {
         }
 
         return { wavBytes, tempPath };
-    }
-
-    private buildTranscriptionEndpoints(): string[] {
-        const rawBase = this.baseUrl.replace(/\/+$/, "");
-        const root = rawBase.replace(/\/(api\/)?v1$/i, "");
-        const candidates = [
-            `${rawBase}/audio/transcriptions`,
-            `${root}/api/v1/audio/transcriptions`,
-        ];
-
-        const unique: string[] = [];
-        for (const url of candidates) {
-            if (!unique.includes(url)) unique.push(url);
-        }
-        return unique;
-    }
-
-    private extractTranscriptionResult(payload: string): TranscriptionResult {
-        const raw = payload.trim();
-        if (raw.length === 0) return { text: "", segments: [] };
-
-        try {
-            const parsed = JSON.parse(raw) as Record<string, unknown>;
-            const candidates: unknown[] = [
-                parsed["text"],
-                parsed["transcript"],
-                parsed["output_text"],
-            ];
-            const text = this.pickFirstText(candidates);
-            const segments = this.extractSegments(parsed);
-            if (text.length > 0) {
-                return { text, segments };
-            }
-        } catch (_err) {
-            if (!NON_SPEECH_TOKEN.test(raw)) {
-                return { text: raw, segments: [] };
-            }
-        }
-
-        return { text: "", segments: [] };
-    }
-
-    private pickFirstText(candidates: unknown[]): string {
-        for (const c of candidates) {
-            if (typeof c === "string") {
-                const trimmed = c.trim();
-                if (trimmed.length > 0 && !NON_SPEECH_TOKEN.test(trimmed)) {
-                    return trimmed;
-                }
-            }
-        }
-        return "";
-    }
-
-    private extractSegments(parsed: Record<string, unknown>): TranscriptionSegmentResult[] {
-        const directWords = this.parseSegmentArray(parsed["words"]);
-        if (directWords.length > 0) return directWords;
-
-        const nestedWords = this.parseNestedWords(parsed["segments"]);
-        if (nestedWords.length > 0) return nestedWords;
-
-        const directSegments = this.parseSegmentArray(parsed["segments"]);
-        if (directSegments.length > 0) return directSegments;
-
-        return [];
-    }
-
-    private parseNestedWords(value: unknown): TranscriptionSegmentResult[] {
-        if (!Array.isArray(value)) return [];
-
-        const words: TranscriptionSegmentResult[] = [];
-        for (const entry of value) {
-            if (typeof entry !== "object" || entry === null) continue;
-            const record = entry as Record<string, unknown>;
-            words.push(...this.parseSegmentArray(record["words"]));
-        }
-
-        return words;
-    }
-
-    private parseSegmentArray(value: unknown): TranscriptionSegmentResult[] {
-        if (!Array.isArray(value)) return [];
-
-        const segments: TranscriptionSegmentResult[] = [];
-        for (const entry of value) {
-            if (typeof entry !== "object" || entry === null) continue;
-            const record = entry as Record<string, unknown>;
-            const text = this.pickFirstText([
-                record["word"],
-                record["text"],
-                record["token"],
-            ]);
-            if (!text) continue;
-
-            const start = this.readTimestamp(record, ["start_ms", "start", "t0", "from"]);
-            const end = this.readTimestamp(record, ["end_ms", "end", "t1", "to"]);
-            if (start === null || end === null || end < start) continue;
-
-            segments.push({ startMs: start, endMs: end, text });
-        }
-
-        return segments;
-    }
-
-    private readTimestamp(record: Record<string, unknown>, keys: string[]): number | null {
-        for (const key of keys) {
-            const value = record[key];
-            if (typeof value !== "number" || Number.isNaN(value)) continue;
-            if (key.endsWith("_ms")) return Math.round(value);
-            if (key === "t0" || key === "t1") return Math.round(value * 10);
-            if (!Number.isInteger(value) || value <= 600) return Math.round(value * 1000);
-            return Math.round(value);
-        }
-        return null;
     }
 
     private concatBytes(parts: Uint8Array[]): Uint8Array {

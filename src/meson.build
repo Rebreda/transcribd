@@ -23,11 +23,13 @@ sources = files(
   'recordingList.ts',
   'recordingListWidget.ts',
   'row.ts',
+  'searchIndex.ts',
   'utils.ts',
   'waveform.ts',
   'window.ts',
   'transcriber.ts',
   'openaiClient.ts',
+  'transcriptionParsing.ts',
   'detailView.ts',
   'preferences.ts',
 )

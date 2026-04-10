@@ -32,6 +32,22 @@
               </object>
             </child>
             <child>
+              <object class="AdwSpinRow" id="speechThresholdRow">
+                <property name="title" translatable="yes">Speech Threshold</property>
+                <property name="subtitle" translatable="yes">Raise this to ignore more background sound during realtime transcription.</property>
+                <property name="digits">3</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">0.005</property>
+                    <property name="upper">0.150</property>
+                    <property name="step_increment">0.005</property>
+                    <property name="page_increment">0.010</property>
+                    <property name="value">0.020</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
               <object class="AdwPasswordEntryRow" id="apiKeyEntry">
                 <property name="title" translatable="yes">API Key</property>
               </object>

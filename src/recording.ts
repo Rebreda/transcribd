@@ -7,6 +7,7 @@ import GstPbutils from "gi://GstPbutils";
 
 import { CacheDir } from "./application.js";
 import { EncodingProfiles } from "./recorder.js";
+import { SearchIndex } from "./searchIndex.js";
 
 function isNumArray(input: unknown): input is number[] {
     return Array.isArray(input) && input.every((i) => typeof i === "number");
@@ -28,8 +29,12 @@ export class Recording extends GObject.Object {
     private _duration?: number;
     private _transcription = "";
     private _category = "";
+    private _tags: string[] = [];
+    private _speakers: string[] = [];
     private _segments: TranscriptionSegment[] = [];
     private _cacheKey: string;
+
+    public readonly persistedReady: Promise<void>;
 
     public pipeline?: Gst.Bin | null;
 
@@ -39,6 +44,7 @@ export class Recording extends GObject.Object {
                 Signals: {
                     "peaks-updated": {},
                     "peaks-loading": {},
+                    "metadata-changed": {},
                 },
                 Properties: {
                     duration: GObject.ParamSpec.int(
@@ -126,15 +132,13 @@ export class Recording extends GObject.Object {
             ) => {
                 this._duration = audioInfo.get_duration();
                 this.notify("duration");
+                void SearchIndex.getDefault().upsertRecording(this);
             },
         );
 
         discoverer.discover_uri_async(this.uri);
 
-        // Attempt to load any previously saved transcription + metadata
-        void this.loadTranscription();
-        void this.loadMetadata();
-        void this.loadSegments();
+        this.persistedReady = this._loadPersistedState();
     }
 
     public get name(): string | null {
@@ -143,9 +147,18 @@ export class Recording extends GObject.Object {
 
     public set name(filename: string | null) {
         if (filename && filename !== this.name) {
-            this._file = this._file.set_display_name(filename, null);
+            const previousUri = this.uri;
+            const nextName = this._buildUniqueDisplayName(filename);
+            this._file = this._file.set_display_name(nextName, null);
             this.notify("name");
+            void SearchIndex.getDefault().deleteRecording(previousUri).finally(() => {
+                void SearchIndex.getDefault().upsertRecording(this);
+            });
         }
+    }
+
+    public get cacheKey(): string {
+        return this._cacheKey;
     }
 
     public get extension(): string | undefined {
@@ -195,6 +208,7 @@ export class Recording extends GObject.Object {
     }
 
     public async delete(): Promise<void> {
+        const deletedUri = this.uri;
         await this._file.trash_async(GLib.PRIORITY_HIGH, null);
         const waveformCaches = [
             this.waveformCache,
@@ -231,6 +245,8 @@ export class Recording extends GObject.Object {
                 }
             } catch (_err) { /* ignore */ }
         }
+
+        void SearchIndex.getDefault().deleteRecording(deletedUri);
     }
 
     public save(dest: Gio.File): void {
@@ -313,40 +329,59 @@ export class Recording extends GObject.Object {
         this.notify("category");
     }
 
+    public get tags(): string[] {
+        return [...this._tags];
+    }
+
+    public get speakers(): string[] {
+        return [...this._speakers];
+    }
+
     public async loadMetadata(): Promise<void> {
         try {
             if (!this.metadataCache.query_exists(null)) return;
-            const bytes = (await this.metadataCache.load_bytes_async(null))[0];
-            if (!bytes) return;
-            const data = bytes.get_data();
-            if (!data) return;
-            const json = JSON.parse(
-                new TextDecoder("utf-8").decode(data),
-            ) as Record<string, unknown>;
+            const json = await this._loadMetadataDocument();
             if (typeof json["category"] === "string") {
                 this._category = json["category"];
                 this.notify("category");
             }
+            this._tags = this._normalizeMetadataList(json["tags"]);
+            this._speakers = this._normalizeMetadataList(json["speakers"]);
+            this.emit("metadata-changed");
         } catch (_err) { /* no metadata yet */ }
     }
 
     public async saveCategory(cat: string): Promise<void> {
         this.category = cat;
-        let current: Record<string, unknown> = {};
-        try {
-            if (this.metadataCache.query_exists(null)) {
-                const bytes = (await this.metadataCache.load_bytes_async(null))[0];
-                if (bytes) {
-                    const data = bytes.get_data();
-                    if (data) current = JSON.parse(new TextDecoder("utf-8").decode(data)) as Record<string, unknown>;
-                }
-            }
-        } catch (_) { /* ignore */ }
+        const current = await this._loadMetadataDocument();
         current["category"] = cat;
-        await this.metadataCache.replace_contents_async(
-            new TextEncoder().encode(JSON.stringify(current)),
-            null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null,
-        );
+        current["tags"] = this._tags;
+        current["speakers"] = this._speakers;
+        await this._saveMetadataDocument(current);
+        this.emit("metadata-changed");
+        void SearchIndex.getDefault().upsertRecording(this);
+    }
+
+    public async saveTags(tags: string[]): Promise<void> {
+        this._tags = this._normalizeMetadataList(tags);
+        const current = await this._loadMetadataDocument();
+        current["category"] = this._category;
+        current["tags"] = this._tags;
+        current["speakers"] = this._speakers;
+        await this._saveMetadataDocument(current);
+        this.emit("metadata-changed");
+        void SearchIndex.getDefault().upsertRecording(this);
+    }
+
+    public async saveSpeakers(speakers: string[]): Promise<void> {
+        this._speakers = this._normalizeMetadataList(speakers);
+        const current = await this._loadMetadataDocument();
+        current["category"] = this._category;
+        current["tags"] = this._tags;
+        current["speakers"] = this._speakers;
+        await this._saveMetadataDocument(current);
+        this.emit("metadata-changed");
+        void SearchIndex.getDefault().upsertRecording(this);
     }
 
     public get segments(): TranscriptionSegment[] {
@@ -394,6 +429,86 @@ export class Recording extends GObject.Object {
             Gio.FileCreateFlags.REPLACE_DESTINATION,
             null,
         );
+        void SearchIndex.getDefault().upsertRecording(this);
+    }
+
+    private async _loadPersistedState(): Promise<void> {
+        await Promise.all([
+            this.loadTranscription(),
+            this.loadMetadata(),
+            this.loadSegments(),
+        ]);
+        await SearchIndex.getDefault().upsertRecording(this);
+    }
+
+    private async _loadMetadataDocument(): Promise<Record<string, unknown>> {
+        try {
+            if (!this.metadataCache.query_exists(null)) return {};
+            const bytes = (await this.metadataCache.load_bytes_async(null))[0];
+            if (!bytes) return {};
+            const data = bytes.get_data();
+            if (!data) return {};
+            return JSON.parse(
+                new TextDecoder("utf-8").decode(data),
+            ) as Record<string, unknown>;
+        } catch (_err) {
+            return {};
+        }
+    }
+
+    private async _saveMetadataDocument(data: Record<string, unknown>): Promise<void> {
+        await this.metadataCache.replace_contents_async(
+            new TextEncoder().encode(JSON.stringify(data)),
+            null,
+            false,
+            Gio.FileCreateFlags.REPLACE_DESTINATION,
+            null,
+        );
+    }
+
+    private _normalizeMetadataList(value: unknown): string[] {
+        if (!Array.isArray(value)) return [];
+        const seen = new Set<string>();
+        const items: string[] = [];
+        for (const entry of value) {
+            if (typeof entry !== "string") continue;
+            const clean = entry.trim();
+            const key = clean.toLowerCase();
+            if (clean.length === 0 || seen.has(key)) continue;
+            seen.add(key);
+            items.push(clean);
+        }
+        return items;
+    }
+
+    private _buildUniqueDisplayName(rawName: string): string {
+        const trimmed = rawName.trim();
+        const extension = this._extension?.trim();
+        const preferredName = extension && !trimmed.endsWith(`.${extension}`)
+            ? `${trimmed}.${extension}`
+            : trimmed;
+
+        const parent = this._file.get_parent();
+        if (!parent) return preferredName;
+
+        const splitIndex = preferredName.lastIndexOf(".");
+        const hasExtension = splitIndex > 0;
+        const baseName = hasExtension
+            ? preferredName.slice(0, splitIndex)
+            : preferredName;
+        const suffix = hasExtension ? preferredName.slice(splitIndex) : "";
+
+        let candidate = preferredName;
+        let counter = 2;
+
+        while (true) {
+            const sibling = parent.get_child(candidate);
+            if (!sibling.query_exists(null) || sibling.equal(this._file)) {
+                return candidate;
+            }
+            candidate = `${baseName} ${counter}${suffix}`;
+            counter += 1;
+        }
     }
 
     public async loadPeaks(): Promise<void> {

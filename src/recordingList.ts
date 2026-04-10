@@ -5,16 +5,27 @@ import GObject from "gi://GObject";
 
 import { RecordingsDir } from "./application.js";
 import { Recording } from "./recording.js";
+import { SearchIndex } from "./searchIndex.js";
 
 export class RecordingList extends Gio.ListStore {
     private enumerator?: Gio.FileEnumerator;
+    private trackedRecordings = new WeakSet<Recording>();
 
     public cancellable: Gio.Cancellable;
     public dirMonitor: Gio.FileMonitor;
 
     static {
-        GObject.registerClass(this);
+        GObject.registerClass(
+            {
+                Signals: {
+                    "loading-changed": { param_types: [GObject.TYPE_BOOLEAN] },
+                },
+            },
+            this,
+        );
     }
+
+    private loading = true;
 
     constructor() {
         super();
@@ -31,7 +42,11 @@ export class RecordingList extends Gio.ListStore {
 
                 switch (eventType) {
                     case Gio.FileMonitorEvent.MOVED_OUT:
-                        if (index >= 0) this.remove(index);
+                        if (index >= 0) {
+                            const recording = this.get_item(index) as Recording;
+                            this.remove(index);
+                            void SearchIndex.getDefault().deleteRecording(recording.uri);
+                        }
                         break;
                     case Gio.FileMonitorEvent.MOVED_IN:
                         if (index === -1)
@@ -57,6 +72,7 @@ export class RecordingList extends Gio.ListStore {
         this.enumerator = enumerator;
         if (this.enumerator === null) {
             log("The contents of the Recordings directory were not indexed.");
+            this._setLoading(false);
             return;
         }
 
@@ -79,6 +95,8 @@ export class RecordingList extends Gio.ListStore {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                     console.error(`Failed to load recordings ${e.message}`);
             }
+        } finally {
+            this._setLoading(false);
         }
     }
 
@@ -113,5 +131,48 @@ export class RecordingList extends Gio.ListStore {
         }
 
         if (!added) this.append(recording);
+
+        this._watchRecording(recording);
+
+        void recording.persistedReady
+            .then(() => {
+                this._emitRecordingChanged(recording);
+            })
+            .catch((error) => {
+                console.error(
+                    "[RecordingList] Failed to index recording:",
+                    error instanceof Error ? error.message : String(error),
+                );
+            });
+    }
+
+    private _watchRecording(recording: Recording): void {
+        if (this.trackedRecordings.has(recording)) return;
+        this.trackedRecordings.add(recording);
+
+        for (const signal of [
+            "notify::name",
+            "notify::category",
+            "notify::transcription",
+            "notify::duration",
+            "metadata-changed",
+        ]) {
+            recording.connect(signal, () => {
+                this._emitRecordingChanged(recording);
+            });
+        }
+    }
+
+    private _emitRecordingChanged(recording: Recording): void {
+        const index = this.getIndex(recording.file);
+        if (index >= 0) {
+            this.items_changed(index, 1, 1);
+        }
+    }
+
+    private _setLoading(next: boolean): void {
+        if (this.loading === next) return;
+        this.loading = next;
+        this.emit("loading-changed", next);
     }
 }

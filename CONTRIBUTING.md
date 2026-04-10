@@ -7,7 +7,7 @@ Thanks for contributing.
 Transcribd is a GNOME desktop recorder with local AI transcription support (OpenAI-compatible HTTP and realtime WebSocket flows).
 
 Credit and continuity:
-- This project is based on GNOME Vocalis: https://gitlab.gnome.org/World/vocalis
+- This project is a fork of Vocalis: https://gitlab.gnome.org/World/vocalis
 - Keep upstream attribution intact in docs and metadata.
 
 ## Development Setup

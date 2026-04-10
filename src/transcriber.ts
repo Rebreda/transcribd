@@ -38,7 +38,7 @@ interface WsMessage {
     };
 }
 
-const NON_SPEECH_TOKEN = /^\s*\[(?:blank_audio|silence)\]\s*$/i;
+const NON_SPEECH_TOKEN = /^\s*\[(?:blank_audio|silence|[a-z][a-z _-]{0,31})\]\s*$/i;
 
 export class TranscriberService extends GObject.Object {
     private session: Soup.Session;
@@ -575,6 +575,107 @@ export async function suggestCategory(
     throw new Error(lastError);
 }
 
+export interface SuggestedMetadata {
+    category: string;
+    tags: string[];
+    speakers: string[];
+}
+
+export async function suggestMetadata(
+    transcript: string,
+    serverUrl: string,
+    apiKey: string,
+    model: string,
+    existingCategories: string[],
+    existingTags: string[],
+): Promise<SuggestedMetadata> {
+    if (model.trim().length === 0) {
+        throw new Error("Inference model is not configured");
+    }
+
+    const base = serverUrl.trim().replace(/\/+$/, "");
+    const root = base.replace(/\/(api\/)?v1$/i, "");
+    const urls = [
+        `${base}/chat/completions`,
+        `${root}/api/v1/chat/completions`,
+        `${root}/v1/chat/completions`,
+        `${root}/chat/completions`,
+    ].filter((u, i, a) => a.indexOf(u) === i);
+
+    const categoryContext = existingCategories.length > 0
+        ? `Existing categories to prefer when they fit: ${existingCategories.slice(0, 24).join(", ")}.`
+        : "There are no established categories yet.";
+    const tagContext = existingTags.length > 0
+        ? `Existing tags to prefer when they fit: ${existingTags.slice(0, 40).join(", ")}.`
+        : "There are no established tags yet.";
+
+    const bodyJson = JSON.stringify({
+        model,
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You assign metadata to an audio transcript. Return JSON only. " +
+                    "The JSON object must contain category, tags, and speakers. " +
+                    "category is a short string with at most 3 words. " +
+                    "tags is an array with 1 to 5 short strings. " +
+                    "speakers is an array of distinct speaker names or speaker labels, or an empty array if not knowable. " +
+                    "Prefer existing categories and tags when they fit.",
+            },
+            {
+                role: "user",
+                content:
+                    `${categoryContext}\n${tagContext}\n\nTranscript:\n\n${transcript.slice(0, 2200)}\n\nReturn JSON only.`,
+            },
+        ],
+        max_tokens: 180,
+        temperature: 0.2,
+    });
+
+    const encoder = new TextEncoder();
+    const session = new Soup.Session();
+
+    let lastError = "No response";
+    for (const url of urls) {
+        const msg = Soup.Message.new("POST", url);
+        if (!msg) continue;
+        msg.request_headers.append("Authorization", `Bearer ${apiKey}`);
+        msg.set_request_body_from_bytes(
+            "application/json",
+            GLib.Bytes.new(encoder.encode(bodyJson)),
+        );
+        try {
+            const bytes = await session.send_and_read_async(
+                msg,
+                GLib.PRIORITY_DEFAULT,
+                null,
+            );
+            if (msg.statusCode < 200 || msg.statusCode >= 300) {
+                lastError = `HTTP ${msg.statusCode} from ${url}`;
+                continue;
+            }
+            const decoded = new TextDecoder("utf-8").decode(
+                bytes.get_data() ?? new Uint8Array(),
+            );
+            const resp = JSON.parse(decoded) as {
+                choices?: Array<{ message?: { content?: string } }>;
+            };
+            const content = resp.choices?.[0]?.message?.content?.trim();
+            if (!content) {
+                lastError = `No metadata in response from ${url}`;
+                continue;
+            }
+            const parsed = parseSuggestedMetadata(content);
+            if (parsed) return parsed;
+            lastError = `Invalid metadata payload from ${url}`;
+        } catch (err) {
+            lastError = err instanceof Error ? err.message : String(err);
+        }
+    }
+
+    throw new Error(lastError);
+}
+
 export function suggestTitleFallback(transcript: string): string {
     const cleaned = normalizeTranscriptForMetadata(transcript);
     if (cleaned.length === 0) return "Recording";
@@ -624,10 +725,70 @@ export function suggestCategoryFallback(transcript: string): string {
     return bestName;
 }
 
+export function suggestTagsFallback(transcript: string): string[] {
+    const normalized = normalizeTranscriptForMetadata(transcript).toLowerCase();
+    if (normalized.length === 0) return [];
+
+    const suggestions: Array<{ tag: string; keywords: string[] }> = [
+        { tag: "meeting", keywords: ["meeting", "agenda", "follow up", "team"] },
+        { tag: "tasks", keywords: ["todo", "task", "deadline", "complete"] },
+        { tag: "ideas", keywords: ["idea", "brainstorm", "concept", "feature"] },
+        { tag: "call", keywords: ["call", "phone", "client", "customer"] },
+        { tag: "notes", keywords: ["note", "remember", "reminder"] },
+        { tag: "interview", keywords: ["interview", "candidate", "resume"] },
+    ];
+
+    return suggestions
+        .filter((candidate) =>
+            candidate.keywords.some((keyword) => normalized.includes(keyword)))
+        .map((candidate) => candidate.tag)
+        .slice(0, 5);
+}
+
+export function suggestSpeakersFallback(transcript: string): string[] {
+    const matches = transcript.match(/\b[A-Z][a-z]{2,}\b/g) ?? [];
+    const skip = new Set(["Recording", "Meeting", "Today", "Thank", "Hello"]);
+    const seen = new Set<string>();
+    const speakers: string[] = [];
+    for (const match of matches) {
+        if (skip.has(match) || seen.has(match)) continue;
+        seen.add(match);
+        speakers.push(match);
+        if (speakers.length >= 4) break;
+    }
+    return speakers;
+}
+
 function normalizeTranscriptForMetadata(transcript: string): string {
     return transcript
         .replace(/\[(?:blank_audio|silence)\]/gi, " ")
         .replace(/^\d+[.):-]\s*/g, "")
         .replace(/\s+/g, " ")
         .trim();
+}
+
+function parseSuggestedMetadata(content: string): SuggestedMetadata | null {
+    const match = content.match(/\{[\s\S]*\}/);
+    const raw = match ? match[0] : content;
+    try {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        const category = typeof parsed["category"] === "string"
+            ? parsed["category"].trim()
+            : "";
+        const tags = Array.isArray(parsed["tags"])
+            ? parsed["tags"]
+                .filter((value): value is string => typeof value === "string")
+                .map((value) => value.trim())
+                .filter(Boolean)
+            : [];
+        const speakers = Array.isArray(parsed["speakers"])
+            ? parsed["speakers"]
+                .filter((value): value is string => typeof value === "string")
+                .map((value) => value.trim())
+                .filter(Boolean)
+            : [];
+        return { category, tags, speakers };
+    } catch (_err) {
+        return null;
+    }
 }

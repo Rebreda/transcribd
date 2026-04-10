@@ -41,15 +41,6 @@
                         </style>
                       </object>
                     </child>
-                    <child type="end">
-                      <object class="GtkToggleButton" id="searchToggle">
-                        <property name="icon_name">system-search-symbolic</property>
-                        <property name="tooltip_text" translatable="yes">Search</property>
-                        <style>
-                          <class name="image-button"/>
-                        </style>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child type="top">
@@ -61,22 +52,112 @@
                     <property name="margin_top">8</property>
                     <property name="margin_bottom">8</property>
                     <child>
-                      <object class="GtkEntry" id="categoryFilterEntry">
-                        <property name="placeholder-text" translatable="yes">Filter by category…</property>
-                        <property name="secondary_icon_name">tag-symbolic</property>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkBox">
                         <property name="spacing">8</property>
                         <child>
-                          <object class="GtkDropDown" id="dateFilterDropdown">
+                          <object class="GtkSearchEntry" id="searchEntry">
                             <property name="hexpand">True</property>
+                            <property name="placeholder-text" translatable="yes">Search recordings…</property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkDropDown" id="sortDropdown">
-                            <property name="hexpand">True</property>
+                          <object class="GtkMenuButton" id="filtersButton">
+                            <property name="icon_name">view-filter-symbolic</property>
+                            <property name="tooltip_text" translatable="yes">Filter results</property>
+                            <property name="popover">
+                              <object class="GtkPopover" id="filtersPopover">
+                                <property name="position">bottom</property>
+                                <property name="child">
+                                  <object class="GtkScrolledWindow">
+                                    <property name="hscrollbar_policy">never</property>
+                                    <property name="min_content_width">280</property>
+                                    <property name="max_content_height">420</property>
+                                    <property name="child">
+                                      <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">12</property>
+                                        <property name="margin_start">12</property>
+                                        <property name="margin_end">12</property>
+                                        <property name="margin_top">12</property>
+                                        <property name="margin_bottom">12</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="label" translatable="yes">Date Range</property>
+                                            <property name="xalign">0</property>
+                                            <style>
+                                              <class name="caption-heading"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="dateFilterDropdown">
+                                            <property name="hexpand">True</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkSeparator"/>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="label" translatable="yes">Categories</property>
+                                            <property name="xalign">0</property>
+                                            <style>
+                                              <class name="caption-heading"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox" id="categoryFiltersBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">6</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkSeparator"/>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="label" translatable="yes">Tags</property>
+                                            <property name="xalign">0</property>
+                                            <style>
+                                              <class name="caption-heading"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox" id="tagFiltersBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">6</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkSeparator"/>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="label" translatable="yes">Speakers</property>
+                                            <property name="xalign">0</property>
+                                            <style>
+                                              <class name="caption-heading"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox" id="speakerFiltersBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">6</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                            <style>
+                              <class name="circular"/>
+                              <class name="filters-button"/>
+                            </style>
                           </object>
                         </child>
                         <child>
@@ -86,7 +167,18 @@
                             <style>
                               <class name="flat"/>
                               <class name="circular"/>
+                              <class name="filters-clear-button"/>
                             </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="spacing">8</property>
+                        <child>
+                          <object class="GtkDropDown" id="sortDropdown">
+                            <property name="hexpand">True</property>
                           </object>
                         </child>
                       </object>
@@ -94,16 +186,33 @@
                   </object>
                 </child>
                 <child type="top">
-                  <object class="GtkSearchBar" id="searchBar">
-                    <binding name="search-mode-enabled">
-                      <lookup name="active">searchToggle</lookup>
-                    </binding>
-                    <child>
-                      <object class="GtkSearchEntry" id="searchEntry">
-                        <property name="hexpand">True</property>
-                        <property name="placeholder-text" translatable="yes">Search recordings…</property>
+                  <object class="GtkRevealer" id="sidebarLoadingRevealer">
+                    <property name="reveal_child">False</property>
+                    <property name="transition_type">slide-down</property>
+                    <property name="child">
+                      <object class="GtkBox">
+                        <property name="spacing">8</property>
+                        <property name="margin_start">12</property>
+                        <property name="margin_end">12</property>
+                        <property name="margin_bottom">8</property>
+                        <child>
+                          <object class="GtkSpinner" id="sidebarLoadingSpinner">
+                            <property name="spinning">True</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="sidebarLoadingLabel">
+                            <property name="hexpand">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Loading recordings…</property>
+                            <style>
+                              <class name="dim-label"/>
+                              <class name="caption"/>
+                            </style>
+                          </object>
+                        </child>
                       </object>
-                    </child>
+                    </property>
                   </object>
                 </child>
                 <property name="content">

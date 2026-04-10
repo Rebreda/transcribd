@@ -9,6 +9,7 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
     private _serverUrlEntry!: Adw.EntryRow;
     private _modelEntry!: Adw.EntryRow;
     private _apiKeyEntry!: Adw.PasswordEntryRow;
+    private _speechThresholdRow!: Adw.SpinRow;
     private _injectSwitch!: Adw.SwitchRow;
     private _inferenceServerUrlEntry!: Adw.EntryRow;
     private _inferenceModelEntry!: Adw.EntryRow;
@@ -23,6 +24,7 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
                     "serverUrlEntry",
                     "modelEntry",
                     "apiKeyEntry",
+                    "speechThresholdRow",
                     "injectSwitch",
                     "inferenceServerUrlEntry",
                     "inferenceModelEntry",
@@ -58,6 +60,12 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
             "transcription-api-key",
             this._apiKeyEntry,
             "text",
+            Gio.SettingsBindFlags.DEFAULT,
+        );
+        Settings.bind(
+            "transcription-speech-threshold",
+            this._speechThresholdRow,
+            "value",
             Gio.SettingsBindFlags.DEFAULT,
         );
         Settings.bind(

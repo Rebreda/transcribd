@@ -7,17 +7,23 @@ import GLib from "gi://GLib";
 
 import { Row } from "./row.js";
 import { Recording } from "./recording.js";
+import { DateFilterMode, SearchIndex } from "./searchIndex.js";
 
-type DateFilterMode = "all" | "today" | "week" | "month" | "year";
 type SortMode = "newest" | "oldest" | "name-asc" | "name-desc" | "category-asc";
 
 export class RecordingsListWidget extends Adw.Bin {
     public list: Gtk.ListBox;
+    private placeholderLabel: Gtk.Label;
     private searchTerm = "";
-    private categoryTerm = "";
+    private selectedCategories = new Set<string>();
+    private selectedTags = new Set<string>();
+    private selectedSpeakers = new Set<string>();
     private dateFilter: DateFilterMode = "all";
     private sortMode: SortMode = "newest";
     private model: Gio.ListModel;
+    private refreshGeneration = 0;
+    private modelLoading = true;
+    private queryLoading = false;
 
     static {
         GObject.registerClass(
@@ -28,6 +34,9 @@ export class RecordingsListWidget extends Adw.Bin {
                         param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT],
                     },
                     "row-transcribe": { param_types: [GObject.TYPE_OBJECT] },
+                    "loading-state-changed": {
+                        param_types: [GObject.TYPE_BOOLEAN, GObject.TYPE_STRING],
+                    },
                 },
             },
             this,
@@ -52,14 +61,22 @@ export class RecordingsListWidget extends Adw.Bin {
             margin_bottom: 24,
         });
         placeholder.add_css_class("dim-label");
+        this.placeholderLabel = placeholder;
         this.list.set_placeholder(placeholder);
 
         this.set_child(this.list);
 
         this.model.connect("items-changed", () => {
-            this._refreshRows();
+            this._requestRefresh();
         });
-        this._refreshRows();
+        this.model.connect("loading-changed", (_model: Gio.ListModel, loading: boolean) => {
+            this.modelLoading = loading;
+            this._updateLoadingState();
+            if (!loading) {
+                this._requestRefresh();
+            }
+        });
+        this._requestRefresh();
 
         this.list.connect(
             "row-activated",
@@ -71,57 +88,105 @@ export class RecordingsListWidget extends Adw.Bin {
 
     public filterBySearch(term: string): void {
         this.searchTerm = term;
-        this._refreshRows();
+        this._requestRefresh();
     }
 
-    public filterByCategory(term: string): void {
-        this.categoryTerm = term;
-        this._refreshRows();
+    public setValueFilters(filters: {
+        categories?: string[];
+        tags?: string[];
+        speakers?: string[];
+    }): void {
+        this.selectedCategories = new Set(filters.categories ?? []);
+        this.selectedTags = new Set(filters.tags ?? []);
+        this.selectedSpeakers = new Set(filters.speakers ?? []);
+        this._requestRefresh();
     }
 
     public filterByDate(mode: DateFilterMode): void {
         this.dateFilter = mode;
-        this._refreshRows();
+        this._requestRefresh();
     }
 
     public sortBy(mode: SortMode): void {
         this.sortMode = mode;
-        this._refreshRows();
+        this._requestRefresh();
     }
 
     public refresh(): void {
-        this._refreshRows();
+        this._requestRefresh();
     }
 
-    private _refreshRows(): void {
+    private _requestRefresh(): void {
+        this.refreshGeneration += 1;
+        const generation = this.refreshGeneration;
+        this.queryLoading = this._hasActiveFilters();
+        this._updateLoadingState();
+        void this._refreshRows(generation);
+    }
+
+    private async _refreshRows(generation: number): Promise<void> {
         const selectedRow = this.list.get_selected_row() as Row | null;
         const selectedUri = selectedRow?.recording.uri ?? null;
 
-        let child = this.list.get_first_child();
-        while (child) {
-            const next = child.get_next_sibling();
-            this.list.remove(child as Gtk.Widget);
-            child = next;
-        }
+        try {
+            const recordings = await this._getVisibleRecordings();
+            if (generation !== this.refreshGeneration) return;
 
-        const recordings = this._getVisibleRecordings();
-        for (const recording of recordings) {
-            const row = new Row(recording);
-            this.list.append(row);
-            if (selectedUri && recording.uri === selectedUri) {
-                this.list.select_row(row);
+            let child = this.list.get_first_child();
+            while (child) {
+                const next = child.get_next_sibling();
+                this.list.remove(child as Gtk.Widget);
+                child = next;
+            }
+
+            for (const recording of recordings) {
+                const row = new Row(recording);
+                this.list.append(row);
+                if (selectedUri && recording.uri === selectedUri) {
+                    this.list.select_row(row);
+                }
+            }
+
+            this._updatePlaceholder(recordings.length);
+        } finally {
+            if (generation === this.refreshGeneration) {
+                this.queryLoading = false;
+                this._updateLoadingState();
             }
         }
     }
 
-    private _getVisibleRecordings(): Recording[] {
+    private async _getVisibleRecordings(): Promise<Recording[]> {
         const recordings: Recording[] = [];
         for (let i = 0; i < this.model.get_n_items(); i++) {
             recordings.push(this.model.get_item(i) as Recording);
         }
 
+        if (!this._hasActiveFilters()) {
+            recordings.sort((left, right) => this._compareRecordings(left, right));
+            return recordings;
+        }
+
+        const uriMatches = await SearchIndex.getDefault().search({
+            searchTerm: this.searchTerm,
+            dateFilter: this.dateFilter,
+            categories: [...this.selectedCategories],
+            tags: [...this.selectedTags],
+            speakers: [...this.selectedSpeakers],
+        });
+
+        if (!uriMatches) {
+            return this._getVisibleRecordingsFallback(recordings);
+        }
+
+        const filtered = recordings.filter((recording) => uriMatches.has(recording.uri));
+        filtered.sort((left, right) => this._compareRecordings(left, right));
+        return filtered;
+    }
+
+    private _getVisibleRecordingsFallback(recordings: Recording[]): Recording[] {
+
         const term = this.searchTerm.trim().toLowerCase();
-        const categoryTerm = this.categoryTerm.trim().toLowerCase();
         const now = GLib.DateTime.new_now_local();
         const nowUnix = now?.to_unix() ?? 0;
 
@@ -129,6 +194,8 @@ export class RecordingsListWidget extends Adw.Bin {
             const name = (recording.name ?? "").toLowerCase();
             const category = (recording.category ?? "").toLowerCase();
             const transcript = recording.transcription.toLowerCase();
+            const tags = recording.tags.map((value) => value.toLowerCase());
+            const speakers = recording.speakers.map((value) => value.toLowerCase());
             const dateText = this._dateSearchText(recording);
 
             if (
@@ -136,12 +203,31 @@ export class RecordingsListWidget extends Adw.Bin {
                 !name.includes(term) &&
                 !category.includes(term) &&
                 !transcript.includes(term) &&
+                !tags.some((value) => value.includes(term)) &&
+                !speakers.some((value) => value.includes(term)) &&
                 !dateText.includes(term)
             ) {
                 return false;
             }
 
-            if (categoryTerm.length > 0 && !category.includes(categoryTerm)) {
+            if (
+                this.selectedCategories.size > 0 &&
+                !this.selectedCategories.has(recording.category)
+            ) {
+                return false;
+            }
+
+            if (
+                this.selectedTags.size > 0 &&
+                !recording.tags.some((value) => this.selectedTags.has(value))
+            ) {
+                return false;
+            }
+
+            if (
+                this.selectedSpeakers.size > 0 &&
+                !recording.speakers.some((value) => this.selectedSpeakers.has(value))
+            ) {
                 return false;
             }
 
@@ -150,6 +236,37 @@ export class RecordingsListWidget extends Adw.Bin {
 
         filtered.sort((left, right) => this._compareRecordings(left, right));
         return filtered;
+    }
+
+    private _hasActiveFilters(): boolean {
+        return this.searchTerm.trim().length > 0 ||
+            this.selectedCategories.size > 0 ||
+            this.selectedTags.size > 0 ||
+            this.selectedSpeakers.size > 0 ||
+            this.dateFilter !== "all";
+    }
+
+    private _updatePlaceholder(resultCount: number): void {
+        if (this.modelLoading) {
+            this.placeholderLabel.label = _("Loading recordings…");
+            return;
+        }
+
+        if (this._hasActiveFilters() && resultCount === 0) {
+            this.placeholderLabel.label = _("No recordings match the current filters");
+            return;
+        }
+
+        this.placeholderLabel.label = _("No recordings yet");
+    }
+
+    private _updateLoadingState(): void {
+        const loading = this.modelLoading || this.queryLoading;
+        const message = this.queryLoading
+            ? _("Searching recordings…")
+            : _("Loading recordings…");
+        this.emit("loading-state-changed", loading, message);
+        this._updatePlaceholder(this.list.observe_children().get_n_items());
     }
 
     private _matchesDateFilter(recording: Recording, nowUnix: number): boolean {

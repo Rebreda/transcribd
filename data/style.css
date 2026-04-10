@@ -27,3 +27,21 @@ button.large {
 .recording-row {
   padding: 0;
 }
+
+.filters-button {
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.filters-button.filter-active {
+  background: var(--accent-bg-color);
+  color: var(--accent-fg-color);
+}
+
+.filters-clear-button {
+  opacity: 0.72;
+}
+
+.filters-clear-button:hover {
+  opacity: 1;
+}

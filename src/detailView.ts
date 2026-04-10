@@ -16,7 +16,12 @@ export class RecordingDetailView extends Adw.Bin {
     private _dateLabel!: Gtk.Label;
     private _durationLabel!: Gtk.Label;
     private _durationTimeLabel!: Gtk.Label;
-    private _categoryEntry!: Gtk.Entry;
+    private _categoryRow!: Gtk.Box;
+    private _categoryValueLabel!: Gtk.Label;
+    private _tagsRow!: Gtk.Box;
+    private _tagsValueLabel!: Gtk.Label;
+    private _speakersRow!: Gtk.Box;
+    private _speakersValueLabel!: Gtk.Label;
     private _waveformContainer!: Gtk.Box;
     private _seekBar!: Gtk.Scale;
     private _positionLabel!: Gtk.Label;
@@ -31,6 +36,7 @@ export class RecordingDetailView extends Adw.Bin {
     private _retranscribeBtn!: Gtk.Button;
     private _saveTranscriptBtn!: Gtk.Button;
     private _transcriptionView!: Gtk.TextView;
+    private _loadingLabel!: Gtk.Label;
 
     private _recording: Recording | null = null;
     private player: Gst.Element;
@@ -38,6 +44,9 @@ export class RecordingDetailView extends Adw.Bin {
     private positionTimer: number | null = null;
     private transcriptDirty = false;
     private updatingTranscript = false;
+    private transcriptionBusy = false;
+    private loadGeneration = 0;
+    private recordingSignalIds: number[] = [];
 
     static {
         GObject.registerClass(
@@ -49,7 +58,12 @@ export class RecordingDetailView extends Adw.Bin {
                     "dateLabel",
                     "durationLabel",
                     "durationTimeLabel",
-                    "categoryEntry",
+                    "categoryRow",
+                    "categoryValueLabel",
+                    "tagsRow",
+                    "tagsValueLabel",
+                    "speakersRow",
+                    "speakersValueLabel",
                     "waveformContainer",
                     "seekBar",
                     "positionLabel",
@@ -64,6 +78,7 @@ export class RecordingDetailView extends Adw.Bin {
                     "retranscribeBtn",
                     "saveTranscriptBtn",
                     "transcriptionView",
+                    "loadingLabel",
                 ],
                 Signals: {
                     transcribe: { param_types: [GObject.TYPE_OBJECT] },
@@ -126,16 +141,6 @@ export class RecordingDetailView extends Adw.Bin {
             if (!this._titleLabel.editing) this._applyNameChange();
         });
 
-        // Category entry
-        this._categoryEntry.connect("activate", () => {
-            void this._saveCategoryChange();
-        });
-        const categoryFocusController = new Gtk.EventControllerFocus();
-        categoryFocusController.connect("leave", () => {
-            void this._saveCategoryChange();
-        });
-        this._categoryEntry.add_controller(categoryFocusController);
-
         // Transcribe / re-transcribe buttons
         this._transcribeBtn.connect("clicked", () => {
             if (this._recording) this.emit("transcribe", this._recording);
@@ -195,11 +200,47 @@ export class RecordingDetailView extends Adw.Bin {
     public set recording(rec: Recording | null) {
         if (this._recording === rec) return;
 
+        this._disconnectRecordingSignals();
+
         // Stop playback when switching recording
         this._stopPlayback();
 
         this._recording = rec;
+        const generation = ++this.loadGeneration;
         this._refreshView();
+
+        if (!rec) {
+            return;
+        }
+
+        this._setMetadataSensitive(false);
+        if (!this.transcriptionBusy) {
+            this._showTranscriptionLoading(_("Loading recording…"));
+        }
+
+        void rec.persistedReady.finally(() => {
+            if (this._recording !== rec || generation !== this.loadGeneration) return;
+            this._setMetadataSensitive(true);
+            this._refreshMetadata(rec);
+            if (!this.transcriptionBusy) {
+                this._refreshTranscription(rec.transcription);
+            }
+        });
+    }
+
+    public setTranscriptionBusy(isBusy: boolean, message?: string): void {
+        this.transcriptionBusy = isBusy;
+        this._transcriptionView.editable = !isBusy;
+        this._transcribeBtn.sensitive = !isBusy;
+        this._retranscribeBtn.sensitive = !isBusy;
+        this._injectBtn.sensitive = !isBusy;
+        this._saveTranscriptBtn.sensitive = !isBusy && this.transcriptDirty;
+
+        if (isBusy) {
+            this._showTranscriptionLoading(message ?? _("Working…"));
+        } else if (this._recording) {
+            this._refreshTranscription(this._recording.transcription);
+        }
     }
 
     /** Stop timer and clean up when destroyed. */
@@ -213,7 +254,18 @@ export class RecordingDetailView extends Adw.Bin {
     private _refreshView(): void {
         const rec = this._recording;
 
-        if (!rec) return;
+        if (!rec) {
+            this._titleLabel.set_text("");
+            this._dateLabel.label = "";
+            this._durationLabel.label = "";
+            this._durationTimeLabel.label = "";
+            this._categoryValueLabel.label = "";
+            this._tagsValueLabel.label = "";
+            this._speakersValueLabel.label = "";
+            this._showTranscriptionLoading(_("Select a recording to inspect it"));
+            this._setMetadataSensitive(false);
+            return;
+        }
 
         // Title (strip extension for display)
         const displayName = (rec.name ?? "").replace(/\.[^.]+$/, "");
@@ -224,30 +276,59 @@ export class RecordingDetailView extends Adw.Bin {
 
         // Duration (may arrive later via notify)
         this._refreshDuration();
-        rec.connect("notify::duration", () => this._refreshDuration());
+        this.recordingSignalIds.push(
+            rec.connect("notify::duration", () => this._refreshDuration()),
+        );
 
-        // Category
-        this._categoryEntry.set_text(rec.category ?? "");
-        rec.connect("notify::category", () => {
-            this._categoryEntry.set_text(rec.category ?? "");
-        });
+        this._refreshMetadata(rec);
+        this.recordingSignalIds.push(
+            rec.connect("metadata-changed", () => {
+                this._refreshMetadata(rec);
+            }),
+        );
 
         // Name
-        rec.connect("notify::name", () => {
-            const newDisplay = (rec.name ?? "").replace(/\.[^.]+$/, "");
-            if (this._titleLabel.get_text() !== newDisplay) {
-                this._titleLabel.set_text(newDisplay);
-            }
-        });
+        this.recordingSignalIds.push(
+            rec.connect("notify::name", () => {
+                const newDisplay = (rec.name ?? "").replace(/\.[^.]+$/, "");
+                if (this._titleLabel.get_text() !== newDisplay) {
+                    this._titleLabel.set_text(newDisplay);
+                }
+            }),
+        );
 
         // Waveform
         this._buildWaveform(rec);
 
         // Transcription
-        this._refreshTranscription(rec.transcription);
-        rec.connect("notify::transcription", () => {
-            this._refreshTranscription(rec.transcription);
-        });
+        if (!this.transcriptionBusy) {
+            this._showTranscriptionLoading(_("Loading transcript…"));
+        }
+        this.recordingSignalIds.push(
+            rec.connect("notify::transcription", () => {
+                if (!this.transcriptionBusy) {
+                    this._refreshTranscription(rec.transcription);
+                }
+            }),
+        );
+    }
+
+    private _refreshMetadata(rec: Recording): void {
+        this._setMetadataRow(
+            this._categoryRow,
+            this._categoryValueLabel,
+            rec.category,
+        );
+        this._setMetadataRow(
+            this._tagsRow,
+            this._tagsValueLabel,
+            rec.tags.join(", "),
+        );
+        this._setMetadataRow(
+            this._speakersRow,
+            this._speakersValueLabel,
+            rec.speakers.join(", "),
+        );
     }
 
     private _buildWaveform(rec: Recording): void {
@@ -320,6 +401,11 @@ export class RecordingDetailView extends Adw.Bin {
         }
     }
 
+    private _showTranscriptionLoading(message: string): void {
+        this._loadingLabel.set_text(message);
+        this._transcriptionStack.visible_child_name = "loading";
+    }
+
     private async _saveTranscriptChanges(): Promise<void> {
         const rec = this._recording;
         if (!rec || !this.transcriptDirty) return;
@@ -342,17 +428,6 @@ export class RecordingDetailView extends Adw.Bin {
         await rec.saveSegments([]);
         this.transcriptDirty = false;
         this._saveTranscriptBtn.sensitive = false;
-        this.emit("recording-updated", rec);
-    }
-
-    private async _saveCategoryChange(): Promise<void> {
-        const rec = this._recording;
-        if (!rec) return;
-
-        const nextCategory = this._categoryEntry.get_text().trim();
-        if (nextCategory === (rec.category ?? "").trim()) return;
-
-        await rec.saveCategory(nextCategory);
         this.emit("recording-updated", rec);
     }
 
@@ -482,5 +557,35 @@ export class RecordingDetailView extends Adw.Bin {
             dialog.destroy();
         });
         dialog.show();
+    }
+
+    private _setMetadataSensitive(sensitive: boolean): void {
+        this._titleLabel.sensitive = sensitive;
+        this._categoryRow.sensitive = sensitive;
+        this._tagsRow.sensitive = sensitive;
+        this._speakersRow.sensitive = sensitive;
+    }
+
+    private _setMetadataRow(
+        row: Gtk.Box,
+        label: Gtk.Label,
+        value: string | null | undefined,
+    ): void {
+        const text = value?.trim() ?? "";
+        label.label = text;
+        row.visible = text.length > 0;
+    }
+
+    private _disconnectRecordingSignals(): void {
+        const rec = this._recording;
+        if (!rec) return;
+        for (const id of this.recordingSignalIds) {
+            try {
+                rec.disconnect(id);
+            } catch (_err) {
+                // Ignore stale handler IDs.
+            }
+        }
+        this.recordingSignalIds = [];
     }
 }

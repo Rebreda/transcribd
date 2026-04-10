@@ -14,10 +14,12 @@ import { RecorderWidget } from "./recorderWidget.js";
 import { RecordingDetailView } from "./detailView.js";
 import { Recording, TranscriptionSegment } from "./recording.js";
 import {
-    suggestCategory,
+    suggestMetadata,
     TranscriberService,
     injectText,
     suggestCategoryFallback,
+    suggestTagsFallback,
+    suggestSpeakersFallback,
     suggestTitle,
     suggestTitleFallback,
 } from "./transcriber.js";
@@ -30,10 +32,15 @@ export class Window extends Adw.ApplicationWindow {
     private _recorderContainer!: Gtk.Box;
     private _emptyPage!: Adw.StatusPage;
     private _searchEntry!: Gtk.SearchEntry;
-    private _categoryFilterEntry!: Gtk.Entry;
+    private _filtersButton!: Gtk.MenuButton;
+    private _categoryFiltersBox!: Gtk.Box;
+    private _tagFiltersBox!: Gtk.Box;
+    private _speakerFiltersBox!: Gtk.Box;
     private _dateFilterDropdown!: Gtk.DropDown;
     private _sortDropdown!: Gtk.DropDown;
     private _clearFiltersBtn!: Gtk.Button;
+    private _sidebarLoadingRevealer!: Gtk.Revealer;
+    private _sidebarLoadingLabel!: Gtk.Label;
 
     private recorder: Recorder;
     private recorderWidget: RecorderWidget;
@@ -51,14 +58,24 @@ export class Window extends Adw.ApplicationWindow {
     private transcriberService: TranscriberService | null = null;
     private dictationMode = false;
     private audioChunkHandlerId: number | null = null;
+    private recorderPeakHandlerId: number | null = null;
     private partialHandlerId: number | null = null;
     private doneHandlerId: number | null = null;
     private errorHandlerId: number | null = null;
     private segmentHandlerId: number | null = null;
     private liveCommitTimerId: number | null = null;
+    private lastSpeechActivityMs = 0;
+    private currentSpeechSegmentStartedMs = 0;
+    private speechPeakCountSinceSegment = 0;
+    private speechCaptureActive = false;
+    private queuedSpeechChunks = 0;
+    private prerollChunks: GLib.Bytes[] = [];
     private pendingTranscript = "";
     private pendingSegments: TranscriptionSegment[] = [];
     private isTranscribingRecording = false;
+    private selectedCategoryFilters = new Set<string>();
+    private selectedTagFilters = new Set<string>();
+    private selectedSpeakerFilters = new Set<string>();
 
     static {
         GObject.registerClass(
@@ -72,10 +89,15 @@ export class Window extends Adw.ApplicationWindow {
                     "recorderContainer",
                     "emptyPage",
                     "searchEntry",
-                    "categoryFilterEntry",
+                    "filtersButton",
+                    "categoryFiltersBox",
+                    "tagFiltersBox",
+                    "speakerFiltersBox",
                     "dateFilterDropdown",
                     "sortDropdown",
                     "clearFiltersBtn",
+                    "sidebarLoadingRevealer",
+                    "sidebarLoadingLabel",
                 ],
             },
             this,
@@ -103,6 +125,7 @@ export class Window extends Adw.ApplicationWindow {
         this.recordingList = new RecordingList();
         this.itemsSignalId = this.recordingList.connect("items-changed", () => {
             this._updateEmpty();
+            this._rebuildFilterOptions();
         });
 
         // Sidebar list widget
@@ -148,17 +171,14 @@ export class Window extends Adw.ApplicationWindow {
             this.recordingListWidget.filterBySearch(
                 this._searchEntry.get_text(),
             );
-        });
-        this._categoryFilterEntry.connect("changed", () => {
-            this.recordingListWidget.filterByCategory(
-                this._categoryFilterEntry.get_text(),
-            );
+            this._updateFilterAffordance();
         });
         this._dateFilterDropdown.connect("notify::selected", () => {
             const modes = ["all", "today", "week", "month", "year"] as const;
             this.recordingListWidget.filterByDate(
                 modes[this._dateFilterDropdown.get_selected()] ?? "all",
             );
+            this._updateFilterAffordance();
         });
         this._sortDropdown.connect("notify::selected", () => {
             const modes = [
@@ -174,14 +194,29 @@ export class Window extends Adw.ApplicationWindow {
         });
         this._clearFiltersBtn.connect("clicked", () => {
             this._searchEntry.set_text("");
-            this._categoryFilterEntry.set_text("");
+            this.selectedCategoryFilters.clear();
+            this.selectedTagFilters.clear();
+            this.selectedSpeakerFilters.clear();
             this._dateFilterDropdown.set_selected(0);
             this._sortDropdown.set_selected(0);
             this.recordingListWidget.filterBySearch("");
-            this.recordingListWidget.filterByCategory("");
+            this.recordingListWidget.setValueFilters({});
             this.recordingListWidget.filterByDate("all");
             this.recordingListWidget.sortBy("newest");
+            this._rebuildFilterOptions();
+            this._updateFilterAffordance();
         });
+        this.recordingListWidget.connect(
+            "loading-state-changed",
+            (
+                _widget: RecordingsListWidget,
+                loading: boolean,
+                message: string,
+            ) => {
+                this._sidebarLoadingRevealer.reveal_child = loading;
+                this._sidebarLoadingLabel.label = message;
+            },
+        );
 
         // Row selection → show detail
         this.recordingListWidget.connect(
@@ -239,6 +274,8 @@ export class Window extends Adw.ApplicationWindow {
         this.recorderWidget.actionsGroup.add_action(dictateAction);
 
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
+        this._rebuildFilterOptions();
+        this._updateFilterAffordance();
         this._updateEmpty();
     }
 
@@ -283,6 +320,12 @@ export class Window extends Adw.ApplicationWindow {
         if (Settings.get_boolean("transcription-enabled")) {
             this.pendingTranscript = "";
             this.pendingSegments = [];
+            this.lastSpeechActivityMs = 0;
+            this.currentSpeechSegmentStartedMs = 0;
+            this.speechPeakCountSinceSegment = 0;
+            this.speechCaptureActive = false;
+            this.queuedSpeechChunks = 0;
+            this.prerollChunks = [];
             try {
                 this.transcriberService = new TranscriberService();
                 this.transcriberService.setRecordingStart(Date.now());
@@ -335,7 +378,22 @@ export class Window extends Adw.ApplicationWindow {
                 this.audioChunkHandlerId = this.recorder.connect(
                     "audio-chunk",
                     (_recorder: Recorder, chunk: GLib.Bytes) => {
-                        this.transcriberService?.appendChunk(chunk);
+                        this._queueRealtimeChunk(chunk);
+                    },
+                );
+                this.recorderPeakHandlerId = this.recorder.connect(
+                    "notify::current-peak",
+                    (recorder: Recorder) => {
+                        if (recorder.current_peak >= this._speechThreshold()) {
+                            this.lastSpeechActivityMs = Date.now();
+                            this.speechPeakCountSinceSegment += 1;
+                            if (
+                                !this.speechCaptureActive &&
+                                this.speechPeakCountSinceSegment >= 3
+                            ) {
+                                this._startRealtimeSpeechSegment();
+                            }
+                        }
                     },
                 );
 
@@ -375,7 +433,12 @@ export class Window extends Adw.ApplicationWindow {
                 `[Window] Saving live transcript (${finalTranscript.length} chars) for ${recording.name}`,
             );
             void recording.saveTranscription(finalTranscript);
-            void this._autoAnnotateRecording(recording, finalTranscript);
+            void this._autoAnnotateRecording(recording, finalTranscript).catch((err) => {
+                console.error(
+                    "[Window] Auto-annotate failed:",
+                    err instanceof Error ? err.message : String(err),
+                );
+            });
             if (isDictation) injectText(finalTranscript, this);
             this.recordingListWidget.refresh();
         }
@@ -403,6 +466,10 @@ export class Window extends Adw.ApplicationWindow {
             this.recorder.disconnect(this.audioChunkHandlerId);
             this.audioChunkHandlerId = null;
         }
+        if (this.recorderPeakHandlerId !== null) {
+            this.recorder.disconnect(this.recorderPeakHandlerId);
+            this.recorderPeakHandlerId = null;
+        }
         if (this.transcriberService) {
             const service = this.transcriberService;
             this.transcriberService = null;
@@ -424,15 +491,43 @@ export class Window extends Adw.ApplicationWindow {
         }
         this.pendingTranscript = "";
         this.pendingSegments = [];
+        this.lastSpeechActivityMs = 0;
+        this.currentSpeechSegmentStartedMs = 0;
+        this.speechPeakCountSinceSegment = 0;
+        this.speechCaptureActive = false;
+        this.queuedSpeechChunks = 0;
+        this.prerollChunks = [];
+    }
+
+    private _speechThreshold(): number {
+        const threshold = Settings.get_double("transcription-speech-threshold");
+        return Math.max(0.001, Math.min(0.5, threshold));
     }
 
     private _startRealtimeCommitTimer(): void {
         this._stopRealtimeCommitTimer();
         this.liveCommitTimerId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
-            1200,
+            250,
             () => {
-                this.transcriberService?.commit();
+                if (!this.speechCaptureActive) {
+                    return GLib.SOURCE_CONTINUE;
+                }
+
+                const now = Date.now();
+                const silenceMs = this.lastSpeechActivityMs > 0
+                    ? now - this.lastSpeechActivityMs
+                    : Number.POSITIVE_INFINITY;
+                const segmentAgeMs = this.currentSpeechSegmentStartedMs > 0
+                    ? now - this.currentSpeechSegmentStartedMs
+                    : 0;
+                const shouldCommit = this.queuedSpeechChunks > 0 && (
+                    silenceMs >= 900 || segmentAgeMs >= 7000
+                );
+
+                if (shouldCommit) {
+                    this._commitRealtimeSpeechSegment();
+                }
                 return GLib.SOURCE_CONTINUE;
             },
         );
@@ -448,6 +543,10 @@ export class Window extends Adw.ApplicationWindow {
     private async _flushRealtimeTranscription(): Promise<void> {
         const service = this.transcriberService;
         if (!service) return;
+
+        if (this.queuedSpeechChunks > 0) {
+            this._commitRealtimeSpeechSegment();
+        }
 
         await new Promise<void>((resolve) => {
             let resolved = false;
@@ -475,8 +574,54 @@ export class Window extends Adw.ApplicationWindow {
             tempIds.push(service.connect("transcription-done", () => finish()));
             tempIds.push(service.connect("transcription-error", () => finish()));
 
-            service.commit();
+            if (this.queuedSpeechChunks > 0) {
+                service.commit();
+            } else {
+                finish();
+            }
         });
+    }
+
+    private _queueRealtimeChunk(chunk: GLib.Bytes): void {
+        this.prerollChunks.push(chunk);
+        if (this.prerollChunks.length > 15) {
+            this.prerollChunks.shift();
+        }
+
+        if (!this.speechCaptureActive) {
+            return;
+        }
+
+        this.transcriberService?.appendChunk(chunk);
+        this.queuedSpeechChunks += 1;
+    }
+
+    private _startRealtimeSpeechSegment(): void {
+        if (this.speechCaptureActive) {
+            return;
+        }
+
+        this.speechCaptureActive = true;
+        this.currentSpeechSegmentStartedMs = Date.now();
+        this.queuedSpeechChunks = 0;
+
+        for (const chunk of this.prerollChunks) {
+            this.transcriberService?.appendChunk(chunk);
+            this.queuedSpeechChunks += 1;
+        }
+    }
+
+    private _commitRealtimeSpeechSegment(): void {
+        if (!this.speechCaptureActive || this.queuedSpeechChunks === 0) {
+            return;
+        }
+
+        this.transcriberService?.commit();
+        this.speechCaptureActive = false;
+        this.currentSpeechSegmentStartedMs = 0;
+        this.speechPeakCountSinceSegment = 0;
+        this.queuedSpeechChunks = 0;
+        this.prerollChunks = [];
     }
 
     private _safeDisconnect(obj: GObject.Object, id: number): void {
@@ -525,6 +670,9 @@ export class Window extends Adw.ApplicationWindow {
         }
 
         this.isTranscribingRecording = true;
+        if (this.detailView.recording === recording) {
+            this.detailView.setTranscriptionBusy(true, _("Transcribing recording…"));
+        }
         this._toastOverlay.add_toast(Adw.Toast.new(_("Transcribing recording…")));
 
         const service = new TranscriberService();
@@ -555,6 +703,9 @@ export class Window extends Adw.ApplicationWindow {
             );
         } finally {
             this.isTranscribingRecording = false;
+            if (this.detailView.recording === recording) {
+                this.detailView.setTranscriptionBusy(false);
+            }
         }
     }
 
@@ -577,45 +728,221 @@ export class Window extends Adw.ApplicationWindow {
                     .replace(/\.$/, "")
                     .trim();
                 if (clean.length > 0 && /^Recording \d+$/.test(recording.name ?? "")) {
-                    recording.name = clean;
+                    try {
+                        recording.name = clean;
+                    } catch (renameErr) {
+                        console.error(
+                            "[Window] Auto-name rename failed:",
+                            renameErr instanceof Error ? renameErr.message : String(renameErr),
+                        );
+                    }
                 }
             } catch (e) {
-                console.error(
-                    "[Window] Auto-name failed:",
-                    e instanceof Error ? e.message : String(e),
-                );
                 const fallbackTitle = suggestTitleFallback(transcript);
                 if (fallbackTitle.length > 0 && /^Recording \d+$/.test(recording.name ?? "")) {
-                    recording.name = fallbackTitle;
+                    try {
+                        recording.name = fallbackTitle;
+                    } catch (renameErr) {
+                        console.log(
+                            "[Window] Fallback auto-name skipped:",
+                            renameErr instanceof Error ? renameErr.message : String(renameErr),
+                        );
+                    }
                 }
             }
         }
 
-        if ((recording.category ?? "").trim().length === 0) {
+        const categoryMissing = (recording.category ?? "").trim().length === 0;
+        const tagsMissing = recording.tags.length === 0;
+        const speakersMissing = recording.speakers.length === 0;
+
+        if (categoryMissing || tagsMissing || speakersMissing) {
             try {
-                const category = await suggestCategory(
+                const metadata = await suggestMetadata(
                     transcript,
                     Settings.get_string("inference-server-url"),
                     Settings.get_string("inference-api-key"),
                     Settings.get_string("inference-model"),
+                    this._collectDistinctValues("category"),
+                    this._collectDistinctValues("tags"),
                 );
-                const cleanCategory = category
+                const cleanCategory = metadata.category
                     .replace(/^["']|["']$/g, "")
                     .replace(/\.$/, "")
                     .trim();
-                if (cleanCategory.length > 0) {
+                const cleanTags = metadata.tags
+                    .map((tag) => tag.replace(/^["']|["']$/g, "").trim())
+                    .filter((tag) => tag.length > 0);
+                const cleanSpeakers = metadata.speakers
+                    .map((speaker) => speaker.replace(/^["']|["']$/g, "").trim())
+                    .filter((speaker) => speaker.length > 0);
+
+                if (categoryMissing && cleanCategory.length > 0) {
                     await recording.saveCategory(cleanCategory);
-                    this.recordingListWidget.refresh();
-                    return;
                 }
-            } catch (_e) {
-                const fallbackCategory = suggestCategoryFallback(transcript);
-                if (fallbackCategory.length > 0) {
-                    await recording.saveCategory(fallbackCategory);
+                if (tagsMissing && cleanTags.length > 0) {
+                    await recording.saveTags(cleanTags);
+                }
+                if (speakersMissing && cleanSpeakers.length > 0) {
+                    await recording.saveSpeakers(cleanSpeakers);
+                }
+                this.recordingListWidget.refresh();
+                this._rebuildFilterOptions();
+                return;
+            } catch (categoryErr) {
+                try {
+                    const fallbackCategory = suggestCategoryFallback(transcript);
+                    const fallbackTags = suggestTagsFallback(transcript);
+                    const fallbackSpeakers = suggestSpeakersFallback(transcript);
+                    if (categoryMissing && fallbackCategory.length > 0) {
+                        await recording.saveCategory(fallbackCategory);
+                    }
+                    if (tagsMissing && fallbackTags.length > 0) {
+                        await recording.saveTags(fallbackTags);
+                    }
+                    if (speakersMissing && fallbackSpeakers.length > 0) {
+                        await recording.saveSpeakers(fallbackSpeakers);
+                    }
                     this.recordingListWidget.refresh();
+                    this._rebuildFilterOptions();
+                } catch (saveErr) {
+                    console.log(
+                        "[Window] Fallback auto-metadata skipped:",
+                        saveErr instanceof Error ? saveErr.message : String(saveErr),
+                    );
                 }
             }
         }
+    }
+
+    private _rebuildFilterOptions(): void {
+        this._rebuildFilterSection(
+            this._categoryFiltersBox,
+            this._collectDistinctValues("category"),
+            this.selectedCategoryFilters,
+            (selected) => {
+                this.selectedCategoryFilters = selected;
+                this._applyValueFilters();
+            },
+            _("No categories yet"),
+        );
+        this._rebuildFilterSection(
+            this._tagFiltersBox,
+            this._collectDistinctValues("tags"),
+            this.selectedTagFilters,
+            (selected) => {
+                this.selectedTagFilters = selected;
+                this._applyValueFilters();
+            },
+            _("No tags yet"),
+        );
+        this._rebuildFilterSection(
+            this._speakerFiltersBox,
+            this._collectDistinctValues("speakers"),
+            this.selectedSpeakerFilters,
+            (selected) => {
+                this.selectedSpeakerFilters = selected;
+                this._applyValueFilters();
+            },
+            _("No speakers yet"),
+        );
+    }
+
+    private _applyValueFilters(): void {
+        this.recordingListWidget.setValueFilters({
+            categories: [...this.selectedCategoryFilters],
+            tags: [...this.selectedTagFilters],
+            speakers: [...this.selectedSpeakerFilters],
+        });
+        this._updateFilterAffordance();
+    }
+
+    private _updateFilterAffordance(): void {
+        const filterCount = this.selectedCategoryFilters.size +
+            this.selectedTagFilters.size +
+            this.selectedSpeakerFilters.size +
+            (this._dateFilterDropdown.get_selected() > 0 ? 1 : 0);
+
+        this._filtersButton.tooltip_text = filterCount > 0
+            ? _("%d active filters").format(filterCount)
+            : _("Filter results");
+        this._filtersButton.set_css_classes(
+            filterCount > 0
+                ? ["filters-button", "filter-active"]
+                : ["filters-button"],
+        );
+        this._clearFiltersBtn.sensitive = filterCount > 0 ||
+            this._searchEntry.get_text().length > 0;
+    }
+
+    private _rebuildFilterSection(
+        box: Gtk.Box,
+        values: string[],
+        selected: Set<string>,
+        onChanged: (next: Set<string>) => void,
+        emptyLabel: string,
+    ): void {
+        let child = box.get_first_child();
+        while (child) {
+            const next = child.get_next_sibling();
+            box.remove(child as Gtk.Widget);
+            child = next;
+        }
+
+        const normalizedSelected = new Set(
+            [...selected].filter((value) => values.includes(value)),
+        );
+
+        if (values.length === 0) {
+            const label = new Gtk.Label({ label: emptyLabel, xalign: 0 });
+            label.add_css_class("dim-label");
+            label.add_css_class("caption");
+            box.append(label);
+            onChanged(normalizedSelected);
+            return;
+        }
+
+        for (const value of values) {
+            const check = new Gtk.CheckButton({
+                label: value,
+                active: normalizedSelected.has(value),
+            });
+            check.connect("toggled", () => {
+                const nextSelected = new Set(normalizedSelected);
+                if (check.active) nextSelected.add(value);
+                else nextSelected.delete(value);
+                onChanged(nextSelected);
+            });
+            box.append(check);
+        }
+
+        onChanged(normalizedSelected);
+    }
+
+    private _collectDistinctValues(kind: "category" | "tags" | "speakers"): string[] {
+        const seen = new Set<string>();
+        const values: string[] = [];
+
+        for (let i = 0; i < this.recordingList.get_n_items(); i++) {
+            const recording = this.recordingList.get_item(i) as Recording;
+            const rawValues = kind === "category"
+                ? [recording.category]
+                : kind === "tags"
+                    ? recording.tags
+                    : recording.speakers;
+
+            for (const rawValue of rawValues) {
+                const value = rawValue?.trim();
+                if (!value) continue;
+                const key = value.toLowerCase();
+                if (seen.has(key)) continue;
+                seen.add(key);
+                values.push(value);
+            }
+        }
+
+        values.sort((left, right) => left.localeCompare(right));
+        return values;
     }
 
     private _sendDeleteToast(recording: Recording, index: number): void {

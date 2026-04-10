@@ -9,11 +9,13 @@
     <file>recordingList.js</file>
     <file>recordingListWidget.js</file>
     <file>row.js</file>
+    <file>searchIndex.js</file>
     <file>utils.js</file>
     <file>waveform.js</file>
     <file>window.js</file>
     <file>transcriber.js</file>
     <file>openaiClient.js</file>
+    <file>transcriptionParsing.js</file>
     <file>detailView.js</file>
     <file>preferences.js</file>
   </gresource>

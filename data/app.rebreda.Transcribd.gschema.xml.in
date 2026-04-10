@@ -50,6 +50,11 @@
       <summary>Transcription API key</summary>
       <description>API key for the transcription server.</description>
     </key>
+    <key name="transcription-speech-threshold" type="d">
+      <default>0.020</default>
+      <summary>Realtime speech threshold</summary>
+      <description>Minimum detected microphone level required before realtime audio is forwarded to the transcription server.</description>
+    </key>
     <key name="inference-server-url" type="s">
       <default>'http://localhost:8080/api/v1'</default>
       <summary>Inference server URL</summary>

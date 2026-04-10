@@ -96,6 +96,11 @@ export class Application extends Adw.Application {
             "replace_contents_finish",
         );
         Gio._promisify(
+            Gio.Subprocess.prototype,
+            "communicate_utf8_async",
+            "communicate_utf8_finish",
+        );
+        Gio._promisify(
             Soup.Session.prototype,
             "send_and_read_async",
             "send_and_read_finish",
