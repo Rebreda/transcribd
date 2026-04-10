@@ -32,7 +32,8 @@
       "@girs/gobject-2.0",
       "@girs/gst-1.0",
       "@girs/gstpbutils-1.0",
-      "@girs/gtk-4.0"
+      "@girs/gtk-4.0",
+      "@girs/soup-3.0"
     ]
   },
   "include": ["src/**/*"],

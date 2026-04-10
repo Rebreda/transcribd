@@ -17,6 +17,12 @@
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
+                <property name="action-name">recorder.dictate</property>
+                <property name="title" translatable="yes" context="shortcut window">Dictate</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
                 <property name="action-name">recorder.stop</property>
                 <property name="title" translatable="yes" context="shortcut window">Stop Recording</property>
               </object>

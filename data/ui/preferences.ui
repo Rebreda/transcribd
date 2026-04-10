@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="Gjs_PreferencesDialog" parent="AdwPreferencesDialog">
+    <property name="title" translatable="yes">Preferences</property>
+    <child>
+      <object class="AdwPreferencesPage">
+        <property name="title" translatable="yes">Transcription</property>
+        <property name="icon_name">microphone-sensitivity-high-symbolic</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Transcription</property>
+            <property name="description" translatable="yes">Configure real-time audio transcription using an OpenAI-compatible server.</property>
+            <child>
+              <object class="AdwSwitchRow" id="enabledSwitch">
+                <property name="title" translatable="yes">Enable Transcription</property>
+                <property name="subtitle" translatable="yes">Transcribe recordings in real time</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="serverGroup">
+            <property name="title" translatable="yes">Server</property>
+            <child>
+              <object class="AdwEntryRow" id="serverUrlEntry">
+                <property name="title" translatable="yes">Server URL</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwEntryRow" id="modelEntry">
+                <property name="title" translatable="yes">Model</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPasswordEntryRow" id="apiKeyEntry">
+                <property name="title" translatable="yes">API Key</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="injectionGroup">
+            <property name="title" translatable="yes">Dictation</property>
+            <child>
+              <object class="AdwSwitchRow" id="injectSwitch">
+                <property name="title" translatable="yes">Inject Text at Cursor</property>
+                <property name="subtitle" translatable="yes">After dictation, insert transcribed text where your cursor is (requires ydotool or xdotool)</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

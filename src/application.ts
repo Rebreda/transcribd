@@ -24,6 +24,7 @@ import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gst from "gi://Gst";
 import Gtk from "gi://Gtk?version=4.0";
+import Soup from "gi://Soup?version=3.0";
 
 export const RecordingsDir = Gio.file_new_for_path(
     GLib.build_filenamev([GLib.get_user_data_dir(), pkg.name]),
@@ -34,6 +35,7 @@ export const CacheDir = Gio.file_new_for_path(
 export const Settings = new Gio.Settings({ schema: pkg.name });
 
 import { Window } from "./window.js";
+import { PreferencesDialog } from "./preferences.js";
 
 export class Application extends Adw.Application {
     private window?: Window;
@@ -87,6 +89,22 @@ export class Application extends Adw.Application {
             "next_files_async",
             "next_files_finish",
         );
+
+        Gio._promisify(
+            Gio.File.prototype,
+            "replace_contents_async",
+            "replace_contents_finish",
+        );
+        Gio._promisify(
+            Soup.Session.prototype,
+            "send_and_read_async",
+            "send_and_read_finish",
+        );
+        Gio._promisify(
+            Soup.Session.prototype,
+            "websocket_connect_async",
+            "websocket_connect_finish",
+        );
     }
 
     private initAppMenu(): void {
@@ -99,6 +117,14 @@ export class Application extends Adw.Application {
         const aboutAction = new Gio.SimpleAction({ name: "about" });
         aboutAction.connect("activate", this.showAbout.bind(this));
         this.add_action(aboutAction);
+
+        const preferencesAction = new Gio.SimpleAction({ name: "preferences" });
+        preferencesAction.connect("activate", () => {
+            const dialog = new PreferencesDialog();
+            dialog.present(this.window ?? null);
+        });
+        this.add_action(preferencesAction);
+        this.set_accels_for_action("app.preferences", ["<Primary>comma"]);
 
         const quitAction = new Gio.SimpleAction({ name: "quit" });
         quitAction.connect("activate", () => {
@@ -126,6 +152,7 @@ export class Application extends Adw.Application {
         this.set_accels_for_action("recording.rename", ["F2"]);
         this.set_accels_for_action("recording.delete", ["Delete"]);
         this.set_accels_for_action("recording.export", ["<Primary>s"]);
+        this.set_accels_for_action("recorder.dictate", ["<Primary><Alt>d"]);
     }
 
     private initUserDirectory(dir: Gio.File): void {

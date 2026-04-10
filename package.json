@@ -21,6 +21,7 @@
     "@girs/gst-1.0": "*",
     "@girs/gstpbutils-1.0": "^1.0.0-4.0.0-rc.1",
     "@girs/gtk-4.0": "*",
+    "@girs/soup-3.0": "^3.6.6-4.0.0-rc.1",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.5.5",

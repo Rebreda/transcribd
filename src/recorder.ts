@@ -91,9 +91,17 @@ export class Recorder extends GObject.Object {
     private timeout?: number | null;
     private pipeState?: Gst.State;
 
+    // Transcription tee branch (only present when transcription is enabled)
+    private appsink: Gst.Element | undefined;
+
     static {
         GObject.registerClass(
             {
+                Signals: {
+                    "audio-chunk": {
+                        param_types: [GObject.TYPE_JSOBJECT],
+                    },
+                },
                 Properties: {
                     duration: GObject.ParamSpec.int(
                         "duration",
@@ -176,7 +184,13 @@ export class Recorder extends GObject.Object {
         if (this.ebin && this.level && this.filesink) {
             this.ebin.set_property("profile", this.getProfile());
             this.filesink.set_property("location", this.file.get_path());
-            this.level.link(this.ebin);
+
+            if (Settings.get_boolean("transcription-enabled")) {
+                this._setupTranscriptionBranch();
+            } else {
+                this.level.link(this.ebin);
+            }
+
             this.ebin.link(this.filesink);
         }
 
@@ -198,8 +212,22 @@ export class Recorder extends GObject.Object {
     }
 
     public stop(): Recording | undefined {
+        // Block appsink before tearing down so no callbacks fire after NULL state
+        if (this.appsink) {
+            try {
+                const sinkPad = this.appsink.get_static_pad("sink");
+                sinkPad?.add_probe(
+                    Gst.PadProbeType.BLOCK_DOWNSTREAM,
+                    () => Gst.PadProbeReturn.DROP,
+                );
+            } catch (_e) {
+                // ignore
+            }
+        }
+
         this.state = Gst.State.NULL;
         this.duration = 0;
+        this.appsink = undefined;
         if (this.timeout) {
             GLib.source_remove(this.timeout);
             this.timeout = null;
@@ -342,5 +370,70 @@ export class Recorder extends GObject.Object {
         const ret = this.pipeline.set_state(s);
         if (ret === Gst.StateChangeReturn.FAILURE)
             log("Unable to update the recorder pipeline state");
+    }
+
+    private _setupTranscriptionBranch(): void {
+        if (!this.level || !this.ebin) return;
+
+        const tee = Gst.ElementFactory.make("tee", "transcription-tee");
+        const queue1 = Gst.ElementFactory.make("queue", "enc-queue");
+        const queue2 = Gst.ElementFactory.make("queue", "pcm-queue");
+        const resample = Gst.ElementFactory.make("audioresample", "transcription-resample");
+        const convert = Gst.ElementFactory.make("audioconvert", "transcription-convert");
+        const capsfilter = Gst.ElementFactory.make("capsfilter", "transcription-caps");
+        const appsink = Gst.ElementFactory.make("appsink", "transcription-sink");
+
+        if (!tee || !queue1 || !queue2 || !resample || !convert || !capsfilter || !appsink) {
+            log("TranscriberBranch: could not create all elements, falling back to direct link");
+            this.level.link(this.ebin);
+            return;
+        }
+
+        // PCM16 mono 16kHz — required by Lemonade /realtime
+        const pcmCaps = Gst.Caps.from_string(
+            "audio/x-raw,format=S16LE,rate=16000,channels=1",
+        );
+        capsfilter.set_property("caps", pcmCaps);
+
+        appsink.set_property("emit-signals", true);
+        appsink.set_property("sync", false);
+        appsink.set_property("async", false);
+        appsink.set_property("max-buffers", 0);
+
+        for (const el of [tee, queue1, queue2, resample, convert, capsfilter, appsink]) {
+            this.pipeline.add(el);
+        }
+
+        // level → tee
+        this.level.link(tee);
+
+        // tee branch 1: → queue1 → ebin (the encoder path)
+        tee.link(queue1);
+        queue1.link(this.ebin);
+
+        // tee branch 2: → queue2 → resample → convert → capsfilter → appsink
+        tee.link(queue2);
+        queue2.link(resample);
+        resample.link(convert);
+        convert.link(capsfilter);
+        capsfilter.link(appsink);
+
+        appsink.connect("new-sample", (sink: Gst.Element) => {
+            // pull-sample returns a Gst.Sample
+            const sample = sink.emit("pull-sample") as unknown as Gst.Sample | null;
+            if (!sample) return Gst.FlowReturn.OK;
+            const buffer = sample.get_buffer();
+            if (!buffer) return Gst.FlowReturn.OK;
+            const [ok, mapInfo] = buffer.map(Gst.MapFlags.READ);
+            if (ok) {
+                const chunkBytes = GLib.Bytes.new(mapInfo.data as unknown as Uint8Array);
+                this.emit("audio-chunk", chunkBytes);
+                buffer.unmap(mapInfo);
+            }
+            return Gst.FlowReturn.OK;
+        });
+
+
+        this.appsink = appsink;
     }
 }

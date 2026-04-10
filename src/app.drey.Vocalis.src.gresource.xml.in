@@ -12,5 +12,7 @@
     <file>utils.js</file>
     <file>waveform.js</file>
     <file>window.js</file>
+    <file>transcriber.js</file>
+    <file>preferences.js</file>
   </gresource>
 </gresources>

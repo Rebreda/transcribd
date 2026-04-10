@@ -20,6 +20,7 @@ export class Recording extends GObject.Object {
     private _timeModified: GLib.DateTime;
     private _timeCreated: GLib.DateTime;
     private _duration?: number;
+    private _transcription = "";
 
     public pipeline?: Gst.Bin | null;
 
@@ -45,6 +46,14 @@ export class Recording extends GObject.Object {
                         "name",
                         "Recording Name",
                         "Recording name in string",
+                        GObject.ParamFlags.READWRITE |
+                            GObject.ParamFlags.CONSTRUCT,
+                        "",
+                    ),
+                    transcription: GObject.ParamSpec.string(
+                        "transcription",
+                        "Transcription",
+                        "Transcribed text for this recording",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
                         "",
@@ -95,6 +104,9 @@ export class Recording extends GObject.Object {
         );
 
         discoverer.discover_uri_async(this.uri);
+
+        // Attempt to load any previously saved transcription
+        void this.loadTranscription();
     }
 
     public get name(): string | null {
@@ -157,6 +169,13 @@ export class Recording extends GObject.Object {
     public async delete(): Promise<void> {
         await this._file.trash_async(GLib.PRIORITY_HIGH, null);
         await this.waveformCache.trash_async(GLib.PRIORITY_DEFAULT, null);
+        try {
+            if (this.transcriptionCache.query_exists(null)) {
+                await this.transcriptionCache.trash_async(GLib.PRIORITY_DEFAULT, null);
+            }
+        } catch (_err) {
+            // Ignore if transcript file doesn't exist
+        }
     }
 
     public save(dest: Gio.File): void {
@@ -174,6 +193,46 @@ export class Recording extends GObject.Object {
 
     public get waveformCache(): Gio.File {
         return CacheDir.get_child(`${this.name}_data`);
+    }
+
+    public get transcriptionCache(): Gio.File {
+        return CacheDir.get_child(`${this.name}.transcript`);
+    }
+
+    public get transcription(): string {
+        return this._transcription;
+    }
+
+    public set transcription(value: string) {
+        this._transcription = value;
+        this.notify("transcription");
+    }
+
+    public async loadTranscription(): Promise<void> {
+        try {
+            const bytes = (await this.transcriptionCache.load_bytes_async(null))[0];
+            if (bytes) {
+                const data = bytes.get_data();
+                if (data) {
+                    this.transcription = new TextDecoder("utf-8").decode(data);
+                }
+            }
+        } catch (_err) {
+            // No transcript file yet — that's fine
+        }
+    }
+
+    public async saveTranscription(text: string): Promise<void> {
+        this.transcription = text;
+        const enc = new TextEncoder();
+        const contents = enc.encode(text);
+        await this.transcriptionCache.replace_contents_async(
+            contents,
+            null,
+            false,
+            Gio.FileCreateFlags.REPLACE_DESTINATION,
+            null,
+        );
     }
 
     public async loadPeaks(): Promise<void> {

@@ -30,6 +30,31 @@
       <summary>Available channels</summary>
       <description>Maps available channels. If there is not no mapping set, stereo channel will be used by default.</description>
     </key>
+    <key name="transcription-enabled" type="b">
+      <default>false</default>
+      <summary>Enable transcription</summary>
+      <description>Whether to enable real-time audio transcription.</description>
+    </key>
+    <key name="transcription-server-url" type="s">
+      <default>'http://localhost:13305/api/v1'</default>
+      <summary>Transcription server URL</summary>
+      <description>Base URL of the OpenAI-compatible transcription server.</description>
+    </key>
+    <key name="transcription-model" type="s">
+      <default>'Whisper-Tiny'</default>
+      <summary>Transcription model</summary>
+      <description>Whisper model name to use for transcription.</description>
+    </key>
+    <key name="transcription-api-key" type="s">
+      <default>'lemonade'</default>
+      <summary>Transcription API key</summary>
+      <description>API key for the transcription server.</description>
+    </key>
+    <key name="transcription-inject-text" type="b">
+      <default>false</default>
+      <summary>Inject transcribed text at cursor</summary>
+      <description>Whether to inject the transcription at the cursor after dictation stops.</description>
+    </key>
   </schema>
 </schemalist>
 

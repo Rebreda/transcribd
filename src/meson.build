@@ -26,6 +26,8 @@ sources = files(
   'utils.ts',
   'waveform.ts',
   'window.ts',
+  'transcriber.ts',
+  'preferences.ts',
 )
 
 tsc_out = meson.project_build_root() / 'tsc-out'

@@ -7,6 +7,7 @@ import Gtk from "gi://Gtk?version=4.0";
 import { Recording } from "./recording.js";
 import { displayDateTime, formatTime } from "./utils.js";
 import { WaveForm, WaveType } from "./waveform.js";
+import { injectText } from "./transcriber.js";
 
 export enum RowState {
     Playing,
@@ -26,6 +27,9 @@ export class Row extends Gtk.ListBoxRow {
     private _playbackControls!: Gtk.Box;
     private _playBtn!: Gtk.Button;
     private _pauseBtn!: Gtk.Button;
+    private _transcriptionRevealer!: Gtk.Revealer;
+    private _transcriptionText!: Gtk.Label;
+    private _injectTranscriptionBtn!: Gtk.Button;
 
     public recording: Recording;
     private _expanded: boolean;
@@ -60,6 +64,9 @@ export class Row extends Gtk.ListBoxRow {
                     "saveBtn",
                     "playBtn",
                     "pauseBtn",
+                    "transcriptionRevealer",
+                    "transcriptionText",
+                    "injectTranscriptionBtn",
                 ],
                 Signals: {
                     play: { param_types: [GObject.TYPE_STRING] },
@@ -253,6 +260,22 @@ export class Row extends Gtk.ListBoxRow {
             this._waveformStack.visible_child_name = "loading";
         });
 
+        // Transcription: show if a transcription is already available
+        this._updateTranscription(recording.transcription);
+        recording.connect("notify::transcription", (_rec: Recording) => {
+            this._updateTranscription(_rec.transcription);
+        });
+
+        this._injectTranscriptionBtn.connect("clicked", () => {
+            const root = this.root;
+            if (root && this.recording.transcription) {
+                injectText(
+                    this.recording.transcription,
+                    root as Gtk.Window,
+                );
+            }
+        });
+
         // Force LTR, we don't want forward/play/backward
         this._playbackControls.set_direction(Gtk.TextDirection.LTR);
 
@@ -262,6 +285,12 @@ export class Row extends Gtk.ListBoxRow {
         recording.connect("notify::duration", () => {
             this._duration.label = formatTime(recording.duration);
         });
+    }
+
+    private _updateTranscription(text: string): void {
+        const hasText = text.length > 0;
+        this._transcriptionText.label = text;
+        this._transcriptionRevealer.reveal_child = hasText && this._expanded;
     }
 
     private onRenameRecording(): void {
@@ -307,6 +336,13 @@ export class Row extends Gtk.ListBoxRow {
 
     public set expanded(state: boolean) {
         this._expanded = state;
+        // Guard: template may not be bound yet during CONSTRUCT property init
+        if (!this._transcriptionRevealer) return;
+        if (!state) {
+            this._transcriptionRevealer.reveal_child = false;
+        } else if (this.recording.transcription.length > 0) {
+            this._transcriptionRevealer.reveal_child = true;
+        }
         this.notify("expanded");
     }
 

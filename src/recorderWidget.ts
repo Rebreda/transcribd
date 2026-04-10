@@ -21,6 +21,9 @@ export class RecorderWidget extends Gtk.Box {
     private _recorderTime!: Gtk.Label;
     private _pauseBtn!: Gtk.Button;
     private _resumeBtn!: Gtk.Button;
+    private _transcriptionRevealer!: Gtk.Revealer;
+    private _transcriptionLabel!: Gtk.Label;
+    private _transcriptionBuffer = "";
 
     private recorder: Recorder;
     private waveform: WaveForm;
@@ -37,6 +40,8 @@ export class RecorderWidget extends Gtk.Box {
                     "recorderTime",
                     "pauseBtn",
                     "resumeBtn",
+                    "transcriptionRevealer",
+                    "transcriptionLabel",
                 ],
                 Signals: {
                     canceled: {},
@@ -154,6 +159,10 @@ export class RecorderWidget extends Gtk.Box {
         dialog.connect("response::delete", () => {
             const recording = this.recorder.stop();
             this.state = RecorderState.Stopped;
+            // Clear transcription
+            this._transcriptionBuffer = "";
+            this._transcriptionLabel.label = "";
+            this._transcriptionRevealer.reveal_child = false;
             if (recording) {
                 void recording.delete();
             }
@@ -168,6 +177,10 @@ export class RecorderWidget extends Gtk.Box {
 
     private onStop(): void {
         this.state = RecorderState.Stopped;
+        // Clear transcription buffer for next recording
+        this._transcriptionBuffer = "";
+        this._transcriptionLabel.label = "";
+        this._transcriptionRevealer.reveal_child = false;
         const recording = this.recorder.stop();
         this.waveform.destroy();
         this.emit("stopped", recording);
@@ -207,5 +220,26 @@ export class RecorderWidget extends Gtk.Box {
                 resumeAction.enabled = false;
                 break;
         }
+    }
+
+    /**
+     * Append a transcription delta to the live transcript label.
+     * Called by Window as partial transcription events arrive.
+     */
+    public appendTranscription(text: string): void {
+        this._transcriptionBuffer += text;
+        this._transcriptionLabel.label = this._transcriptionBuffer;
+        this._transcriptionRevealer.reveal_child = true;
+    }
+
+    /**
+     * Returns the full accumulated transcription text, then clears the buffer.
+     */
+    public consumeTranscription(): string {
+        const text = this._transcriptionBuffer;
+        this._transcriptionBuffer = "";
+        this._transcriptionLabel.label = "";
+        this._transcriptionRevealer.reveal_child = false;
+        return text;
     }
 }

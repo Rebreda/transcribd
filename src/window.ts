@@ -25,12 +25,14 @@ import GObject from "gi://GObject";
 import Gst from "gi://Gst";
 import Gtk from "gi://Gtk?version=4.0";
 
+import { Settings } from "./application.js";
 import { Recorder } from "./recorder.js";
 import { RecordingList } from "./recordingList.js";
 import { RecordingsListWidget } from "./recordingListWidget.js";
 import { RecorderWidget } from "./recorderWidget.js";
 import { Recording } from "./recording.js";
 import { Row } from "./row.js";
+import { TranscriberService, injectText } from "./transcriber.js";
 
 enum WindowState {
     Empty,
@@ -56,6 +58,14 @@ export class Window extends Adw.ApplicationWindow {
     private undoToasts: Adw.Toast[];
     private undoSignalID: number | null;
     private undoAction: Gio.SimpleAction;
+
+    private transcriberService: TranscriberService | null = null;
+    private dictationMode = false;
+    private audioChunkHandlerId: number | null = null;
+    private partialHandlerId: number | null = null;
+    private doneHandlerId: number | null = null;
+    private errorHandlerId: number | null = null;
+    private pendingTranscript = "";
 
     private _state: WindowState;
 
@@ -149,6 +159,14 @@ export class Window extends Adw.ApplicationWindow {
             this.onRecorderStopped.bind(this),
         );
         this.insert_action_group("recorder", this.recorderWidget.actionsGroup);
+
+        const dictateAction = new Gio.SimpleAction({ name: "dictate" });
+        dictateAction.connect("activate", () => {
+            this.dictationMode = true;
+            this.recorderWidget.actionsGroup.activate_action("start", null);
+        });
+        this.recorderWidget.actionsGroup.add_action(dictateAction);
+
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
     }
 
@@ -179,9 +197,53 @@ export class Window extends Adw.ApplicationWindow {
         if (activeRow && activeRow.editMode) activeRow.editMode = false;
 
         this.state = WindowState.Recorder;
+
+        if (Settings.get_boolean("transcription-enabled")) {
+            this.pendingTranscript = "";
+            try {
+                this.transcriberService = new TranscriberService();
+
+                this.partialHandlerId = this.transcriberService.connect(
+                    "transcription-partial",
+                    (_service: TranscriberService, text: string) => {
+                        this.recorderWidget.appendTranscription(text);
+                    },
+                );
+                this.doneHandlerId = this.transcriberService.connect(
+                    "transcription-done",
+                    (_service: TranscriberService, text: string) => {
+                        this.pendingTranscript +=
+                            (this.pendingTranscript ? " " : "") + text;
+                        this.recorderWidget.appendTranscription(text);
+                    },
+                );
+                this.errorHandlerId = this.transcriberService.connect(
+                    "transcription-error",
+                    (_service: TranscriberService, error: string) => {
+                        const toast = Adw.Toast.new(
+                            _('Transcription error: %s').format(error),
+                        );
+                        this._toastOverlay.add_toast(toast);
+                    },
+                );
+                this.audioChunkHandlerId = this.recorder.connect(
+                    "audio-chunk",
+                    (_recorder: Recorder, chunk: GLib.Bytes) => {
+                        this.transcriberService?.appendChunk(chunk);
+                    },
+                );
+
+                void this.transcriberService.startSession();
+            } catch (e) {
+                console.error("Failed to start transcription session:", e);
+                this.transcriberService = null;
+            }
+        }
     }
 
     private onRecorderCanceled(): void {
+        this._cleanupTranscriberService();
+        this.dictationMode = false;
         if (this.recordingList.get_n_items() === 0)
             this.state = WindowState.Empty;
         else this.state = WindowState.List;
@@ -191,10 +253,47 @@ export class Window extends Adw.ApplicationWindow {
         _widget: RecorderWidget,
         recording: Recording,
     ): void {
+        const isDictation = this.dictationMode;
+        const finalTranscript = this.pendingTranscript;
+        this._cleanupTranscriberService();
+        this.dictationMode = false;
+
+        if (finalTranscript) {
+            void recording.saveTranscription(finalTranscript);
+            if (isDictation) {
+                injectText(finalTranscript, this);
+            }
+        }
+
         this.recordingList.insert(0, recording);
         const row = this.recordingListWidget.list.get_row_at_index(0) as Row;
         row.editMode = true;
         this.state = WindowState.List;
+    }
+
+    private _cleanupTranscriberService(): void {
+        if (this.audioChunkHandlerId !== null) {
+            this.recorder.disconnect(this.audioChunkHandlerId);
+            this.audioChunkHandlerId = null;
+        }
+        if (this.transcriberService) {
+            const service = this.transcriberService;
+            this.transcriberService = null;
+            if (this.partialHandlerId !== null) {
+                service.disconnect(this.partialHandlerId);
+                this.partialHandlerId = null;
+            }
+            if (this.doneHandlerId !== null) {
+                service.disconnect(this.doneHandlerId);
+                this.doneHandlerId = null;
+            }
+            if (this.errorHandlerId !== null) {
+                service.disconnect(this.errorHandlerId);
+                this.errorHandlerId = null;
+            }
+            service.commit();
+            service.endSession();
+        }
     }
 
     private sendNotification(
