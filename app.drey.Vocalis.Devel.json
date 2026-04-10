@@ -19,14 +19,16 @@
         "--socket=pulseaudio"
     ],
     "build-options" : {
-        "append-path" : "/usr/lib/sdk/node20/bin:/usr/lib/sdk/typescript/bin"
+        "append-path" : "/usr/lib/sdk/node20/bin:/usr/lib/sdk/typescript/bin",
+        "env" : {        }
     },
     "modules" : [
         {
             "name" : "vocalis",
             "buildsystem" : "meson",
             "config-opts" : [
-            	"-Dprofile=development"
+                "-Dprofile=development",
+                "--libdir=lib"
             ],
             "sources" : [
                 {

@@ -141,12 +141,12 @@ export class Application extends Adw.Application {
         }
     }
 
-    public vfunc_startup(): void {
+    public override vfunc_startup(): void {
         super.vfunc_startup();
         log("Vocalis (%s)".format(pkg.name));
         log("Version: %s".format(pkg.version));
 
-        Gst.init(null);
+        Gst.init();
 
         this.initUserDirectory(CacheDir);
         this.initUserDirectory(RecordingsDir);
@@ -154,7 +154,7 @@ export class Application extends Adw.Application {
         this.initAppMenu();
     }
 
-    public vfunc_activate(): void {
+    public override vfunc_activate(): void {
         if (!this.window) {
             this.window = new Window({ application: this });
             if (pkg.name.endsWith("Devel")) this.window.add_css_class("devel");

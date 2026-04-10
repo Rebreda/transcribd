@@ -125,27 +125,29 @@ export class Recorder extends GObject.Object {
         super();
         this.peaks = [];
 
-        let srcElement: Gst.Element;
-        let audioConvert: Gst.Element;
         const caps = Gst.Caps.from_string("audio/x-raw");
 
         this.pipeline = new Gst.Pipeline({ name: "pipe" });
 
-        const elements = [
-            ["pulsesrc", "srcElement"],
-            ["audioconvert", "audioConvert"],
-            ["level", "level"],
-            ["encodebin", "ebin"],
-            ["filesink", "filesink"],
-        ].map(([fac, name]) => {
+        const elements = (
+            [
+                ["pulsesrc", "srcElement"],
+                ["audioconvert", "audioConvert"],
+                ["level", "level"],
+                ["encodebin", "ebin"],
+                ["filesink", "filesink"],
+            ] as [string, string][]
+        ).map(([fac, name]) => {
             const element = Gst.ElementFactory.make(fac, name);
             if (!element) throw new Error("Not all elements could be created.");
             this.pipeline.add(element);
             return element;
-        });
+        }) as [Gst.Element, Gst.Element, Gst.Element, Gst.Element, Gst.Element];
 
-        [srcElement, audioConvert, this.level, this.ebin, this.filesink] =
-            elements;
+        const [srcElement, audioConvert, level, ebin, filesink] = elements;
+        this.level = level;
+        this.ebin = ebin;
+        this.filesink = filesink;
 
         srcElement.link(audioConvert);
         audioConvert.link_filtered(this.level, caps);
@@ -270,12 +272,13 @@ export class Recorder extends GObject.Object {
 
     private getChannel(): number {
         const channelIndex = Settings.get_enum("audio-channel");
-        return AudioChannels[channelIndex].channels;
+        return AudioChannels[channelIndex]?.channels ?? 2;
     }
 
     private getProfile(): GstPbutils.EncodingContainerProfile | undefined {
         const profileIndex = Settings.get_enum("audio-profile");
         const profile = EncodingProfiles[profileIndex];
+        if (!profile) return undefined;
 
         const audioCaps = Gst.Caps.from_string(profile.audioCaps);
         audioCaps?.set_value("channels", this.getChannel());
@@ -331,13 +334,10 @@ export class Recorder extends GObject.Object {
         return this.pipeState;
     }
 
-    public set state(s: Gst.State | undefined) {
+    public set state(s: Gst.State) {
         this.pipeState = s;
-        if (this.pipeState) {
-            const ret = this.pipeline.set_state(this.pipeState);
-
-            if (ret === Gst.StateChangeReturn.FAILURE)
-                log("Unable to update the recorder pipeline state");
-        }
+        const ret = this.pipeline.set_state(s);
+        if (ret === Gst.StateChangeReturn.FAILURE)
+            log("Unable to update the recorder pipeline state");
     }
 }

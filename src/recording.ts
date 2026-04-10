@@ -83,11 +83,16 @@ export class Recording extends GObject.Object {
 
         const discoverer = new GstPbutils.Discoverer();
         discoverer.start();
-        discoverer.connect("discovered", (_discoverer, audioInfo) => {
-            this._duration = audioInfo.get_duration();
-
-            this.notify("duration");
-        });
+        discoverer.connect(
+            "discovered",
+            (
+                _discoverer: GstPbutils.Discoverer,
+                audioInfo: GstPbutils.DiscovererInfo,
+            ) => {
+                this._duration = audioInfo.get_duration();
+                this.notify("duration");
+            },
+        );
 
         discoverer.discover_uri_async(this.uri);
     }

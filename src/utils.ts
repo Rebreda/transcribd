@@ -29,7 +29,6 @@ export function formatTime(nanoSeconds: number): string {
     const minutes = time.getMinutes().toString().padStart(2, "0");
     const hours = time.getHours().toString().padStart(2, "0");
 
-    // eslint-disable-next-line no-irregular-whitespace
     return `${hours} ∶ ${minutes} ∶ ${seconds} . <small>${miliseconds}</small>`;
 }
 

@@ -23,7 +23,6 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gst from "gi://Gst";
-import GstPlayer from "gi://GstPlayer";
 import Gtk from "gi://Gtk?version=4.0";
 
 import { Recorder } from "./recorder.js";
@@ -48,7 +47,7 @@ export class Window extends Adw.ApplicationWindow {
 
     private recorder: Recorder;
     private recorderWidget: RecorderWidget;
-    private player: GstPlayer.Player;
+    private player: Gst.Element;
     private recordingList: RecordingList;
     private itemsSignalId: number;
     private recordingListWidget: RecordingsListWidget;
@@ -86,10 +85,14 @@ export class Window extends Adw.ApplicationWindow {
         this.recorderWidget = new RecorderWidget(this.recorder);
         this._mainStack.add_named(this.recorderWidget, "recorder");
 
-        const dispatcher =
-            GstPlayer.PlayerGMainContextSignalDispatcher.new(null);
-        this.player = GstPlayer.Player.new(null, dispatcher);
-        this.player.connect("end-of-stream", () => this.player.stop());
+        const player = Gst.ElementFactory.make("playbin", "player");
+        if (!player) {
+            throw new Error("Failed to create playbin element");
+        }
+        this.player = player;
+        this.player.connect("about-to-finish", () => {
+            // Handle end of stream
+        });
 
         this.recordingList = new RecordingList();
         this.itemsSignalId = this.recordingList.connect("items-changed", () => {
@@ -152,7 +155,7 @@ export class Window extends Adw.ApplicationWindow {
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
     }
 
-    public vfunc_close_request(): boolean {
+    public override vfunc_close_request(): boolean {
         this.dismissUndoToasts();
         this.recordingList.cancellable.cancel();
         if (this.itemsSignalId)
@@ -173,7 +176,7 @@ export class Window extends Adw.ApplicationWindow {
     }
 
     private onRecorderStarted(): void {
-        this.player.stop();
+        this.player.set_state(Gst.State.NULL);
 
         const activeRow = this.recordingListWidget.activeRow;
         if (activeRow && activeRow.editMode) activeRow.editMode = false;

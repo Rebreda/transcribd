@@ -148,7 +148,6 @@ export class Row extends Gtk.ListBoxRow {
             this.exportDialog.connect(
                 "response",
                 (_dialog: Gtk.FileChooserNative, response: number) => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
                     if (response === Gtk.ResponseType.ACCEPT) {
                         const dest = this.exportDialog?.get_file();
                         if (dest) this.recording.save(dest);

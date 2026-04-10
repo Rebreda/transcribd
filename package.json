@@ -11,17 +11,26 @@
     "Christopher Davis <christopherdavis@gnome.org>"
   ],
   "license": "GPL-3.0-or-later",
-  "dependencies": {
-    "typescript": "^5.3.3"
-  },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^6.18.1",
-    "@typescript-eslint/parser": "^6.18.1",
-    "eslint": "^8.56.0",
+    "@girs/adw-1": "*",
+    "@girs/gdk-4.0": "*",
+    "@girs/gio-2.0": "*",
+    "@girs/gjs": "*",
+    "@girs/glib-2.0": "*",
+    "@girs/gobject-2.0": "*",
+    "@girs/gst-1.0": "*",
+    "@girs/gstpbutils-1.0": "^1.0.0-4.0.0-rc.1",
+    "@girs/gtk-4.0": "*",
+    "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.2"
+    "eslint-plugin-prettier": "^5.5.5",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.58.1"
   },
   "scripts": {
-    "typecheck": "tsc --strict"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
   }
 }

@@ -26,7 +26,7 @@ export class RecordingList extends Gio.ListStore {
         );
         this.dirMonitor.connect(
             "changed",
-            (_dirMonitor, file1, file2, eventType) => {
+            (_dirMonitor, file1, _file2, eventType) => {
                 const index = this.getIndex(file1);
 
                 switch (eventType) {

@@ -1,8 +1,8 @@
 /* exported RecordingsListWidget */
 import Adw from "gi://Adw";
+import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gst from "gi://Gst";
-import GstPlayer from "gi://GstPlayer";
 import Gtk from "gi://Gtk?version=4.0";
 import Gio from "gi://Gio";
 
@@ -11,7 +11,7 @@ import { Recording } from "./recording.js";
 import { WaveForm } from "./waveform.js";
 
 export class RecordingsListWidget extends Adw.Bin {
-    private player: GstPlayer.Player;
+    private player: Gst.Element;
     public list: Gtk.ListBox;
     public activeRow?: Row | null;
     public activePlayingRow?: Row | null;
@@ -29,7 +29,7 @@ export class RecordingsListWidget extends Adw.Bin {
         );
     }
 
-    constructor(model: Gio.ListModel, player: GstPlayer.Player) {
+    constructor(model: Gio.ListModel, player: Gst.Element) {
         super();
         this.list = Gtk.ListBox.new();
         this.list.valign = Gtk.Align.START;
@@ -43,31 +43,19 @@ export class RecordingsListWidget extends Adw.Bin {
         this.set_child(this.list);
 
         this.player = player;
-        this.player.connect(
-            "state-changed",
-            (_player: GstPlayer.Player, state: GstPlayer.PlayerState) => {
-                if (
-                    state === GstPlayer.PlayerState.STOPPED &&
-                    this.activePlayingRow
-                ) {
-                    this.activePlayingRow.state = RowState.Paused;
-                    this.activePlayingRow.waveform.position = 0.0;
-                } else if (state === GstPlayer.PlayerState.PLAYING) {
-                    if (this.activePlayingRow)
-                        this.activePlayingRow.state = RowState.Playing;
-                }
-            },
-        );
+        const bus = this.player.get_bus();
+        if (bus) {
+            bus.add_signal_watch();
+            bus.connect("message", (_bus, message) => {
+                this.onBusMessage(message);
+            });
+        }
 
-        this.player.connect(
-            "position-updated",
-            (_player: GstPlayer.Player, pos: number) => {
-                if (this.activePlayingRow) {
-                    const duration = this.activePlayingRow.recording.duration;
-                    this.activePlayingRow.waveform.position = pos / duration;
-                }
-            },
-        );
+        // Update position every 100ms
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            this.updatePosition();
+            return true;
+        });
 
         this.list.bind_model(model, (item: GObject.Object) => {
             const recording = item as Recording;
@@ -79,14 +67,18 @@ export class RecordingsListWidget extends Adw.Bin {
                         this.activePlayingRow.waveform.position = 0.0;
 
                     this.activePlayingRow = row;
-                    this.player.set_uri(recording.uri);
+                    this.player.set_property("uri", recording.uri);
                 }
             });
 
             row.waveform.connect(
                 "position-changed",
                 (_wave: WaveForm, position: number) => {
-                    this.player.seek(position * row.recording.duration);
+                    this.player.seek_simple(
+                        Gst.Format.TIME,
+                        Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
+                        position * row.recording.duration,
+                    );
                 },
             );
 
@@ -95,35 +87,53 @@ export class RecordingsListWidget extends Adw.Bin {
                     if (this.activePlayingRow !== _row) {
                         this.activePlayingRow.state = RowState.Paused;
                         this.activePlayingRow.waveform.position = 0.0;
-                        this.player.set_uri(recording.uri);
+                        this.player.set_property("uri", recording.uri);
                     }
                 } else {
-                    this.player.set_uri(recording.uri);
+                    this.player.set_property("uri", recording.uri);
                 }
 
                 this.activePlayingRow = _row;
-                this.player.play();
+                this.player.set_state(Gst.State.PLAYING);
             });
 
             row.connect("pause", () => {
-                this.player.pause();
+                this.player.set_state(Gst.State.PAUSED);
             });
 
             row.connect("seek-backward", (row: Row) => {
-                let position = this.player.position - 10 * Gst.SECOND;
-                position =
-                    position < 0 || position > row.recording.duration
-                        ? 0
-                        : position;
-                this.player.seek(position);
+                const [success, currentPos] = this.player.query_position(
+                    Gst.Format.TIME,
+                );
+                if (success) {
+                    let position = currentPos - 10 * Gst.SECOND;
+                    position = Math.max(
+                        0,
+                        Math.min(position, row.recording.duration),
+                    );
+                    this.player.seek_simple(
+                        Gst.Format.TIME,
+                        Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
+                        position,
+                    );
+                }
             });
             row.connect("seek-forward", (_row: Row) => {
-                let position = this.player.position + 10 * Gst.SECOND;
-                position =
-                    position < 0 || position > _row.recording.duration
-                        ? 0
-                        : position;
-                this.player.seek(position);
+                const [success, currentPos] = this.player.query_position(
+                    Gst.Format.TIME,
+                );
+                if (success) {
+                    let position = currentPos + 10 * Gst.SECOND;
+                    position = Math.max(
+                        0,
+                        Math.min(position, _row.recording.duration),
+                    );
+                    this.player.seek_simple(
+                        Gst.Format.TIME,
+                        Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
+                        position,
+                    );
+                }
             });
 
             row.connect("deleted", () => {
@@ -131,7 +141,7 @@ export class RecordingsListWidget extends Adw.Bin {
 
                 if (row === this.activePlayingRow) {
                     this.activePlayingRow = null;
-                    this.player.stop();
+                    this.player.set_state(Gst.State.NULL);
                 }
 
                 const index = row.get_index();
@@ -177,6 +187,42 @@ export class RecordingsListWidget extends Adw.Bin {
             if (current) current.remove_css_class("expanded");
             if (before) before.remove_css_class("expanded-before");
             if (after) after.remove_css_class("expanded-after");
+        }
+    }
+
+    private onBusMessage(message: Gst.Message): void {
+        const type = message.type;
+        if (type === Gst.MessageType.EOS) {
+            if (this.activePlayingRow) {
+                this.activePlayingRow.state = RowState.Paused;
+                this.activePlayingRow.waveform.position = 0.0;
+            }
+        } else if (type === Gst.MessageType.STATE_CHANGED) {
+            const [_oldState, newState] = message.parse_state_changed();
+            if (newState === Gst.State.PLAYING) {
+                if (this.activePlayingRow) {
+                    this.activePlayingRow.state = RowState.Playing;
+                }
+            } else if (
+                newState === Gst.State.PAUSED ||
+                newState === Gst.State.NULL
+            ) {
+                if (this.activePlayingRow) {
+                    this.activePlayingRow.state = RowState.Paused;
+                }
+            }
+        }
+    }
+
+    private updatePosition(): void {
+        if (this.activePlayingRow) {
+            const [success, position] = this.player.query_position(
+                Gst.Format.TIME,
+            );
+            if (success) {
+                const duration = this.activePlayingRow.recording.duration;
+                this.activePlayingRow.waveform.position = position / duration;
+            }
         }
     }
 }

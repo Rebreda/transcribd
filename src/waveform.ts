@@ -104,7 +104,6 @@ export class WaveForm extends Gtk.DrawingArea {
             this.queue_draw();
         });
 
-        // @ts-expect-error ts-for-gir doesn't handle the cairo Context properly
         this.set_draw_func(this.drawFunc.bind(this));
     }
 
@@ -193,7 +192,7 @@ export class WaveForm extends Gtk.DrawingArea {
             if (this._peaks.length > this.get_allocated_width() / (2 * GUTTER))
                 this._peaks.pop();
 
-            this._peaks.unshift(p.toFixed(2));
+            this._peaks.unshift(parseFloat(p.toFixed(2)));
             this.queue_draw();
         }
     }

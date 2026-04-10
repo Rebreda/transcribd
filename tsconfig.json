@@ -1,34 +1,39 @@
 {
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "strict": true,
-        "paths": {
-            "*": [
-                "*",
-                "types/*",
-                "gi-types/*"
-            ]
-        },
-        "target": "ES2018",
-        "baseUrl": ".",
-        "moduleResolution": "node",
-        "module": "ES2020",
-        "outDir": "_build",
-        "lib": [
-            "es2017"
-        ],
-        "skipLibCheck": true,
-        "typeRoots": [
-            "types",
-            "gi-types"
-        ],
-    },
-    "include": [
-        "gi-types/index.d.ts",
-        "types/ambient.d.ts",
-        "src/*",
-    ],
-    "exclude": [
-        "node_modules/@types/**"
-    ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": [
+      "@girs/gjs",
+      "@girs/adw-1",
+      "@girs/gdk-4.0",
+      "@girs/gio-2.0",
+      "@girs/glib-2.0",
+      "@girs/gobject-2.0",
+      "@girs/gst-1.0",
+      "@girs/gstpbutils-1.0",
+      "@girs/gtk-4.0"
+    ]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
