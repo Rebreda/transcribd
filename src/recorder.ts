@@ -321,13 +321,16 @@ export class Recorder extends GObject.Object {
     }
 
     public set current_peak(peak: number) {
-        if (this.peaks) {
-            if (peak > 0) peak = 0;
+        if (peak > 0) peak = 0;
 
-            this._current_peak = Math.pow(10, peak / 20);
-            this.peaks.push(this._current_peak);
-            this.notify("current-peak");
-        }
+        const value = Math.pow(10, peak / 20);
+        // Guard against NaN/Infinity (e.g. -Infinity dBFS during silence)
+        if (!Number.isFinite(value) || Number.isNaN(value)) return;
+
+        this._current_peak = value;
+        // this.peaks is undefined during GObject CONSTRUCT (before super() returns)
+        this.peaks?.push(this._current_peak);
+        this.notify("current-peak");
     }
 
     public get state(): Gst.State | undefined {

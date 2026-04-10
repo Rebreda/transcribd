@@ -90,9 +90,6 @@ export class Window extends Adw.ApplicationWindow {
             throw new Error("Failed to create playbin element");
         }
         this.player = player;
-        this.player.connect("about-to-finish", () => {
-            // Handle end of stream
-        });
 
         this.recordingList = new RecordingList();
         this.itemsSignalId = this.recordingList.connect("items-changed", () => {

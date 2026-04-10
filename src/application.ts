@@ -146,7 +146,7 @@ export class Application extends Adw.Application {
         log("Vocalis (%s)".format(pkg.name));
         log("Version: %s".format(pkg.version));
 
-        Gst.init();
+        Gst.init([]);
 
         this.initUserDirectory(CacheDir);
         this.initUserDirectory(RecordingsDir);
