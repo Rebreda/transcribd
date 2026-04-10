@@ -19,6 +19,21 @@ interface WsMessage {
     error?: { message?: string };
     session?: { model?: string; turn_detection?: Record<string, unknown> };
     audio?: string;
+    item?: {
+        transcript?: string;
+        text?: string;
+        delta?: string;
+        content?: Array<{
+            transcript?: string;
+            text?: string;
+            delta?: string;
+        }>;
+    };
+    data?: {
+        transcript?: string;
+        text?: string;
+        delta?: string;
+    };
 }
 
 export class TranscriberService extends GObject.Object {
@@ -215,12 +230,34 @@ export class TranscriberService extends GObject.Object {
 
         switch (msg.type) {
             case "conversation.item.input_audio_transcription.delta":
-                if (msg.delta) this.emit("transcription-partial", msg.delta);
+            {
+                const deltaText = this._extractTranscriptionText(msg, "delta");
+                if (deltaText.length > 0) {
+                    console.log(
+                        `[Transcriber] Delta text (${deltaText.length}): ${deltaText.slice(0, 80)}`,
+                    );
+                    this.emit("transcription-partial", deltaText);
+                }
                 break;
+            }
             case "conversation.item.input_audio_transcription.completed":
-                if (msg.transcript)
-                    this.emit("transcription-done", msg.transcript);
+            {
+                const doneText = this._extractTranscriptionText(
+                    msg,
+                    "transcript",
+                );
+                if (doneText.length > 0) {
+                    console.log(
+                        `[Transcriber] Completed text (${doneText.length}): ${doneText.slice(0, 120)}`,
+                    );
+                    this.emit("transcription-done", doneText);
+                } else {
+                    console.log(
+                        `[Transcriber] Completed event had no transcript payload: ${text.slice(0, 200)}`,
+                    );
+                }
                 break;
+            }
             case "error":
                 this.emit(
                     "transcription-error",
@@ -230,6 +267,36 @@ export class TranscriberService extends GObject.Object {
             default:
                 break;
         }
+    }
+
+    private _extractTranscriptionText(
+        msg: WsMessage,
+        kind: "delta" | "transcript",
+    ): string {
+        const key = kind;
+        const candidates: unknown[] = [
+            msg[key],
+            msg.item?.[key],
+            msg.item?.text,
+            msg.item?.transcript,
+            msg.data?.[key],
+            msg.data?.text,
+            msg.data?.transcript,
+            ...(msg.item?.content ?? []).flatMap((entry) => [
+                entry[key],
+                entry.text,
+                entry.transcript,
+            ]),
+        ];
+
+        for (const c of candidates) {
+            if (typeof c === "string") {
+                const trimmed = c.trim();
+                if (trimmed.length > 0) return c;
+            }
+        }
+
+        return "";
     }
 }
 

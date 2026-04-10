@@ -277,10 +277,15 @@ export class Window extends Adw.ApplicationWindow {
         this.dictationMode = false;
 
         if (finalTranscript) {
+            console.log(
+                `[Window] Saving live transcript (${finalTranscript.length} chars) for ${recording.name}`,
+            );
             void recording.saveTranscription(finalTranscript);
             if (isDictation) {
                 injectText(finalTranscript, this);
             }
+        } else {
+            console.log("[Window] No live transcript text to save on stop");
         }
 
         this.recordingList.insert(0, recording);
@@ -298,21 +303,32 @@ export class Window extends Adw.ApplicationWindow {
             const service = this.transcriberService;
             this.transcriberService = null;
             if (this.partialHandlerId !== null) {
-                service.disconnect(this.partialHandlerId);
+                this._safeDisconnect(service, this.partialHandlerId);
                 this.partialHandlerId = null;
             }
             if (this.doneHandlerId !== null) {
-                service.disconnect(this.doneHandlerId);
+                this._safeDisconnect(service, this.doneHandlerId);
                 this.doneHandlerId = null;
             }
             if (this.errorHandlerId !== null) {
-                service.disconnect(this.errorHandlerId);
+                this._safeDisconnect(service, this.errorHandlerId);
                 this.errorHandlerId = null;
             }
             service.commit();
             service.endSession();
         }
         this.pendingTranscript = "";
+    }
+
+    private _safeDisconnect(obj: GObject.Object, id: number): void {
+        if (id <= 0) return;
+        try {
+            if (GObject.signal_handler_is_connected(obj, id)) {
+                obj.disconnect(id);
+            }
+        } catch (_err) {
+            // Ignore stale handler IDs.
+        }
     }
 
     private _wait(ms: number): Promise<void> {
@@ -479,6 +495,9 @@ export class Window extends Adw.ApplicationWindow {
 
             const text = combinedText.trim();
             if (text.length > 0) {
+                console.log(
+                    `[Window] Saving file transcription (${text.length} chars) for ${recording.name}`,
+                );
                 await recording.saveTranscription(text);
                 this._toastOverlay.add_toast(
                     Adw.Toast.new(_("Transcription saved")),
@@ -496,9 +515,9 @@ export class Window extends Adw.ApplicationWindow {
                 Adw.Toast.new(_('Transcription failed: %s').format(msg)),
             );
         } finally {
-            if (partialId !== null) service.disconnect(partialId);
-            if (doneId !== null) service.disconnect(doneId);
-            if (errorId !== null) service.disconnect(errorId);
+            if (partialId !== null) this._safeDisconnect(service, partialId);
+            if (doneId !== null) this._safeDisconnect(service, doneId);
+            if (errorId !== null) this._safeDisconnect(service, errorId);
             service.endSession();
             this.isTranscribingRecording = false;
         }
