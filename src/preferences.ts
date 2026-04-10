@@ -29,10 +29,6 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
 
     constructor() {
         super();
-    }
-
-    public override vfunc_constructed(): void {
-        super.vfunc_constructed();
 
         Settings.bind(
             "transcription-enabled",
