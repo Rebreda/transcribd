@@ -21,6 +21,7 @@ export class Recording extends GObject.Object {
     private _timeCreated: GLib.DateTime;
     private _duration?: number;
     private _transcription = "";
+    private _cacheKey: string;
 
     public pipeline?: Gst.Bin | null;
 
@@ -72,11 +73,20 @@ export class Recording extends GObject.Object {
         this.loadedPeaks = [];
 
         const info = file.query_info(
-            "time::created,time::modified,standard::content-type",
+            "time::created,time::modified,standard::content-type,id::file",
             0,
             null,
         );
         const contentType = info.get_attribute_string("standard::content-type");
+        const rawFileId =
+            info.get_attribute_string("id::file") ?? this._file.get_uri();
+        this._cacheKey =
+            GLib.compute_checksum_for_string(
+                GLib.ChecksumType.SHA256,
+                rawFileId,
+                -1,
+            ) ??
+            rawFileId;
 
         for (const profile of EncodingProfiles) {
             if (profile.contentType === contentType) {
@@ -168,13 +178,32 @@ export class Recording extends GObject.Object {
 
     public async delete(): Promise<void> {
         await this._file.trash_async(GLib.PRIORITY_HIGH, null);
-        await this.waveformCache.trash_async(GLib.PRIORITY_DEFAULT, null);
-        try {
-            if (this.transcriptionCache.query_exists(null)) {
-                await this.transcriptionCache.trash_async(GLib.PRIORITY_DEFAULT, null);
+        const waveformCaches = [
+            this.waveformCache,
+            this.legacyWaveformCache,
+        ];
+        for (const cache of waveformCaches) {
+            try {
+                if (cache.query_exists(null)) {
+                    await cache.trash_async(GLib.PRIORITY_DEFAULT, null);
+                }
+            } catch (_err) {
+                // Ignore missing cache files.
             }
-        } catch (_err) {
-            // Ignore if transcript file doesn't exist
+        }
+
+        const transcriptCaches = [
+            this.transcriptionCache,
+            this.legacyTranscriptionCache,
+        ];
+        for (const cache of transcriptCaches) {
+            try {
+                if (cache.query_exists(null)) {
+                    await cache.trash_async(GLib.PRIORITY_DEFAULT, null);
+                }
+            } catch (_err) {
+                // Ignore missing cache files.
+            }
         }
     }
 
@@ -192,10 +221,18 @@ export class Recording extends GObject.Object {
     }
 
     public get waveformCache(): Gio.File {
+        return CacheDir.get_child(`${this._cacheKey}_data`);
+    }
+
+    private get legacyWaveformCache(): Gio.File {
         return CacheDir.get_child(`${this.name}_data`);
     }
 
     public get transcriptionCache(): Gio.File {
+        return CacheDir.get_child(`${this._cacheKey}.transcript`);
+    }
+
+    private get legacyTranscriptionCache(): Gio.File {
         return CacheDir.get_child(`${this.name}.transcript`);
     }
 
@@ -209,12 +246,23 @@ export class Recording extends GObject.Object {
     }
 
     public async loadTranscription(): Promise<void> {
+        const candidates = [
+            this.transcriptionCache,
+            this.legacyTranscriptionCache,
+        ];
+
         try {
-            const bytes = (await this.transcriptionCache.load_bytes_async(null))[0];
-            if (bytes) {
-                const data = bytes.get_data();
-                if (data) {
-                    this.transcription = new TextDecoder("utf-8").decode(data);
+            for (const cache of candidates) {
+                if (!cache.query_exists(null)) continue;
+                const bytes = (await cache.load_bytes_async(null))[0];
+                if (bytes) {
+                    const data = bytes.get_data();
+                    if (data) {
+                        this.transcription = new TextDecoder("utf-8").decode(
+                            data,
+                        );
+                        break;
+                    }
                 }
             }
         } catch (_err) {
@@ -236,8 +284,15 @@ export class Recording extends GObject.Object {
     }
 
     public async loadPeaks(): Promise<void> {
+        const caches = [this.waveformCache, this.legacyWaveformCache];
+
         try {
-            const bytes = (await this.waveformCache.load_bytes_async(null))[0];
+            let bytes: GLib.Bytes | null = null;
+            for (const cache of caches) {
+                if (!cache.query_exists(null)) continue;
+                bytes = (await cache.load_bytes_async(null))[0];
+                if (bytes) break;
+            }
             const decoder = new TextDecoder("utf-8");
             if (bytes) {
                 const data = bytes.get_data();

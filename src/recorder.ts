@@ -93,6 +93,8 @@ export class Recorder extends GObject.Object {
 
     // Transcription tee branch (only present when transcription is enabled)
     private appsink: Gst.Element | undefined;
+    private appsinkPollId: number | null = null;
+    private teeBranchElements: Gst.Element[] = [];
 
     static {
         GObject.registerClass(
@@ -228,6 +230,23 @@ export class Recorder extends GObject.Object {
         this.state = Gst.State.NULL;
         this.duration = 0;
         this.appsink = undefined;
+        if (this.appsinkPollId !== null) {
+            GLib.source_remove(this.appsinkPollId);
+            this.appsinkPollId = null;
+        }
+
+        // Remove tee branch elements added this recording so they can be recreated next time
+        for (const el of this.teeBranchElements) {
+            this.pipeline.remove(el);
+        }
+        this.teeBranchElements = [];
+
+        // Unlink level.src so the next start() can link it freely regardless of mode
+        const levelSrc = this.level?.get_static_pad("src");
+        if (levelSrc) {
+            const peer = levelSrc.get_peer();
+            if (peer) levelSrc.unlink(peer);
+        }
         if (this.timeout) {
             GLib.source_remove(this.timeout);
             this.timeout = null;
@@ -395,10 +414,10 @@ export class Recorder extends GObject.Object {
         );
         capsfilter.set_property("caps", pcmCaps);
 
-        appsink.set_property("emit-signals", true);
         appsink.set_property("sync", false);
         appsink.set_property("async", false);
-        appsink.set_property("max-buffers", 0);
+        appsink.set_property("max-buffers", 200);
+        appsink.set_property("drop", true); // drop old samples rather than blocking the pipeline
 
         for (const el of [tee, queue1, queue2, resample, convert, capsfilter, appsink]) {
             this.pipeline.add(el);
@@ -418,22 +437,25 @@ export class Recorder extends GObject.Object {
         convert.link(capsfilter);
         capsfilter.link(appsink);
 
-        appsink.connect("new-sample", (sink: Gst.Element) => {
-            // pull-sample returns a Gst.Sample
-            const sample = sink.emit("pull-sample") as unknown as Gst.Sample | null;
-            if (!sample) return Gst.FlowReturn.OK;
-            const buffer = sample.get_buffer();
-            if (!buffer) return Gst.FlowReturn.OK;
-            const [ok, mapInfo] = buffer.map(Gst.MapFlags.READ);
-            if (ok) {
-                const chunkBytes = GLib.Bytes.new(mapInfo.data as unknown as Uint8Array);
-                this.emit("audio-chunk", chunkBytes);
-                buffer.unmap(mapInfo);
+        // Poll for samples on the main thread every 20 ms (avoids cross-thread JSAPI calls)
+        this.appsinkPollId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 20, () => {
+            if (!this.appsink) return GLib.SOURCE_REMOVE;
+            const sample = this.appsink.emit("try-pull-sample", 0) as unknown as Gst.Sample | null;
+            if (sample) {
+                const buffer = sample.get_buffer();
+                if (buffer) {
+                    const [ok, mapInfo] = buffer.map(Gst.MapFlags.READ);
+                    if (ok) {
+                        const chunkBytes = GLib.Bytes.new(mapInfo.data as unknown as Uint8Array);
+                        this.emit("audio-chunk", chunkBytes);
+                        buffer.unmap(mapInfo);
+                    }
+                }
             }
-            return Gst.FlowReturn.OK;
+            return GLib.SOURCE_CONTINUE;
         });
 
-
         this.appsink = appsink;
+        this.teeBranchElements = [tee, queue1, queue2, resample, convert, capsfilter, appsink];
     }
 }

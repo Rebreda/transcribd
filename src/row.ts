@@ -73,6 +73,7 @@ export class Row extends Gtk.ListBoxRow {
                     pause: {},
                     "seek-backward": {},
                     "seek-forward": {},
+                    transcribe: {},
                     deleted: {},
                 },
                 Properties: {
@@ -218,7 +219,7 @@ export class Row extends Gtk.ListBoxRow {
 
         const seekBackAction = new Gio.SimpleAction({ name: "seek-backward" });
         seekBackAction.connect("activate", () => {
-            RowState;
+            this.emit("seek-backward");
         });
         this.actionGroup.add_action(seekBackAction);
 
@@ -229,6 +230,12 @@ export class Row extends Gtk.ListBoxRow {
             this.emit("seek-forward");
         });
         this.actionGroup.add_action(seekForwardAction);
+
+        const transcribeAction = new Gio.SimpleAction({ name: "transcribe" });
+        transcribeAction.connect("activate", () => {
+            this.emit("transcribe");
+        });
+        this.actionGroup.add_action(transcribeAction);
 
         this.insert_action_group("recording", this.actionGroup);
 

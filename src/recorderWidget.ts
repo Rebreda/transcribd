@@ -136,6 +136,11 @@ export class RecorderWidget extends Gtk.Box {
         this._playbackStack.visible_child_name = "recorder-pause";
         this.state = RecorderState.Recording;
 
+        // Reset live transcription for a fresh recording session.
+        this._transcriptionBuffer = "";
+        this._transcriptionLabel.label = "";
+        this._transcriptionRevealer.reveal_child = false;
+
         this.recorder.start();
         this.emit("started");
     }
@@ -177,10 +182,6 @@ export class RecorderWidget extends Gtk.Box {
 
     private onStop(): void {
         this.state = RecorderState.Stopped;
-        // Clear transcription buffer for next recording
-        this._transcriptionBuffer = "";
-        this._transcriptionLabel.label = "";
-        this._transcriptionRevealer.reveal_child = false;
         const recording = this.recorder.stop();
         this.waveform.destroy();
         this.emit("stopped", recording);

@@ -280,43 +280,43 @@
                     </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkRevealer" id="transcriptionRevealer">
-                <property name="transition_type">GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN</property>
-                <property name="transition_duration">200</property>
                 <child>
-                  <object class="GtkBox">
-                    <property name="orientation">vertical</property>
-                    <property name="margin_start">14</property>
-                    <property name="margin_end">14</property>
-                    <property name="margin_top">8</property>
-                    <property name="margin_bottom">8</property>
-                    <property name="spacing">8</property>
+                  <object class="GtkRevealer" id="transcriptionRevealer">
+                    <property name="transition_type">GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN</property>
+                    <property name="transition_duration">200</property>
                     <child>
-                      <object class="GtkSeparator"/>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="transcriptionText">
-                        <property name="wrap">True</property>
-                        <property name="wrap_mode">word-char</property>
-                        <property name="selectable">True</property>
-                        <property name="xalign">0</property>
-                        <style>
-                          <class name="body"/>
-                        </style>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="injectTranscriptionBtn">
-                        <property name="halign">end</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Copy / Inject Transcription</property>
-                        <property name="icon_name">edit-paste-symbolic</property>
-                        <style>
-                          <class name="circular"/>
-                        </style>
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="margin_start">14</property>
+                        <property name="margin_end">14</property>
+                        <property name="margin_top">8</property>
+                        <property name="margin_bottom">8</property>
+                        <property name="spacing">8</property>
+                        <child>
+                          <object class="GtkSeparator"/>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="transcriptionText">
+                            <property name="wrap">True</property>
+                            <property name="wrap_mode">word-char</property>
+                            <property name="selectable">True</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="body"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="injectTranscriptionBtn">
+                            <property name="halign">end</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Copy / Inject Transcription</property>
+                            <property name="icon_name">edit-paste-symbolic</property>
+                            <style>
+                              <class name="circular"/>
+                            </style>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -337,6 +337,10 @@
       <item>
         <attribute name="action">recording.export</attribute>
         <attribute name="label" translatable="yes">Export</attribute>
+      </item>
+      <item>
+        <attribute name="action">recording.transcribe</attribute>
+        <attribute name="label" translatable="yes">Transcribe</attribute>
       </item>
     </section>
   </menu>

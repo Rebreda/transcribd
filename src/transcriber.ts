@@ -70,6 +70,7 @@ export class TranscriberService extends GObject.Object {
         // Discover WebSocket port from the health endpoint
         const baseUrl = this.serverUrl;
         const healthUrl = `${baseUrl}/health`;
+        console.log(`[Transcriber] Contacting health endpoint: ${healthUrl}`);
         const msg = Soup.Message.new("GET", healthUrl);
         if (!msg) {
             this.emit("transcription-error", `Invalid server URL: ${healthUrl}`);
@@ -96,10 +97,13 @@ export class TranscriberService extends GObject.Object {
                 return;
             }
             wsPort = health.websocket_port;
+            console.log(`[Transcriber] Health OK, WebSocket port: ${wsPort}`);
         } catch (err) {
+            const errMsg = err instanceof Error ? err.message : String(err);
+            console.error(`[Transcriber] Health request failed: ${errMsg}`);
             this.emit(
                 "transcription-error",
-                `Failed to contact server: ${err instanceof Error ? err.message : String(err)}`,
+                `Failed to contact server: ${errMsg}`,
             );
             return;
         }
@@ -107,6 +111,7 @@ export class TranscriberService extends GObject.Object {
         // Connect WebSocket
         const model = encodeURIComponent(this.model);
         const wsUrl = `ws://127.0.0.1:${wsPort}/realtime?model=${model}`;
+        console.log(`[Transcriber] Connecting WebSocket: ${wsUrl}`);
         const wsMsg = Soup.Message.new("GET", wsUrl);
         if (!wsMsg) {
             this.emit("transcription-error", `Invalid WebSocket URL: ${wsUrl}`);
@@ -122,6 +127,7 @@ export class TranscriberService extends GObject.Object {
                 null,
             );
             this.wsConnection = conn;
+            console.log(`[Transcriber] WebSocket connected to ${wsUrl}`);
             this.emit("connected");
 
             // Send initial session.update to configure the model
@@ -145,6 +151,7 @@ export class TranscriberService extends GObject.Object {
             });
 
             conn.connect("closed", () => {
+                console.log(`[Transcriber] WebSocket closed`);
                 this.wsConnection = null;
                 this.emit("disconnected");
             });
@@ -153,9 +160,11 @@ export class TranscriberService extends GObject.Object {
                 this.emit("transcription-error", err.message);
             });
         } catch (err) {
+            const errMsg = err instanceof Error ? err.message : String(err);
+            console.error(`[Transcriber] WebSocket connection failed: ${errMsg}`);
             this.emit(
                 "transcription-error",
-                `WebSocket connection failed: ${err instanceof Error ? err.message : String(err)}`,
+                `WebSocket connection failed: ${errMsg}`,
             );
         }
     }
@@ -202,6 +211,7 @@ export class TranscriberService extends GObject.Object {
         } catch (_e) {
             return;
         }
+        console.log(`[Transcriber] WS message type: ${msg.type}`);
 
         switch (msg.type) {
             case "conversation.item.input_audio_transcription.delta":

@@ -66,6 +66,7 @@ export class Window extends Adw.ApplicationWindow {
     private doneHandlerId: number | null = null;
     private errorHandlerId: number | null = null;
     private pendingTranscript = "";
+    private isTranscribingRecording = false;
 
     private _state: WindowState;
 
@@ -126,6 +127,13 @@ export class Window extends Adw.ApplicationWindow {
                     message = _("Recording deleted");
                 }
                 this.sendNotification(message, recording, index);
+            },
+        );
+
+        this.recordingListWidget.connect(
+            "row-transcribe",
+            (_listBox: Gtk.ListBox, recording: Recording) => {
+                void this.transcribeExistingRecording(recording);
             },
         );
 
@@ -206,15 +214,23 @@ export class Window extends Adw.ApplicationWindow {
                 this.partialHandlerId = this.transcriberService.connect(
                     "transcription-partial",
                     (_service: TranscriberService, text: string) => {
+                        this.pendingTranscript += text;
                         this.recorderWidget.appendTranscription(text);
                     },
                 );
                 this.doneHandlerId = this.transcriberService.connect(
                     "transcription-done",
                     (_service: TranscriberService, text: string) => {
-                        this.pendingTranscript +=
-                            (this.pendingTranscript ? " " : "") + text;
-                        this.recorderWidget.appendTranscription(text);
+                        // Some backends provide only completed chunks, so keep this as a fallback.
+                        if (text.length > 0) {
+                            this.pendingTranscript +=
+                                (this.pendingTranscript ? " " : "") + text;
+                            this.recorderWidget.appendTranscription(
+                                this.pendingTranscript.endsWith(" ")
+                                    ? text
+                                    : ` ${text}`,
+                            );
+                        }
                     },
                 );
                 this.errorHandlerId = this.transcriberService.connect(
@@ -254,7 +270,9 @@ export class Window extends Adw.ApplicationWindow {
         recording: Recording,
     ): void {
         const isDictation = this.dictationMode;
-        const finalTranscript = this.pendingTranscript;
+        const finalTranscript =
+            this.pendingTranscript.trim() ||
+            this.recorderWidget.consumeTranscription().trim();
         this._cleanupTranscriberService();
         this.dictationMode = false;
 
@@ -293,6 +311,196 @@ export class Window extends Adw.ApplicationWindow {
             }
             service.commit();
             service.endSession();
+        }
+        this.pendingTranscript = "";
+    }
+
+    private _wait(ms: number): Promise<void> {
+        return new Promise((resolve) => {
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
+                resolve();
+                return GLib.SOURCE_REMOVE;
+            });
+        });
+    }
+
+    private _streamRecordingAudio(
+        recording: Recording,
+        onChunk: (chunk: GLib.Bytes) => void,
+    ): Promise<void> {
+        const pipeline = Gst.parse_launch(
+            "uridecodebin name=src ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! appsink name=file-transcription-sink sync=false async=false max-buffers=200 drop=true",
+        ) as Gst.Pipeline;
+
+        const src = pipeline.get_by_name("src");
+        src?.set_property("uri", recording.uri);
+
+        const appsink = pipeline.get_by_name("file-transcription-sink");
+        if (!appsink) {
+            pipeline.set_state(Gst.State.NULL);
+            throw new Error("Failed to create appsink for file transcription");
+        }
+
+        const bus = pipeline.get_bus();
+
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            let pollId: number | null = null;
+            let busHandlerId: number | null = null;
+
+            const cleanup = () => {
+                if (pollId !== null) {
+                    GLib.source_remove(pollId);
+                    pollId = null;
+                }
+                if (bus && busHandlerId !== null) {
+                    bus.disconnect(busHandlerId);
+                    bus.remove_signal_watch();
+                    busHandlerId = null;
+                }
+                pipeline.set_state(Gst.State.NULL);
+            };
+
+            const finishOk = () => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                resolve();
+            };
+
+            const finishErr = (err: string) => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                reject(new Error(err));
+            };
+
+            if (bus) {
+                bus.add_signal_watch();
+                busHandlerId = bus.connect(
+                    "message",
+                    (_bus: Gst.Bus, message: Gst.Message) => {
+                        switch (message.type) {
+                            case Gst.MessageType.EOS:
+                                finishOk();
+                                break;
+                            case Gst.MessageType.ERROR:
+                                finishErr(message.parse_error().toString());
+                                break;
+                            default:
+                                break;
+                        }
+                    },
+                );
+            }
+
+            pollId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 20, () => {
+                const sample = appsink.emit("try-pull-sample", 0) as unknown as
+                    | Gst.Sample
+                    | null;
+                if (!sample) return GLib.SOURCE_CONTINUE;
+
+                const buffer = sample.get_buffer();
+                if (!buffer) return GLib.SOURCE_CONTINUE;
+
+                const [ok, mapInfo] = buffer.map(Gst.MapFlags.READ);
+                if (ok) {
+                    const chunkBytes = GLib.Bytes.new(
+                        mapInfo.data as unknown as Uint8Array,
+                    );
+                    onChunk(chunkBytes);
+                    buffer.unmap(mapInfo);
+                }
+
+                return GLib.SOURCE_CONTINUE;
+            });
+
+            const result = pipeline.set_state(Gst.State.PLAYING);
+            if (result === Gst.StateChangeReturn.FAILURE) {
+                finishErr("Failed to start decode pipeline for transcription");
+            }
+        });
+    }
+
+    private async transcribeExistingRecording(recording: Recording): Promise<void> {
+        if (this.isTranscribingRecording) {
+            this._toastOverlay.add_toast(
+                Adw.Toast.new(_("A transcription job is already running")),
+            );
+            return;
+        }
+
+        this.isTranscribingRecording = true;
+        this._toastOverlay.add_toast(
+            Adw.Toast.new(_("Transcribing recording…")),
+        );
+
+        const service = new TranscriberService();
+        let combinedText = "";
+        let partialId: number | null = null;
+        let doneId: number | null = null;
+        let errorId: number | null = null;
+
+        try {
+            partialId = service.connect(
+                "transcription-partial",
+                (_service: TranscriberService, text: string) => {
+                    combinedText += text;
+                },
+            );
+
+            doneId = service.connect(
+                "transcription-done",
+                (_service: TranscriberService, text: string) => {
+                    if (text.length > 0)
+                        combinedText += (combinedText ? " " : "") + text;
+                },
+            );
+
+            errorId = service.connect(
+                "transcription-error",
+                (_service: TranscriberService, error: string) => {
+                    this._toastOverlay.add_toast(
+                        Adw.Toast.new(
+                            _('Transcription error: %s').format(error),
+                        ),
+                    );
+                },
+            );
+
+            await service.startSession();
+            await this._streamRecordingAudio(recording, (chunk) => {
+                service.appendChunk(chunk);
+            });
+
+            service.commit();
+            await this._wait(1200);
+            service.endSession();
+
+            const text = combinedText.trim();
+            if (text.length > 0) {
+                await recording.saveTranscription(text);
+                this._toastOverlay.add_toast(
+                    Adw.Toast.new(_("Transcription saved")),
+                );
+            } else {
+                this._toastOverlay.add_toast(
+                    Adw.Toast.new(
+                        _("Transcription completed, but no text was returned"),
+                    ),
+                );
+            }
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this._toastOverlay.add_toast(
+                Adw.Toast.new(_('Transcription failed: %s').format(msg)),
+            );
+        } finally {
+            if (partialId !== null) service.disconnect(partialId);
+            if (doneId !== null) service.disconnect(doneId);
+            if (errorId !== null) service.disconnect(errorId);
+            service.endSession();
+            this.isTranscribingRecording = false;
         }
     }
 

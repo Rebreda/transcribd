@@ -23,6 +23,9 @@ export class RecordingsListWidget extends Adw.Bin {
                     "row-deleted": {
                         param_types: [GObject.TYPE_OBJECT, GObject.TYPE_INT],
                     },
+                    "row-transcribe": {
+                        param_types: [GObject.TYPE_OBJECT],
+                    },
                 },
             },
             this,
@@ -147,6 +150,10 @@ export class RecordingsListWidget extends Adw.Bin {
                 const index = row.get_index();
                 this.isolateAt(index, false);
                 this.emit("row-deleted", row.recording, index);
+            });
+
+            row.connect("transcribe", () => {
+                this.emit("row-transcribe", row.recording);
             });
 
             return row;
