@@ -83,6 +83,7 @@ meson setup build -Dprofile=development
 - [Contributing Guide](CONTRIBUTING.md)
 - [Development Guide](docs/DEVELOPMENT.md)
 - [Architecture Overview](docs/ARCHITECTURE.md)
+- [Flatpak Build Guide](docs/FLATPAK.md)
 
 ### Configuration
 

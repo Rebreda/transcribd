@@ -75,6 +75,10 @@ const AudioChannels = [
     { name: "mono", channels: 1 },
 ];
 
+interface AppSinkLike extends Gst.Element {
+    try_pull_sample(timeout: number): Gst.Sample | null;
+}
+
 export class Recorder extends GObject.Object {
     private peaks: number[];
 
@@ -92,7 +96,7 @@ export class Recorder extends GObject.Object {
     private pipeState?: Gst.State;
 
     // Transcription tee branch (only present when transcription is enabled)
-    private appsink: Gst.Element | undefined;
+    private appsink: AppSinkLike | null = null;
     private appsinkPollId: number | null = null;
     private teeBranchElements: Gst.Element[] = [];
 
@@ -229,7 +233,7 @@ export class Recorder extends GObject.Object {
 
         this.state = Gst.State.NULL;
         this.duration = 0;
-        this.appsink = undefined;
+        this.appsink = null;
         if (this.appsinkPollId !== null) {
             GLib.source_remove(this.appsinkPollId);
             this.appsinkPollId = null;
@@ -394,19 +398,28 @@ export class Recorder extends GObject.Object {
     private _setupTranscriptionBranch(): void {
         if (!this.level || !this.ebin) return;
 
+        const gstAppNamespace = (imports.gi as unknown as Record<string, unknown>).GstApp;
+        if (!gstAppNamespace) {
+            log("TranscriberBranch: GstApp namespace unavailable, falling back to direct link");
+            this.level.link(this.ebin);
+            return;
+        }
+
         const tee = Gst.ElementFactory.make("tee", "transcription-tee");
         const queue1 = Gst.ElementFactory.make("queue", "enc-queue");
         const queue2 = Gst.ElementFactory.make("queue", "pcm-queue");
         const resample = Gst.ElementFactory.make("audioresample", "transcription-resample");
         const convert = Gst.ElementFactory.make("audioconvert", "transcription-convert");
         const capsfilter = Gst.ElementFactory.make("capsfilter", "transcription-caps");
-        const appsink = Gst.ElementFactory.make("appsink", "transcription-sink");
+        const appsinkElement = Gst.ElementFactory.make("appsink", "transcription-sink");
 
-        if (!tee || !queue1 || !queue2 || !resample || !convert || !capsfilter || !appsink) {
+        if (!tee || !queue1 || !queue2 || !resample || !convert || !capsfilter || !appsinkElement) {
             log("TranscriberBranch: could not create all elements, falling back to direct link");
             this.level.link(this.ebin);
             return;
         }
+
+        const appsink = appsinkElement as AppSinkLike;
 
         // PCM16 mono 16kHz — required by Lemonade /realtime
         const pcmCaps = Gst.Caps.from_string(
@@ -419,7 +432,7 @@ export class Recorder extends GObject.Object {
         appsink.set_property("max-buffers", 200);
         appsink.set_property("drop", true); // drop old samples rather than blocking the pipeline
 
-        for (const el of [tee, queue1, queue2, resample, convert, capsfilter, appsink]) {
+        for (const el of [tee, queue1, queue2, resample, convert, capsfilter, appsinkElement]) {
             this.pipeline.add(el);
         }
 
@@ -435,12 +448,12 @@ export class Recorder extends GObject.Object {
         queue2.link(resample);
         resample.link(convert);
         convert.link(capsfilter);
-        capsfilter.link(appsink);
+        capsfilter.link(appsinkElement);
 
         // Poll for samples on the main thread every 20 ms (avoids cross-thread JSAPI calls)
         this.appsinkPollId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 20, () => {
             if (!this.appsink) return GLib.SOURCE_REMOVE;
-            const sample = this.appsink.emit("try-pull-sample", 0) as unknown as Gst.Sample | null;
+            const sample = this.appsink.try_pull_sample(0);
             if (sample) {
                 const buffer = sample.get_buffer();
                 if (buffer) {
@@ -456,6 +469,6 @@ export class Recorder extends GObject.Object {
         });
 
         this.appsink = appsink;
-        this.teeBranchElements = [tee, queue1, queue2, resample, convert, capsfilter, appsink];
+        this.teeBranchElements = [tee, queue1, queue2, resample, convert, capsfilter, appsinkElement];
     }
 }

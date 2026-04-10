@@ -13,7 +13,14 @@ import { RecordingsListWidget } from "./recordingListWidget.js";
 import { RecorderWidget } from "./recorderWidget.js";
 import { RecordingDetailView } from "./detailView.js";
 import { Recording, TranscriptionSegment } from "./recording.js";
-import { TranscriberService, injectText, suggestTitle } from "./transcriber.js";
+import {
+    suggestCategory,
+    TranscriberService,
+    injectText,
+    suggestCategoryFallback,
+    suggestTitle,
+    suggestTitleFallback,
+} from "./transcriber.js";
 
 export class Window extends Adw.ApplicationWindow {
     private _toastOverlay!: Adw.ToastOverlay;
@@ -288,11 +295,12 @@ export class Window extends Adw.ApplicationWindow {
         this._updateEmpty();
     }
 
-    private _onRecorderStopped(
+    private async _onRecorderStopped(
         _widget: RecorderWidget,
         recording: Recording,
-    ): void {
+    ): Promise<void> {
         const isDictation = this.dictationMode;
+        await this._flushRealtimeTranscription();
         const finalTranscript =
             this.pendingTranscript.trim() ||
             this.recorderWidget.consumeTranscription().trim();
@@ -305,7 +313,7 @@ export class Window extends Adw.ApplicationWindow {
                 `[Window] Saving live transcript (${finalTranscript.length} chars) for ${recording.name}`,
             );
             void recording.saveTranscription(finalTranscript);
-            void this._autoNameRecording(recording, finalTranscript);
+            void this._autoAnnotateRecording(recording, finalTranscript);
             if (isDictation) injectText(finalTranscript, this);
         }
 
@@ -348,11 +356,44 @@ export class Window extends Adw.ApplicationWindow {
             this.doneHandlerId = null;
             this.errorHandlerId = null;
             this.segmentHandlerId = null;
-            service.commit();
             service.endSession();
         }
         this.pendingTranscript = "";
         this.pendingSegments = [];
+    }
+
+    private async _flushRealtimeTranscription(): Promise<void> {
+        const service = this.transcriberService;
+        if (!service) return;
+
+        await new Promise<void>((resolve) => {
+            let resolved = false;
+            const tempIds: number[] = [];
+
+            const finish = (): void => {
+                if (resolved) return;
+                resolved = true;
+                if (timeoutId > 0) GLib.source_remove(timeoutId);
+                for (const id of tempIds) {
+                    this._safeDisconnect(service, id);
+                }
+                resolve();
+            };
+
+            const timeoutId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                1500,
+                () => {
+                    finish();
+                    return GLib.SOURCE_REMOVE;
+                },
+            );
+
+            tempIds.push(service.connect("transcription-done", () => finish()));
+            tempIds.push(service.connect("transcription-error", () => finish()));
+
+            service.commit();
+        });
     }
 
     private _safeDisconnect(obj: GObject.Object, id: number): void {
@@ -405,12 +446,14 @@ export class Window extends Adw.ApplicationWindow {
 
         const service = new TranscriberService();
         try {
-            const text = (
-                await service.transcribeFileHttp(recording.file)
-            ).trim();
+            const result = await service.transcribeFileHttp(recording.file);
+            const text = result.text.trim();
             if (text.length > 0) {
                 await recording.saveTranscription(text);
-                void this._autoNameRecording(recording, text);
+                if (result.segments.length > 0) {
+                    await recording.saveSegments(result.segments);
+                }
+                await this._autoAnnotateRecording(recording, text);
                 this._toastOverlay.add_toast(
                     Adw.Toast.new(_("Transcription saved")),
                 );
@@ -431,31 +474,61 @@ export class Window extends Adw.ApplicationWindow {
         }
     }
 
-    private async _autoNameRecording(
+    private async _autoAnnotateRecording(
         recording: Recording,
         transcript: string,
     ): Promise<void> {
-        if (!/^Recording \d+$/.test(recording.name ?? "")) return;
         if (!Settings.get_boolean("transcription-enabled")) return;
-        try {
-            const title = await suggestTitle(
-                transcript,
-                Settings.get_string("transcription-server-url"),
-                Settings.get_string("transcription-api-key"),
-            );
-            const clean = title
-                .replace(/^["']|["']$/g, "")
-                .replace(/\.$/, "")
-                .trim();
-            if (clean.length === 0) return;
-            if (/^Recording \d+$/.test(recording.name ?? "")) {
-                recording.name = clean;
+
+        if (/^Recording \d+$/.test(recording.name ?? "")) {
+            try {
+                const title = await suggestTitle(
+                    transcript,
+                    Settings.get_string("inference-server-url"),
+                    Settings.get_string("inference-api-key"),
+                    Settings.get_string("inference-model"),
+                );
+                const clean = title
+                    .replace(/^["']|["']$/g, "")
+                    .replace(/\.$/, "")
+                    .trim();
+                if (clean.length > 0 && /^Recording \d+$/.test(recording.name ?? "")) {
+                    recording.name = clean;
+                }
+            } catch (e) {
+                console.error(
+                    "[Window] Auto-name failed:",
+                    e instanceof Error ? e.message : String(e),
+                );
+                const fallbackTitle = suggestTitleFallback(transcript);
+                if (fallbackTitle.length > 0 && /^Recording \d+$/.test(recording.name ?? "")) {
+                    recording.name = fallbackTitle;
+                }
             }
-        } catch (e) {
-            console.error(
-                "[Window] Auto-name failed:",
-                e instanceof Error ? e.message : String(e),
-            );
+        }
+
+        if ((recording.category ?? "").trim().length === 0) {
+            try {
+                const category = await suggestCategory(
+                    transcript,
+                    Settings.get_string("inference-server-url"),
+                    Settings.get_string("inference-api-key"),
+                    Settings.get_string("inference-model"),
+                );
+                const cleanCategory = category
+                    .replace(/^["']|["']$/g, "")
+                    .replace(/\.$/, "")
+                    .trim();
+                if (cleanCategory.length > 0) {
+                    await recording.saveCategory(cleanCategory);
+                    return;
+                }
+            } catch (_e) {
+                const fallbackCategory = suggestCategoryFallback(transcript);
+                if (fallbackCategory.length > 0) {
+                    await recording.saveCategory(fallbackCategory);
+                }
+            }
         }
     }
 

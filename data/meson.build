@@ -1,12 +1,12 @@
 icon_dir = 'icons' / 'hicolor' / 'scalable' / 'apps'
 install_data(
-  'icons' / 'app.drey.Vocalis.svg',
+  'icons' / 'app.rebreda.Transcribd.svg',
   install_dir:  transcribd_datadir / icon_dir
 )
 
 icon_dir = 'icons' / 'hicolor' / 'symbolic' / 'apps'
 install_data(
-  'icons' / 'app.drey.Vocalis-symbolic.svg',
+  'icons' / 'app.rebreda.Transcribd-symbolic.svg',
   rename: '@0@-symbolic.svg'.format(application_id),
   install_dir: transcribd_datadir / icon_dir
 )
@@ -15,7 +15,7 @@ desktop_conf = configuration_data()
 desktop_conf.set('app-id', application_id)
 desktop_file = i18n.merge_file(
   input: configure_file(
-	input: 'app.drey.Vocalis.desktop.in.in',
+	input: 'app.rebreda.Transcribd.desktop.in.in',
   	output: '@BASENAME@',
   	configuration: desktop_conf
   ),
@@ -39,17 +39,31 @@ endif
 gsettings_conf = configuration_data()
 gsettings_conf.set('app-id', application_id)
 gsettings_conf.set('gettext-package', gettext_package)
-configure_file(
-  input: 'app.drey.Vocalis.gschema.xml.in',
+schema_file = configure_file(
+  input: 'app.rebreda.Transcribd.gschema.xml.in',
   output: '@0@.gschema.xml'.format(application_id),
   configuration: gsettings_conf,
   install: true,
   install_dir: transcribd_schemadir
 )
 
+glib_compile_schemas = find_program('glib-compile-schemas')
+schema_compile = custom_target(
+  'compile-schemas',
+  input: schema_file,
+  output: 'gschemas.compiled',
+  command: [
+    glib_compile_schemas,
+    '--strict',
+    '--targetdir', meson.current_build_dir(),
+    meson.current_build_dir(),
+  ],
+  build_by_default: true,
+)
+
 data_res = gnome.compile_resources(
   application_id + '.data',
-  'app.drey.Vocalis.data.gresource.xml',
+  'app.rebreda.Transcribd.data.gresource.xml',
   gresource_bundle: true,
   install_dir: transcribd_pkgdatadir,
   install: true
@@ -61,7 +75,7 @@ metainfo_conf.set('gettext-package', gettext_package)
 
 metainfo_file = i18n.merge_file(
   input: configure_file(
-  input: 'app.drey.Vocalis.metainfo.xml.in.in',
+  input: 'app.rebreda.Transcribd.metainfo.xml.in.in',
   	output: '@BASENAME@',
   	configuration: metainfo_conf
 	),

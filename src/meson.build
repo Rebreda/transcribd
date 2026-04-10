@@ -59,9 +59,13 @@ src_res = gnome.compile_resources(
   install_dir: transcribd_pkgdatadir
 )
 
+run_schema_dir = meson.project_build_root() / 'data'
+env_prog = find_program('env')
+
 run_target('run',
-  command: app,
+  command: [env_prog, 'GSETTINGS_SCHEMA_DIR=@0@'.format(run_schema_dir), app],
   depends: [
+    schema_compile,
     data_res,
     src_res,
   ]

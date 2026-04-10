@@ -129,13 +129,15 @@ export class RecordingDetailView extends Adw.Bin {
                 );
             }
         });
-        this._categoryEntry.connect("focus-leave", () => {
+        const categoryFocusController = new Gtk.EventControllerFocus();
+        categoryFocusController.connect("leave", () => {
             if (this._recording) {
                 void this._recording.saveCategory(
                     this._categoryEntry.get_text().trim(),
                 );
             }
         });
+        this._categoryEntry.add_controller(categoryFocusController);
 
         // Transcribe / re-transcribe buttons
         this._transcribeBtn.connect("clicked", () => {

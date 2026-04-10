@@ -10,6 +10,9 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
     private _modelEntry!: Adw.EntryRow;
     private _apiKeyEntry!: Adw.PasswordEntryRow;
     private _injectSwitch!: Adw.SwitchRow;
+    private _inferenceServerUrlEntry!: Adw.EntryRow;
+    private _inferenceModelEntry!: Adw.EntryRow;
+    private _inferenceApiKeyEntry!: Adw.PasswordEntryRow;
 
     static {
         GObject.registerClass(
@@ -21,6 +24,9 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
                     "modelEntry",
                     "apiKeyEntry",
                     "injectSwitch",
+                    "inferenceServerUrlEntry",
+                    "inferenceModelEntry",
+                    "inferenceApiKeyEntry",
                 ],
             },
             this,
@@ -58,6 +64,24 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
             "transcription-inject-text",
             this._injectSwitch,
             "active",
+            Gio.SettingsBindFlags.DEFAULT,
+        );
+        Settings.bind(
+            "inference-server-url",
+            this._inferenceServerUrlEntry,
+            "text",
+            Gio.SettingsBindFlags.DEFAULT,
+        );
+        Settings.bind(
+            "inference-model",
+            this._inferenceModelEntry,
+            "text",
+            Gio.SettingsBindFlags.DEFAULT,
+        );
+        Settings.bind(
+            "inference-api-key",
+            this._inferenceApiKeyEntry,
+            "text",
             Gio.SettingsBindFlags.DEFAULT,
         );
     }

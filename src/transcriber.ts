@@ -7,7 +7,7 @@ import Gtk from "gi://Gtk?version=4.0";
 import Soup from "gi://Soup?version=3.0";
 
 import { Settings } from "./application.js";
-import { OpenAICompatibleClient } from "./openaiClient.js";
+import { OpenAICompatibleClient, TranscriptionResult } from "./openaiClient.js";
 
 interface WsHealthResponse {
     status: string;
@@ -226,17 +226,17 @@ export class TranscriberService extends GObject.Object {
         this.wsConnection = null;
     }
 
-    public async transcribeFileHttp(file: Gio.File): Promise<string> {
+    public async transcribeFileHttp(file: Gio.File): Promise<TranscriptionResult> {
         const client = new OpenAICompatibleClient({
             baseUrl: this.serverUrl,
             apiKey: this.apiKey,
             session: this.session,
         });
-        const text = await client.transcribeFile(file, this.model);
+        const result = await client.transcribeFile(file, this.model);
         console.log(
-            `[Transcriber] HTTP transcription (${text.length}) via OpenAI-compatible client`,
+            `[Transcriber] HTTP transcription (${result.text.length}) via OpenAI-compatible client`,
         );
-        return text;
+        return result;
     }
 
     private _sendJson(obj: WsMessage | Record<string, unknown>): void {
@@ -415,17 +415,22 @@ export async function suggestTitle(
     transcript: string,
     serverUrl: string,
     apiKey: string,
+    model: string,
 ): Promise<string> {
+    if (model.trim().length === 0) {
+        throw new Error("Inference model is not configured");
+    }
     const base = serverUrl.trim().replace(/\/+$/, "");
-    // Try {base}/chat/completions first, then strip /api prefix variants
     const root = base.replace(/\/(api\/)?v1$/i, "");
     const urls = [
         `${base}/chat/completions`,
+        `${root}/api/v1/chat/completions`,
         `${root}/v1/chat/completions`,
         `${root}/chat/completions`,
     ].filter((u, i, a) => a.indexOf(u) === i);
 
     const bodyJson = JSON.stringify({
+        model,
         messages: [
             {
                 role: "system",
@@ -478,4 +483,137 @@ export async function suggestTitle(
         }
     }
     throw new Error(lastError);
+}
+
+export async function suggestCategory(
+    transcript: string,
+    serverUrl: string,
+    apiKey: string,
+    model: string,
+): Promise<string> {
+    if (model.trim().length === 0) {
+        throw new Error("Inference model is not configured");
+    }
+
+    const base = serverUrl.trim().replace(/\/+$/, "");
+    const root = base.replace(/\/(api\/)?v1$/i, "");
+    const urls = [
+        `${base}/chat/completions`,
+        `${root}/api/v1/chat/completions`,
+        `${root}/v1/chat/completions`,
+        `${root}/chat/completions`,
+    ].filter((u, i, a) => a.indexOf(u) === i);
+
+    const bodyJson = JSON.stringify({
+        model,
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You assign exactly one short category to an audio transcript. " +
+                    "Reply with ONLY the category name, maximum 3 words, no punctuation.",
+            },
+            {
+                role: "user",
+                content: `Suggest a category for this recording transcript:\n\n${transcript.slice(0, 1200)}`,
+            },
+        ],
+        max_tokens: 12,
+        temperature: 0.2,
+    });
+
+    const encoder = new TextEncoder();
+    const session = new Soup.Session();
+
+    let lastError = "No response";
+    for (const url of urls) {
+        const msg = Soup.Message.new("POST", url);
+        if (!msg) continue;
+        msg.request_headers.append("Authorization", `Bearer ${apiKey}`);
+        msg.set_request_body_from_bytes(
+            "application/json",
+            GLib.Bytes.new(encoder.encode(bodyJson)),
+        );
+        try {
+            const bytes = await session.send_and_read_async(
+                msg,
+                GLib.PRIORITY_DEFAULT,
+                null,
+            );
+            if (msg.statusCode < 200 || msg.statusCode >= 300) {
+                lastError = `HTTP ${msg.statusCode} from ${url}`;
+                continue;
+            }
+            const decoded = new TextDecoder("utf-8").decode(
+                bytes.get_data() ?? new Uint8Array(),
+            );
+            const resp = JSON.parse(decoded) as {
+                choices?: Array<{ message?: { content?: string } }>;
+            };
+            const category = resp.choices?.[0]?.message?.content?.trim();
+            if (category && category.length > 0) return category;
+            lastError = `No category in response from ${url}`;
+        } catch (err) {
+            lastError = err instanceof Error ? err.message : String(err);
+        }
+    }
+
+    throw new Error(lastError);
+}
+
+export function suggestTitleFallback(transcript: string): string {
+    const cleaned = normalizeTranscriptForMetadata(transcript);
+    if (cleaned.length === 0) return "Recording";
+
+    const sentence = cleaned.split(/[.!?\n]/)[0]?.trim() ?? cleaned;
+    const words = sentence
+        .split(/\s+/)
+        .map((word) => word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""))
+        .filter((word) => word.length > 0)
+        .slice(0, 6);
+
+    if (words.length === 0) return "Recording";
+
+    return words
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+}
+
+export function suggestCategoryFallback(transcript: string): string {
+    const normalized = normalizeTranscriptForMetadata(transcript).toLowerCase();
+    if (normalized.length === 0) return "General";
+
+    const categories: Array<{ name: string; keywords: string[] }> = [
+        { name: "Meeting", keywords: ["meeting", "agenda", "team", "standup", "follow up"] },
+        { name: "Task", keywords: ["todo", "task", "deadline", "finish", "complete", "deliver"] },
+        { name: "Idea", keywords: ["idea", "brainstorm", "concept", "feature", "prototype"] },
+        { name: "Journal", keywords: ["today", "felt", "thinking", "reflection", "journal"] },
+        { name: "Call", keywords: ["call", "phone", "voicemail", "customer", "client"] },
+        { name: "Interview", keywords: ["interview", "candidate", "hiring", "resume"] },
+        { name: "Lecture", keywords: ["lesson", "lecture", "class", "student", "chapter"] },
+        { name: "Reminder", keywords: ["remember", "remind", "don't forget", "note to self"] },
+    ];
+
+    let bestName = "General";
+    let bestScore = 0;
+    for (const category of categories) {
+        let score = 0;
+        for (const keyword of category.keywords) {
+            if (normalized.includes(keyword)) score += 1;
+        }
+        if (score > bestScore) {
+            bestScore = score;
+            bestName = category.name;
+        }
+    }
+
+    return bestName;
+}
+
+function normalizeTranscriptForMetadata(transcript: string): string {
+    return transcript
+        .replace(/\[(?:blank_audio|silence)\]/gi, " ")
+        .replace(/^\d+[.):-]\s*/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
 }

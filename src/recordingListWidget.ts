@@ -11,7 +11,6 @@ export class RecordingsListWidget extends Adw.Bin {
     public list: Gtk.ListBox;
     private searchTerm = "";
     private model: Gio.ListModel;
-    private itemsChangedId: number;
 
     static {
         GObject.registerClass(
@@ -50,7 +49,7 @@ export class RecordingsListWidget extends Adw.Bin {
 
         this.set_child(this.list);
 
-        this.itemsChangedId = this.model.connect("items-changed", () => {
+        this.model.connect("items-changed", () => {
             this._refreshRows();
         });
         this._refreshRows();

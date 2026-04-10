@@ -5,6 +5,17 @@ import Soup from "gi://Soup?version=3.0";
 
 const NON_SPEECH_TOKEN = /^\s*\[(?:blank_audio|silence)\]\s*$/i;
 
+export interface TranscriptionSegmentResult {
+    startMs: number;
+    endMs: number;
+    text: string;
+}
+
+export interface TranscriptionResult {
+    text: string;
+    segments: TranscriptionSegmentResult[];
+}
+
 export interface OpenAICompatibleClientOptions {
     baseUrl: string;
     apiKey: string;
@@ -26,24 +37,42 @@ export class OpenAICompatibleClient {
         this.session = opts.session ?? new Soup.Session();
     }
 
-    public async transcribeFile(file: Gio.File, model: string): Promise<string> {
+    public async transcribeFile(
+        file: Gio.File,
+        model: string,
+    ): Promise<TranscriptionResult> {
         // Lemonade only supports WAV format — convert first
         const { wavBytes, tempPath } = await this.convertToWav(file);
 
         try {
             const boundary = `----vocalis-${GLib.uuid_string_random()}`;
             const encoder = new TextEncoder();
+            const parts: Uint8Array[] = [];
 
-            const preamble = encoder.encode(
-                `--${boundary}\r\n` +
-                    `Content-Disposition: form-data; name="model"\r\n\r\n` +
-                    `${model}\r\n` +
+            const appendField = (name: string, value: string): void => {
+                parts.push(
+                    encoder.encode(
+                        `--${boundary}\r\n` +
+                            `Content-Disposition: form-data; name="${name}"\r\n\r\n` +
+                            `${value}\r\n`,
+                    ),
+                );
+            };
+
+            appendField("model", model);
+            appendField("response_format", "json");
+            appendField("timestamp_granularities[]", "word");
+            appendField("word_timestamps", "true");
+            parts.push(
+                encoder.encode(
                     `--${boundary}\r\n` +
-                    `Content-Disposition: form-data; name="file"; filename="audio.wav"\r\n` +
-                    `Content-Type: audio/wav\r\n\r\n`,
+                        `Content-Disposition: form-data; name="file"; filename="audio.wav"\r\n` +
+                        `Content-Type: audio/wav\r\n\r\n`,
+                ),
             );
-            const epilogue = encoder.encode(`\r\n--${boundary}--\r\n`);
-            const body = this.concatBytes([preamble, wavBytes, epilogue]);
+            parts.push(wavBytes);
+            parts.push(encoder.encode(`\r\n--${boundary}--\r\n`));
+            const body = this.concatBytes(parts);
 
             const endpoints = this.buildTranscriptionEndpoints();
             let lastError = "Unknown transcription error";
@@ -71,8 +100,8 @@ export class OpenAICompatibleClient {
                     `[OpenAIClient] HTTP status ${msg.statusCode} from ${endpoint}`,
                 );
                 if (msg.statusCode >= 200 && msg.statusCode < 300) {
-                    const extracted = this.extractTranscription(decoded);
-                    if (extracted.length > 0) return extracted;
+                    const extracted = this.extractTranscriptionResult(decoded);
+                    if (extracted.text.length > 0) return extracted;
                 }
                 lastError =
                     `HTTP ${msg.statusCode} from ${endpoint}: ${decoded.slice(0, 200)}`;
@@ -94,56 +123,23 @@ export class OpenAICompatibleClient {
     private async convertToWav(
         file: Gio.File,
     ): Promise<{ wavBytes: Uint8Array; tempPath: string }> {
-        const srcPath = file.get_path();
-        if (!srcPath) throw new Error("Recording file has no local path");
+        const srcUri = file.get_uri();
+        if (!srcUri) throw new Error("Recording file has no local URI");
 
         const tempPath = GLib.build_filenamev([
             GLib.get_tmp_dir(),
             `vocalis-${GLib.uuid_string_random()}.wav`,
         ]);
-
-        const pipeline = new Gst.Pipeline({ name: "wav-convert" });
-        const src = Gst.ElementFactory.make("filesrc", "src");
-        const decode = Gst.ElementFactory.make("decodebin", "decode");
-        const convert = Gst.ElementFactory.make("audioconvert", "aconv");
-        const resample = Gst.ElementFactory.make("audioresample", "aresample");
-        const capsfilt = Gst.ElementFactory.make("capsfilter", "caps");
-        const wavenc = Gst.ElementFactory.make("wavenc", "wavenc");
-        const sink = Gst.ElementFactory.make("filesink", "sink");
-
-        if (
-            !src || !decode || !convert || !resample || !capsfilt || !wavenc || !sink
-        ) {
-            throw new Error(
-                "Failed to create GStreamer elements for WAV conversion",
-            );
-        }
-
-        src.set_property("location", srcPath);
-        sink.set_property("location", tempPath);
-        sink.set_property("sync", false);
-
-        const caps = Gst.Caps.from_string(
-            "audio/x-raw,format=S16LE,rate=16000,channels=1",
-        );
-        capsfilt.set_property("caps", caps);
-
-        for (const el of [src, decode, convert, resample, capsfilt, wavenc, sink]) {
-            pipeline.add(el);
-        }
-
-        src.link(decode);
-        convert.link(resample);
-        resample.link(capsfilt);
-        capsfilt.link(wavenc);
-        wavenc.link(sink);
-
-        decode.connect("pad-added", (_elem: Gst.Element, pad: Gst.Pad) => {
-            const sinkPad = convert.get_static_pad("sink");
-            if (sinkPad && !sinkPad.is_linked()) {
-                pad.link(sinkPad);
-            }
-        });
+        const escapedUri = srcUri.replace(/(["\\])/g, "\\$1");
+        const escapedTempPath = tempPath.replace(/(["\\])/g, "\\$1");
+        const pipeline = Gst.parse_launch(
+            `uridecodebin uri="${escapedUri}" ! ` +
+                `audioconvert ! ` +
+                `audioresample ! ` +
+                `audio/x-raw,format=S16LE,rate=16000,channels=1 ! ` +
+                `wavenc ! ` +
+                `filesink location="${escapedTempPath}" sync=false`,
+        ) as Gst.Element;
 
         pipeline.set_state(Gst.State.PLAYING);
 
@@ -206,9 +202,9 @@ export class OpenAICompatibleClient {
         return unique;
     }
 
-    private extractTranscription(payload: string): string {
+    private extractTranscriptionResult(payload: string): TranscriptionResult {
         const raw = payload.trim();
-        if (raw.length === 0) return "";
+        if (raw.length === 0) return { text: "", segments: [] };
 
         try {
             const parsed = JSON.parse(raw) as Record<string, unknown>;
@@ -217,19 +213,92 @@ export class OpenAICompatibleClient {
                 parsed["transcript"],
                 parsed["output_text"],
             ];
-            for (const c of candidates) {
-                if (typeof c === "string") {
-                    const trimmed = c.trim();
-                    if (trimmed.length > 0 && !NON_SPEECH_TOKEN.test(trimmed)) {
-                        return trimmed;
-                    }
-                }
+            const text = this.pickFirstText(candidates);
+            const segments = this.extractSegments(parsed);
+            if (text.length > 0) {
+                return { text, segments };
             }
         } catch (_err) {
-            if (!NON_SPEECH_TOKEN.test(raw)) return raw;
+            if (!NON_SPEECH_TOKEN.test(raw)) {
+                return { text: raw, segments: [] };
+            }
         }
 
+        return { text: "", segments: [] };
+    }
+
+    private pickFirstText(candidates: unknown[]): string {
+        for (const c of candidates) {
+            if (typeof c === "string") {
+                const trimmed = c.trim();
+                if (trimmed.length > 0 && !NON_SPEECH_TOKEN.test(trimmed)) {
+                    return trimmed;
+                }
+            }
+        }
         return "";
+    }
+
+    private extractSegments(parsed: Record<string, unknown>): TranscriptionSegmentResult[] {
+        const directWords = this.parseSegmentArray(parsed["words"]);
+        if (directWords.length > 0) return directWords;
+
+        const nestedWords = this.parseNestedWords(parsed["segments"]);
+        if (nestedWords.length > 0) return nestedWords;
+
+        const directSegments = this.parseSegmentArray(parsed["segments"]);
+        if (directSegments.length > 0) return directSegments;
+
+        return [];
+    }
+
+    private parseNestedWords(value: unknown): TranscriptionSegmentResult[] {
+        if (!Array.isArray(value)) return [];
+
+        const words: TranscriptionSegmentResult[] = [];
+        for (const entry of value) {
+            if (typeof entry !== "object" || entry === null) continue;
+            const record = entry as Record<string, unknown>;
+            words.push(...this.parseSegmentArray(record["words"]));
+        }
+
+        return words;
+    }
+
+    private parseSegmentArray(value: unknown): TranscriptionSegmentResult[] {
+        if (!Array.isArray(value)) return [];
+
+        const segments: TranscriptionSegmentResult[] = [];
+        for (const entry of value) {
+            if (typeof entry !== "object" || entry === null) continue;
+            const record = entry as Record<string, unknown>;
+            const text = this.pickFirstText([
+                record["word"],
+                record["text"],
+                record["token"],
+            ]);
+            if (!text) continue;
+
+            const start = this.readTimestamp(record, ["start_ms", "start", "t0", "from"]);
+            const end = this.readTimestamp(record, ["end_ms", "end", "t1", "to"]);
+            if (start === null || end === null || end < start) continue;
+
+            segments.push({ startMs: start, endMs: end, text });
+        }
+
+        return segments;
+    }
+
+    private readTimestamp(record: Record<string, unknown>, keys: string[]): number | null {
+        for (const key of keys) {
+            const value = record[key];
+            if (typeof value !== "number" || Number.isNaN(value)) continue;
+            if (key.endsWith("_ms")) return Math.round(value);
+            if (key === "t0" || key === "t1") return Math.round(value * 10);
+            if (!Number.isInteger(value) || value <= 600) return Math.round(value * 1000);
+            return Math.round(value);
+        }
+        return null;
     }
 
     private concatBytes(parts: Uint8Array[]): Uint8Array {

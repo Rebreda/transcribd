@@ -123,5 +123,6 @@ If a `resource:///...` path fails, verify:
 
 ## CI Notes
 
-Current CI config is in `.gitlab-ci.yml` and may still contain legacy naming.
+Primary CI should be GitHub Actions.
+Flatpak workflow is documented in `docs/FLATPAK.md` and implemented in `.github/workflows/flatpak.yml`.
 If changing pipeline behavior, keep the manifest, app ID, and module names in sync.

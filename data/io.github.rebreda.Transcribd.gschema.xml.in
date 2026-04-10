@@ -50,6 +50,21 @@
       <summary>Transcription API key</summary>
       <description>API key for the transcription server.</description>
     </key>
+    <key name="inference-server-url" type="s">
+      <default>'http://localhost:8080/api/v1'</default>
+      <summary>Inference server URL</summary>
+      <description>Base URL of the OpenAI-compatible inference server used for titles and categories.</description>
+    </key>
+    <key name="inference-model" type="s">
+      <default>''</default>
+      <summary>Inference model</summary>
+      <description>Chat or instruct model name to use for metadata generation.</description>
+    </key>
+    <key name="inference-api-key" type="s">
+      <default>'lemonade'</default>
+      <summary>Inference API key</summary>
+      <description>API key for the inference server.</description>
+    </key>
     <key name="transcription-inject-text" type="b">
       <default>false</default>
       <summary>Inject transcribed text at cursor</summary>
