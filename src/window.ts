@@ -30,6 +30,10 @@ export class Window extends Adw.ApplicationWindow {
     private _recorderContainer!: Gtk.Box;
     private _emptyPage!: Adw.StatusPage;
     private _searchEntry!: Gtk.SearchEntry;
+    private _categoryFilterEntry!: Gtk.Entry;
+    private _dateFilterDropdown!: Gtk.DropDown;
+    private _sortDropdown!: Gtk.DropDown;
+    private _clearFiltersBtn!: Gtk.Button;
 
     private recorder: Recorder;
     private recorderWidget: RecorderWidget;
@@ -51,6 +55,7 @@ export class Window extends Adw.ApplicationWindow {
     private doneHandlerId: number | null = null;
     private errorHandlerId: number | null = null;
     private segmentHandlerId: number | null = null;
+    private liveCommitTimerId: number | null = null;
     private pendingTranscript = "";
     private pendingSegments: TranscriptionSegment[] = [];
     private isTranscribingRecording = false;
@@ -58,7 +63,7 @@ export class Window extends Adw.ApplicationWindow {
     static {
         GObject.registerClass(
             {
-                Template: "resource:///app/rebreda/Transcribd/ui/window.ui",
+                Template: "resource:///io/github/rebreda/Transcribd/ui/window.ui",
                 InternalChildren: [
                     "toastOverlay",
                     "sidebarContent",
@@ -67,6 +72,10 @@ export class Window extends Adw.ApplicationWindow {
                     "recorderContainer",
                     "emptyPage",
                     "searchEntry",
+                    "categoryFilterEntry",
+                    "dateFilterDropdown",
+                    "sortDropdown",
+                    "clearFiltersBtn",
                 ],
             },
             this,
@@ -119,11 +128,59 @@ export class Window extends Adw.ApplicationWindow {
         });
         this.add_action(openMenuAction);
 
+        this._dateFilterDropdown.model = Gtk.StringList.new([
+            _("All Dates"),
+            _("Today"),
+            _("Last 7 Days"),
+            _("Last 30 Days"),
+            _("Last 12 Months"),
+        ]);
+        this._sortDropdown.model = Gtk.StringList.new([
+            _("Newest First"),
+            _("Oldest First"),
+            _("Title A-Z"),
+            _("Title Z-A"),
+            _("Category A-Z"),
+        ]);
+
         // Search
         this._searchEntry.connect("search-changed", (_entry: Gtk.SearchEntry) => {
             this.recordingListWidget.filterBySearch(
                 this._searchEntry.get_text(),
             );
+        });
+        this._categoryFilterEntry.connect("changed", () => {
+            this.recordingListWidget.filterByCategory(
+                this._categoryFilterEntry.get_text(),
+            );
+        });
+        this._dateFilterDropdown.connect("notify::selected", () => {
+            const modes = ["all", "today", "week", "month", "year"] as const;
+            this.recordingListWidget.filterByDate(
+                modes[this._dateFilterDropdown.get_selected()] ?? "all",
+            );
+        });
+        this._sortDropdown.connect("notify::selected", () => {
+            const modes = [
+                "newest",
+                "oldest",
+                "name-asc",
+                "name-desc",
+                "category-asc",
+            ] as const;
+            this.recordingListWidget.sortBy(
+                modes[this._sortDropdown.get_selected()] ?? "newest",
+            );
+        });
+        this._clearFiltersBtn.connect("clicked", () => {
+            this._searchEntry.set_text("");
+            this._categoryFilterEntry.set_text("");
+            this._dateFilterDropdown.set_selected(0);
+            this._sortDropdown.set_selected(0);
+            this.recordingListWidget.filterBySearch("");
+            this.recordingListWidget.filterByCategory("");
+            this.recordingListWidget.filterByDate("all");
+            this.recordingListWidget.sortBy("newest");
         });
 
         // Row selection → show detail
@@ -142,6 +199,9 @@ export class Window extends Adw.ApplicationWindow {
                 this._deleteRecording(recording);
             },
         );
+        this.detailView.connect("recording-updated", () => {
+            this.recordingListWidget.refresh();
+        });
 
         // Row deleted from list (row swipe/right-click if exposed)
         this.recordingListWidget.connect(
@@ -279,6 +339,8 @@ export class Window extends Adw.ApplicationWindow {
                     },
                 );
 
+                this._startRealtimeCommitTimer();
+
                 void this.transcriberService.startSession();
             } catch (e) {
                 console.error("Failed to start transcription session:", e);
@@ -315,6 +377,7 @@ export class Window extends Adw.ApplicationWindow {
             void recording.saveTranscription(finalTranscript);
             void this._autoAnnotateRecording(recording, finalTranscript);
             if (isDictation) injectText(finalTranscript, this);
+            this.recordingListWidget.refresh();
         }
 
         if (segments.length > 0) {
@@ -335,6 +398,7 @@ export class Window extends Adw.ApplicationWindow {
     }
 
     private _cleanupTranscriberService(): void {
+        this._stopRealtimeCommitTimer();
         if (this.audioChunkHandlerId !== null) {
             this.recorder.disconnect(this.audioChunkHandlerId);
             this.audioChunkHandlerId = null;
@@ -360,6 +424,25 @@ export class Window extends Adw.ApplicationWindow {
         }
         this.pendingTranscript = "";
         this.pendingSegments = [];
+    }
+
+    private _startRealtimeCommitTimer(): void {
+        this._stopRealtimeCommitTimer();
+        this.liveCommitTimerId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            1200,
+            () => {
+                this.transcriberService?.commit();
+                return GLib.SOURCE_CONTINUE;
+            },
+        );
+    }
+
+    private _stopRealtimeCommitTimer(): void {
+        if (this.liveCommitTimerId !== null) {
+            GLib.source_remove(this.liveCommitTimerId);
+            this.liveCommitTimerId = null;
+        }
     }
 
     private async _flushRealtimeTranscription(): Promise<void> {
@@ -454,6 +537,7 @@ export class Window extends Adw.ApplicationWindow {
                     await recording.saveSegments(result.segments);
                 }
                 await this._autoAnnotateRecording(recording, text);
+                this.recordingListWidget.refresh();
                 this._toastOverlay.add_toast(
                     Adw.Toast.new(_("Transcription saved")),
                 );
@@ -521,12 +605,14 @@ export class Window extends Adw.ApplicationWindow {
                     .trim();
                 if (cleanCategory.length > 0) {
                     await recording.saveCategory(cleanCategory);
+                    this.recordingListWidget.refresh();
                     return;
                 }
             } catch (_e) {
                 const fallbackCategory = suggestCategoryFallback(transcript);
                 if (fallbackCategory.length > 0) {
                     await recording.saveCategory(fallbackCategory);
+                    this.recordingListWidget.refresh();
                 }
             }
         }

@@ -272,6 +272,17 @@
                                   </object>
                                 </child>
                                 <child>
+                                  <object class="GtkButton" id="saveTranscriptBtn">
+                                    <property name="icon_name">document-save-symbolic</property>
+                                    <property name="tooltip_text" translatable="yes">Save transcript changes</property>
+                                    <property name="sensitive">False</property>
+                                    <style>
+                                      <class name="flat"/>
+                                      <class name="circular"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
                                   <object class="GtkButton" id="retranscribeBtn">
                                     <property name="icon_name">view-refresh-symbolic</property>
                                     <property name="tooltip_text" translatable="yes">Re-transcribe</property>
@@ -294,8 +305,9 @@
                                 <child>
                                   <object class="GtkTextView" id="transcriptionView">
                                     <property name="wrap_mode">word-char</property>
-                                    <property name="editable">False</property>
-                                    <property name="cursor_visible">False</property>
+                                    <property name="editable">True</property>
+                                    <property name="cursor_visible">True</property>
+                                    <property name="accepts_tab">False</property>
                                     <property name="top_margin">8</property>
                                     <property name="bottom_margin">8</property>
                                     <property name="left_margin">12</property>

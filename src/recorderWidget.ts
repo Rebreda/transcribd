@@ -32,7 +32,7 @@ export class RecorderWidget extends Gtk.Box {
     static {
         GObject.registerClass(
             {
-                Template: "resource:///app/rebreda/Transcribd/ui/recorder.ui",
+                Template: "resource:///io/github/rebreda/Transcribd/ui/recorder.ui",
                 InternalChildren: [
                     "recorderBox",
                     "playbackStack",

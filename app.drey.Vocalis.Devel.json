@@ -1,7 +1,7 @@
 {
-    "id" : "io.github.rebreda.Transcribd.Devel",
+    "id" : "app.rebreda.Transcribd.Devel",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "48",
+    "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.node20",
@@ -9,7 +9,7 @@
     ],
     "command" : "transcribd",
     "tags" : [
-        "development"
+        "nightly"
     ],
     "finish-args" : [
         "--share=ipc",

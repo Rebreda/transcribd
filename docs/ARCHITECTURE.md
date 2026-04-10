@@ -73,7 +73,7 @@ Profile option:
 
 ## Known Integration Hotspots
 
-- App/resource ID and path consistency (`app.rebreda.Transcribd...`)
+- App/resource ID and path consistency (`io.github.rebreda.Transcribd...`)
 - GSettings schema generation and runtime lookup
 - Meson template/file naming drift after rebranding
 - Multipart payload compatibility with local STT backends

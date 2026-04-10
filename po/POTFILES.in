@@ -1,8 +1,8 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-data/app.rebreda.Transcribd.desktop.in.in
-data/app.rebreda.Transcribd.metainfo.xml.in.in
-data/app.rebreda.Transcribd.gschema.xml.in
+data/io.github.rebreda.Transcribd.desktop.in.in
+data/io.github.rebreda.Transcribd.metainfo.xml.in.in
+data/io.github.rebreda.Transcribd.gschema.xml.in
 data/ui/help-overlay.ui
 data/ui/recorder.ui
 data/ui/row.ui

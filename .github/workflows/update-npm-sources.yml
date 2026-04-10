@@ -1,0 +1,44 @@
+name: Update npm Flatpak Sources
+
+# Run this manually whenever package-lock.json changes, or on push to main
+# when package-lock.json is modified. The generated-sources.json must be
+# committed to the repo for offline Flatpak builds.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - package-lock.json
+
+permissions:
+  contents: write
+
+jobs:
+  generate-sources:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install flatpak-node-generator
+        run: |
+          pip install "git+https://github.com/flatpak/flatpak-builder-tools.git#subdirectory=node"
+
+      - name: Generate sources
+        run: |
+          # Remove node_modules if present so the generator runs cleanly
+          rm -rf node_modules
+          flatpak-node-generator npm package-lock.json -o generated-sources.json
+
+      - name: Commit updated sources
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update generated-sources.json"
+          file_pattern: generated-sources.json

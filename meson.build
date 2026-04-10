@@ -21,7 +21,7 @@ else
   version_suffix = ''
 endif
 
-application_id = 'app.rebreda.Transcribd@0@'.format(profile)
+application_id = 'io.github.rebreda.Transcribd@0@'.format(profile)
 
 gettext_package = application_id
 transcribd_prefix = get_option('prefix')

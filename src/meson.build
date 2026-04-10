@@ -7,7 +7,7 @@ app_conf.set('GJS', gjs_console)
 app_conf.set('APPLICATION_ID', application_id)
 
 app = configure_file(
-  input: 'app.rebreda.Transcribd.in',
+  input: 'io.github.rebreda.Transcribd.in',
   output: application_id,
   install: true,
   install_dir: transcribd_pkgdatadir,
@@ -48,7 +48,7 @@ source_res_conf.set('profile', profile)
 src_res = gnome.compile_resources(
   application_id + '.src',
   configure_file(
-  input: 'app.rebreda.Transcribd.src.gresource.xml.in',
+  input: 'io.github.rebreda.Transcribd.src.gresource.xml.in',
   	output: '@BASENAME@',
   	configuration: source_res_conf
   ),

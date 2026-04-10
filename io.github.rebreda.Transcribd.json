@@ -1,5 +1,5 @@
 {
-    "id" : "io.github.rebreda.Transcribd.Devel",
+    "id" : "io.github.rebreda.Transcribd",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "48",
     "sdk" : "org.gnome.Sdk",
@@ -8,9 +8,6 @@
         "org.freedesktop.Sdk.Extension.typescript"
     ],
     "command" : "transcribd",
-    "tags" : [
-        "development"
-    ],
     "finish-args" : [
         "--share=ipc",
         "--device=dri",
@@ -20,21 +17,31 @@
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/node20/bin:/usr/lib/sdk/typescript/bin",
-        "env" : {        }
+        "env" : {}
     },
     "modules" : [
         {
             "name" : "transcribd",
-            "buildsystem" : "meson",
-            "config-opts" : [
-                "-Dprofile=development",
-                "--libdir=lib"
+            "buildsystem" : "simple",
+            "build-options" : {
+                "env" : {
+                    "npm_config_cache" : "/run/build/transcribd/flatpak-node/npm-cache"
+                }
+            },
+            "build-commands" : [
+                "npm ci --offline",
+                "meson setup --prefix=/app --libdir=lib _build",
+                "ninja -C _build",
+                "ninja -C _build install"
             ],
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "https://github.com/rebreda/transcribd.git"
-                }
+                    "url" : "https://github.com/rebreda/transcribd.git",
+                    "tag" : "v1.0.0",
+                    "commit" : "REPLACE_WITH_ACTUAL_COMMIT_HASH"
+                },
+                "generated-sources.json"
             ]
         }
     ]

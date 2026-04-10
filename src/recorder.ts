@@ -99,6 +99,7 @@ export class Recorder extends GObject.Object {
     private appsink: AppSinkLike | null = null;
     private appsinkPollId: number | null = null;
     private teeBranchElements: Gst.Element[] = [];
+    private transcriptionChunkCount = 0;
 
     static {
         GObject.registerClass(
@@ -201,6 +202,7 @@ export class Recorder extends GObject.Object {
         }
 
         this.state = Gst.State.PLAYING;
+        this.transcriptionChunkCount = 0;
 
         this.timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
             const pos = this.pipeline.query_position(Gst.Format.TIME)[1];
@@ -234,6 +236,7 @@ export class Recorder extends GObject.Object {
         this.state = Gst.State.NULL;
         this.duration = 0;
         this.appsink = null;
+        this.transcriptionChunkCount = 0;
         if (this.appsinkPollId !== null) {
             GLib.source_remove(this.appsinkPollId);
             this.appsinkPollId = null;
@@ -453,13 +456,20 @@ export class Recorder extends GObject.Object {
         // Poll for samples on the main thread every 20 ms (avoids cross-thread JSAPI calls)
         this.appsinkPollId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 20, () => {
             if (!this.appsink) return GLib.SOURCE_REMOVE;
-            const sample = this.appsink.try_pull_sample(0);
+            const sample = this.appsink.emit(
+                "try-pull-sample",
+                0,
+            ) as unknown as Gst.Sample | null;
             if (sample) {
                 const buffer = sample.get_buffer();
                 if (buffer) {
                     const [ok, mapInfo] = buffer.map(Gst.MapFlags.READ);
                     if (ok) {
                         const chunkBytes = GLib.Bytes.new(mapInfo.data as unknown as Uint8Array);
+                        this.transcriptionChunkCount += 1;
+                        if (this.transcriptionChunkCount === 1) {
+                            console.log("[Recorder] First realtime audio chunk emitted");
+                        }
                         this.emit("audio-chunk", chunkBytes);
                         buffer.unmap(mapInfo);
                     }

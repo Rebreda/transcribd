@@ -1,12 +1,12 @@
 icon_dir = 'icons' / 'hicolor' / 'scalable' / 'apps'
 install_data(
-  'icons' / 'app.rebreda.Transcribd.svg',
+  'icons' / 'io.github.rebreda.Transcribd.svg',
   install_dir:  transcribd_datadir / icon_dir
 )
 
 icon_dir = 'icons' / 'hicolor' / 'symbolic' / 'apps'
 install_data(
-  'icons' / 'app.rebreda.Transcribd-symbolic.svg',
+  'icons' / 'io.github.rebreda.Transcribd-symbolic.svg',
   rename: '@0@-symbolic.svg'.format(application_id),
   install_dir: transcribd_datadir / icon_dir
 )
@@ -15,7 +15,7 @@ desktop_conf = configuration_data()
 desktop_conf.set('app-id', application_id)
 desktop_file = i18n.merge_file(
   input: configure_file(
-	input: 'app.rebreda.Transcribd.desktop.in.in',
+	input: 'io.github.rebreda.Transcribd.desktop.in.in',
   	output: '@BASENAME@',
   	configuration: desktop_conf
   ),
@@ -40,7 +40,7 @@ gsettings_conf = configuration_data()
 gsettings_conf.set('app-id', application_id)
 gsettings_conf.set('gettext-package', gettext_package)
 schema_file = configure_file(
-  input: 'app.rebreda.Transcribd.gschema.xml.in',
+  input: 'io.github.rebreda.Transcribd.gschema.xml.in',
   output: '@0@.gschema.xml'.format(application_id),
   configuration: gsettings_conf,
   install: true,
@@ -63,7 +63,7 @@ schema_compile = custom_target(
 
 data_res = gnome.compile_resources(
   application_id + '.data',
-  'app.rebreda.Transcribd.data.gresource.xml',
+  'io.github.rebreda.Transcribd.data.gresource.xml',
   gresource_bundle: true,
   install_dir: transcribd_pkgdatadir,
   install: true
@@ -75,7 +75,7 @@ metainfo_conf.set('gettext-package', gettext_package)
 
 metainfo_file = i18n.merge_file(
   input: configure_file(
-  input: 'app.rebreda.Transcribd.metainfo.xml.in.in',
+  input: 'io.github.rebreda.Transcribd.metainfo.xml.in.in',
   	output: '@BASENAME@',
   	configuration: metainfo_conf
 	),

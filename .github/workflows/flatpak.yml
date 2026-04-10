@@ -33,15 +33,17 @@ jobs:
         run: |
           flatpak --user install -y flathub \
             org.gnome.Sdk//48 \
-            org.gnome.Platform//48
+            org.gnome.Platform//48 \
+            org.freedesktop.Sdk.Extension.node20//24.08 \
+            org.freedesktop.Sdk.Extension.typescript//24.08
 
       - name: Build Flatpak repo
         run: |
-          flatpak-builder --user --force-clean --repo=repo flatpak-build app.rebreda.Transcribd.Devel.json
+          flatpak-builder --user --force-clean --repo=repo flatpak-build io.github.rebreda.Transcribd.Devel.json
 
       - name: Build Flatpak bundle
         run: |
-          flatpak build-bundle repo transcribd-devel.flatpak app.rebreda.Transcribd.Devel
+          flatpak build-bundle repo transcribd-devel.flatpak io.github.rebreda.Transcribd.Devel
 
       - name: Upload Flatpak artifact
         uses: actions/upload-artifact@v4

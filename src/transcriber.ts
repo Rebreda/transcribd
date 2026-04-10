@@ -45,6 +45,8 @@ export class TranscriberService extends GObject.Object {
     private wsConnection: Soup.WebsocketConnection | null = null;
     private segmentStartMs: number | null = null;
     private recordingStartMs: number | null = null;
+    private appendedChunkCount = 0;
+    private pendingChunkCount = 0;
 
 
     static {
@@ -79,6 +81,8 @@ export class TranscriberService extends GObject.Object {
     public setRecordingStart(startMs: number): void {
         this.recordingStartMs = startMs;
         this.segmentStartMs = null;
+        this.appendedChunkCount = 0;
+        this.pendingChunkCount = 0;
     }
 
     public get serverUrl(): string {
@@ -207,12 +211,22 @@ export class TranscriberService extends GObject.Object {
         if (!this.wsConnection) return;
         const raw = data.get_data();
         if (!raw) return;
+        this.appendedChunkCount += 1;
+        this.pendingChunkCount += 1;
+        if (this.appendedChunkCount === 1) {
+            console.log(`[Transcriber] First audio chunk appended (${raw.length} bytes)`);
+        }
         const b64 = GLib.base64_encode(raw);
         this._sendJson({ type: "input_audio_buffer.append", audio: b64 });
     }
 
     public commit(): void {
         if (!this.wsConnection) return;
+        if (this.pendingChunkCount === 0) return;
+        console.log(
+            `[Transcriber] Committing realtime buffer with ${this.pendingChunkCount} pending chunks`,
+        );
+        this.pendingChunkCount = 0;
         this._sendJson({ type: "input_audio_buffer.commit" });
     }
 

@@ -1,5 +1,5 @@
 {
-    "id" : "io.github.rebreda.Transcribd.Devel",
+    "id" : "app.rebreda.Transcribd.Devel",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "48",
     "sdk" : "org.gnome.Sdk",

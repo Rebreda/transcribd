@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/io/github/rebreda/Transcribd@profile@/js">
+  <gresource prefix="/app/rebreda/Transcribd@profile@/js">
     <file>application.js</file>
     <file>main.js</file>
     <file>recorder.js</file>

@@ -29,17 +29,20 @@ export class RecordingDetailView extends Adw.Bin {
     private _transcribeBtn!: Gtk.Button;
     private _injectBtn!: Gtk.Button;
     private _retranscribeBtn!: Gtk.Button;
+    private _saveTranscriptBtn!: Gtk.Button;
     private _transcriptionView!: Gtk.TextView;
 
     private _recording: Recording | null = null;
     private player: Gst.Element;
     private waveform: WaveForm | null = null;
     private positionTimer: number | null = null;
+    private transcriptDirty = false;
+    private updatingTranscript = false;
 
     static {
         GObject.registerClass(
             {
-                Template: "resource:///app/rebreda/Transcribd/ui/detailView.ui",
+                Template: "resource:///io/github/rebreda/Transcribd/ui/detailView.ui",
                 InternalChildren: [
                     "titleLabel",
                     "actionsMenuBtn",
@@ -59,11 +62,13 @@ export class RecordingDetailView extends Adw.Bin {
                     "transcribeBtn",
                     "injectBtn",
                     "retranscribeBtn",
+                    "saveTranscriptBtn",
                     "transcriptionView",
                 ],
                 Signals: {
                     transcribe: { param_types: [GObject.TYPE_OBJECT] },
                     deleted: { param_types: [GObject.TYPE_OBJECT] },
+                    "recording-updated": { param_types: [GObject.TYPE_OBJECT] },
                 },
             },
             this,
@@ -123,19 +128,11 @@ export class RecordingDetailView extends Adw.Bin {
 
         // Category entry
         this._categoryEntry.connect("activate", () => {
-            if (this._recording) {
-                void this._recording.saveCategory(
-                    this._categoryEntry.get_text().trim(),
-                );
-            }
+            void this._saveCategoryChange();
         });
         const categoryFocusController = new Gtk.EventControllerFocus();
         categoryFocusController.connect("leave", () => {
-            if (this._recording) {
-                void this._recording.saveCategory(
-                    this._categoryEntry.get_text().trim(),
-                );
-            }
+            void this._saveCategoryChange();
         });
         this._categoryEntry.add_controller(categoryFocusController);
 
@@ -146,6 +143,20 @@ export class RecordingDetailView extends Adw.Bin {
         this._retranscribeBtn.connect("clicked", () => {
             if (this._recording) this.emit("transcribe", this._recording);
         });
+        this._saveTranscriptBtn.connect("clicked", () => {
+            void this._saveTranscriptChanges();
+        });
+
+        this._transcriptionView.buffer.connect("changed", () => {
+            if (this.updatingTranscript) return;
+            this.transcriptDirty = true;
+            this._saveTranscriptBtn.sensitive = true;
+        });
+        const transcriptFocusController = new Gtk.EventControllerFocus();
+        transcriptFocusController.connect("leave", () => {
+            void this._saveTranscriptChanges();
+        });
+        this._transcriptionView.add_controller(transcriptFocusController);
 
         // Inject button
         this._injectBtn.connect("clicked", () => {
@@ -293,11 +304,56 @@ export class RecordingDetailView extends Adw.Bin {
 
     private _refreshTranscription(text: string): void {
         if (text.trim().length > 0) {
+            this.updatingTranscript = true;
             this._transcriptionView.buffer.set_text(text, -1);
+            this.updatingTranscript = false;
+            this.transcriptDirty = false;
+            this._saveTranscriptBtn.sensitive = false;
             this._transcriptionStack.visible_child_name = "text";
         } else {
+            this.updatingTranscript = true;
+            this._transcriptionView.buffer.set_text("", -1);
+            this.updatingTranscript = false;
+            this.transcriptDirty = false;
+            this._saveTranscriptBtn.sensitive = false;
             this._transcriptionStack.visible_child_name = "empty";
         }
+    }
+
+    private async _saveTranscriptChanges(): Promise<void> {
+        const rec = this._recording;
+        if (!rec || !this.transcriptDirty) return;
+
+        const buffer = this._transcriptionView.buffer;
+        const text = buffer.get_text(
+            buffer.get_start_iter(),
+            buffer.get_end_iter(),
+            false,
+        ).trim();
+        const existing = rec.transcription.trim();
+
+        if (text === existing) {
+            this.transcriptDirty = false;
+            this._saveTranscriptBtn.sensitive = false;
+            return;
+        }
+
+        await rec.saveTranscription(text);
+        await rec.saveSegments([]);
+        this.transcriptDirty = false;
+        this._saveTranscriptBtn.sensitive = false;
+        this.emit("recording-updated", rec);
+    }
+
+    private async _saveCategoryChange(): Promise<void> {
+        const rec = this._recording;
+        if (!rec) return;
+
+        const nextCategory = this._categoryEntry.get_text().trim();
+        if (nextCategory === (rec.category ?? "").trim()) return;
+
+        await rec.saveCategory(nextCategory);
+        this.emit("recording-updated", rec);
     }
 
     private _play(): void {
@@ -402,6 +458,7 @@ export class RecordingDetailView extends Adw.Bin {
         const newName = ext ? `${newText}.${ext}` : newText;
         if (newName !== this._recording.name) {
             this._recording.name = newName;
+            this.emit("recording-updated", this._recording);
         }
     }
 

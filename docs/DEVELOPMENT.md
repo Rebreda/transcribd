@@ -89,7 +89,7 @@ If API tests fail, verify:
 ### Error: icon file does not exist
 
 Example:
-`ERROR: File icons/app.rebreda.Transcribd.svg does not exist`
+`ERROR: File icons/io.github.rebreda.Transcribd.svg does not exist`
 
 Actions:
 1. Confirm files in `data/icons/`.
@@ -99,7 +99,7 @@ Actions:
 ### Error: GSettings schema not found
 
 Example:
-`GSettings schema app.rebreda.Transcribd.Devel not found`
+`GSettings schema io.github.rebreda.Transcribd.Devel not found`
 
 Actions:
 1. Build resources with `ninja -C build`.

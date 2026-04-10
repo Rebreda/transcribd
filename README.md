@@ -1,24 +1,12 @@
 # Transcribd
+An audio note taking app with built-in AI transcription via local Lemonade/OpenAI-compatible STT servers.
 
-An audio recorder with built-in AI transcription via local Lemonade/OpenAI-compatible STT servers.
+![Transcribd in action](image.png)
 
-**Credit:** This project is based on [Vocalis](https://gitlab.gnome.org/World/vocalis) by the GNOME project.
+**Credit:** This project started as a fork of [Vocalis](https://gitlab.gnome.org/World/vocalis) by the GNOME project.
 
-<a href="https://flathub.org/apps/details/org.gnome.SoundRecorder">
-<img src="https://flathub.org/assets/badges/flathub-badge-i-en.png" width="190px" />
-</a>
 
-<div align="center">
-![screenshot](data/resources/screenshots/screenshot1.png)
-</div>
 
-### Useful links
-
-Report issues: [GitHub Issues](https://github.com/rebreda/transcribd/issues)
-
-Translate: https://wiki.gnome.org/TranslationProject
-
-You can also join us in [#sound-recorder:gnome.org on Matrix](https://matrix.to/#/#sound-recorder:gnome.org)
 
 ### Features
 
@@ -60,7 +48,7 @@ ninja -C build
 5. Run in development mode:
 
 ```bash
-GSETTINGS_SCHEMA_DIR=$PWD/build/data ninja -C build run
+ninja -C build run
 ```
 
 6. Validate code before opening a PR:

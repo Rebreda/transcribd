@@ -16,7 +16,7 @@ export class Row extends Gtk.ListBoxRow {
     static {
         GObject.registerClass(
             {
-                Template: "resource:///app/rebreda/Transcribd/ui/row.ui",
+                Template: "resource:///io/github/rebreda/Transcribd/ui/row.ui",
                 InternalChildren: ["name", "date", "duration", "categoryLabel"],
             },
             this,
