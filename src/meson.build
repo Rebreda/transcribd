@@ -27,6 +27,8 @@ sources = files(
   'waveform.ts',
   'window.ts',
   'transcriber.ts',
+  'openaiClient.ts',
+  'detailView.ts',
   'preferences.ts',
 )
 

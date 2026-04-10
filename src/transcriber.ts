@@ -1,11 +1,13 @@
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk?version=4.0";
+import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk?version=4.0";
 import Soup from "gi://Soup?version=3.0";
 
 import { Settings } from "./application.js";
+import { OpenAICompatibleClient } from "./openaiClient.js";
 
 interface WsHealthResponse {
     status: string;
@@ -36,9 +38,13 @@ interface WsMessage {
     };
 }
 
+const NON_SPEECH_TOKEN = /^\s*\[(?:blank_audio|silence)\]\s*$/i;
+
 export class TranscriberService extends GObject.Object {
     private session: Soup.Session;
     private wsConnection: Soup.WebsocketConnection | null = null;
+    private segmentStartMs: number | null = null;
+    private recordingStartMs: number | null = null;
 
 
     static {
@@ -54,6 +60,9 @@ export class TranscriberService extends GObject.Object {
                     "transcription-error": {
                         param_types: [GObject.TYPE_STRING],
                     },
+                    "transcription-segment": {
+                        param_types: [GObject.TYPE_DOUBLE, GObject.TYPE_DOUBLE, GObject.TYPE_STRING],
+                    },
                     connected: {},
                     disconnected: {},
                 },
@@ -65,6 +74,11 @@ export class TranscriberService extends GObject.Object {
     constructor() {
         super();
         this.session = new Soup.Session();
+    }
+
+    public setRecordingStart(startMs: number): void {
+        this.recordingStartMs = startMs;
+        this.segmentStartMs = null;
     }
 
     public get serverUrl(): string {
@@ -150,10 +164,15 @@ export class TranscriberService extends GObject.Object {
                 type: "session.update",
                 session: {
                     model: this.model,
+                    input_audio_format: "pcm16",
+                    input_audio_transcription: {
+                        model: this.model,
+                    },
                     turn_detection: {
-                        threshold: 0.01,
-                        silence_duration_ms: 800,
-                        prefix_padding_ms: 250,
+                        type: "server_vad",
+                        threshold: 0.45,
+                        silence_duration_ms: 450,
+                        prefix_padding_ms: 300,
                     },
                 },
             });
@@ -207,6 +226,19 @@ export class TranscriberService extends GObject.Object {
         this.wsConnection = null;
     }
 
+    public async transcribeFileHttp(file: Gio.File): Promise<string> {
+        const client = new OpenAICompatibleClient({
+            baseUrl: this.serverUrl,
+            apiKey: this.apiKey,
+            session: this.session,
+        });
+        const text = await client.transcribeFile(file, this.model);
+        console.log(
+            `[Transcriber] HTTP transcription (${text.length}) via OpenAI-compatible client`,
+        );
+        return text;
+    }
+
     private _sendJson(obj: WsMessage | Record<string, unknown>): void {
         if (!this.wsConnection) return;
         try {
@@ -240,6 +272,11 @@ export class TranscriberService extends GObject.Object {
                 }
                 break;
             }
+            case "input_audio_buffer.speech_started":
+                if (this.recordingStartMs !== null) {
+                    this.segmentStartMs = Date.now() - this.recordingStartMs;
+                }
+                break;
             case "conversation.item.input_audio_transcription.completed":
             {
                 const doneText = this._extractTranscriptionText(
@@ -251,6 +288,13 @@ export class TranscriberService extends GObject.Object {
                         `[Transcriber] Completed text (${doneText.length}): ${doneText.slice(0, 120)}`,
                     );
                     this.emit("transcription-done", doneText);
+                    // Emit segment with timing info
+                    const endMs = this.recordingStartMs !== null
+                        ? Date.now() - this.recordingStartMs
+                        : 0;
+                    const startMs = this.segmentStartMs ?? 0;
+                    this.emit("transcription-segment", startMs, endMs, doneText);
+                    this.segmentStartMs = null;
                 } else {
                     console.log(
                         `[Transcriber] Completed event had no transcript payload: ${text.slice(0, 200)}`,
@@ -292,12 +336,14 @@ export class TranscriberService extends GObject.Object {
         for (const c of candidates) {
             if (typeof c === "string") {
                 const trimmed = c.trim();
-                if (trimmed.length > 0) return c;
+                if (trimmed.length > 0 && !NON_SPEECH_TOKEN.test(trimmed))
+                    return c;
             }
         }
 
         return "";
     }
+
 }
 
 /**
@@ -359,4 +405,77 @@ export function injectText(
     if ("add_toast" in window && typeof (window as unknown as Record<string, unknown>)["add_toast"] === "function") {
         (window as unknown as { add_toast: (t: Adw.Toast) => void }).add_toast(toast);
     }
+}
+
+/**
+ * Ask the OpenAI-compatible chat API to suggest a short title for a recording
+ * based on its transcript. Returns a trimmed string, or throws on failure.
+ */
+export async function suggestTitle(
+    transcript: string,
+    serverUrl: string,
+    apiKey: string,
+): Promise<string> {
+    const base = serverUrl.trim().replace(/\/+$/, "");
+    // Try {base}/chat/completions first, then strip /api prefix variants
+    const root = base.replace(/\/(api\/)?v1$/i, "");
+    const urls = [
+        `${base}/chat/completions`,
+        `${root}/v1/chat/completions`,
+        `${root}/chat/completions`,
+    ].filter((u, i, a) => a.indexOf(u) === i);
+
+    const bodyJson = JSON.stringify({
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You produce extremely short, descriptive titles for audio recordings. " +
+                    "Reply with ONLY the title — no quotes, no punctuation at the end, maximum 6 words.",
+            },
+            {
+                role: "user",
+                content: `Suggest a title for this recording transcript:\n\n${transcript.slice(0, 1200)}`,
+            },
+        ],
+        max_tokens: 24,
+        temperature: 0.3,
+    });
+
+    const encoder = new TextEncoder();
+    const session = new Soup.Session();
+
+    let lastError = "No response";
+    for (const url of urls) {
+        const msg = Soup.Message.new("POST", url);
+        if (!msg) continue;
+        msg.request_headers.append("Authorization", `Bearer ${apiKey}`);
+        msg.set_request_body_from_bytes(
+            "application/json",
+            GLib.Bytes.new(encoder.encode(bodyJson)),
+        );
+        try {
+            const bytes = await session.send_and_read_async(
+                msg,
+                GLib.PRIORITY_DEFAULT,
+                null,
+            );
+            if (msg.statusCode < 200 || msg.statusCode >= 300) {
+                lastError = `HTTP ${msg.statusCode} from ${url}`;
+                continue;
+            }
+            const decoded = new TextDecoder("utf-8").decode(
+                bytes.get_data() ?? new Uint8Array(),
+            );
+            const resp = JSON.parse(decoded) as {
+                choices?: Array<{ message?: { content?: string } }>;
+            };
+            const title = resp.choices?.[0]?.message?.content?.trim();
+            if (title && title.length > 0) return title;
+            lastError = `No title in response from ${url}`;
+        } catch (err) {
+            lastError = err instanceof Error ? err.message : String(err);
+        }
+    }
+    throw new Error(lastError);
 }

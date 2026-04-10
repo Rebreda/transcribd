@@ -13,6 +13,8 @@
     <file>waveform.js</file>
     <file>window.js</file>
     <file>transcriber.js</file>
+    <file>openaiClient.js</file>
+    <file>detailView.js</file>
     <file>preferences.js</file>
   </gresource>
 </gresources>

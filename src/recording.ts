@@ -12,6 +12,12 @@ function isNumArray(input: unknown): input is number[] {
     return Array.isArray(input) && input.every((i) => typeof i === "number");
 }
 
+export interface TranscriptionSegment {
+    startMs: number;
+    endMs: number;
+    text: string;
+}
+
 export class Recording extends GObject.Object {
     private _file: Gio.File;
     private _peaks: number[];
@@ -21,6 +27,8 @@ export class Recording extends GObject.Object {
     private _timeCreated: GLib.DateTime;
     private _duration?: number;
     private _transcription = "";
+    private _category = "";
+    private _segments: TranscriptionSegment[] = [];
     private _cacheKey: string;
 
     public pipeline?: Gst.Bin | null;
@@ -55,6 +63,14 @@ export class Recording extends GObject.Object {
                         "transcription",
                         "Transcription",
                         "Transcribed text for this recording",
+                        GObject.ParamFlags.READWRITE |
+                            GObject.ParamFlags.CONSTRUCT,
+                        "",
+                    ),
+                    category: GObject.ParamSpec.string(
+                        "category",
+                        "Category",
+                        "Recording category tag",
                         GObject.ParamFlags.READWRITE |
                             GObject.ParamFlags.CONSTRUCT,
                         "",
@@ -115,8 +131,10 @@ export class Recording extends GObject.Object {
 
         discoverer.discover_uri_async(this.uri);
 
-        // Attempt to load any previously saved transcription
+        // Attempt to load any previously saved transcription + metadata
         void this.loadTranscription();
+        void this.loadMetadata();
+        void this.loadSegments();
     }
 
     public get name(): string | null {
@@ -205,6 +223,14 @@ export class Recording extends GObject.Object {
                 // Ignore missing cache files.
             }
         }
+
+        for (const cache of [this.metadataCache, this.segmentsCache]) {
+            try {
+                if (cache.query_exists(null)) {
+                    await cache.trash_async(GLib.PRIORITY_DEFAULT, null);
+                }
+            } catch (_err) { /* ignore */ }
+        }
     }
 
     public save(dest: Gio.File): void {
@@ -234,6 +260,14 @@ export class Recording extends GObject.Object {
 
     private get legacyTranscriptionCache(): Gio.File {
         return CacheDir.get_child(`${this.name}.transcript`);
+    }
+
+    public get metadataCache(): Gio.File {
+        return CacheDir.get_child(`${this._cacheKey}.meta`);
+    }
+
+    public get segmentsCache(): Gio.File {
+        return CacheDir.get_child(`${this._cacheKey}.segments`);
     }
 
     public get transcription(): string {
@@ -268,6 +302,85 @@ export class Recording extends GObject.Object {
         } catch (_err) {
             // No transcript file yet — that's fine
         }
+    }
+
+    public get category(): string {
+        return this._category;
+    }
+
+    public set category(value: string) {
+        this._category = value;
+        this.notify("category");
+    }
+
+    public async loadMetadata(): Promise<void> {
+        try {
+            if (!this.metadataCache.query_exists(null)) return;
+            const bytes = (await this.metadataCache.load_bytes_async(null))[0];
+            if (!bytes) return;
+            const data = bytes.get_data();
+            if (!data) return;
+            const json = JSON.parse(
+                new TextDecoder("utf-8").decode(data),
+            ) as Record<string, unknown>;
+            if (typeof json["category"] === "string") {
+                this._category = json["category"];
+                this.notify("category");
+            }
+        } catch (_err) { /* no metadata yet */ }
+    }
+
+    public async saveCategory(cat: string): Promise<void> {
+        this.category = cat;
+        let current: Record<string, unknown> = {};
+        try {
+            if (this.metadataCache.query_exists(null)) {
+                const bytes = (await this.metadataCache.load_bytes_async(null))[0];
+                if (bytes) {
+                    const data = bytes.get_data();
+                    if (data) current = JSON.parse(new TextDecoder("utf-8").decode(data)) as Record<string, unknown>;
+                }
+            }
+        } catch (_) { /* ignore */ }
+        current["category"] = cat;
+        await this.metadataCache.replace_contents_async(
+            new TextEncoder().encode(JSON.stringify(current)),
+            null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null,
+        );
+    }
+
+    public get segments(): TranscriptionSegment[] {
+        return this._segments.slice();
+    }
+
+    public async loadSegments(): Promise<void> {
+        try {
+            if (!this.segmentsCache.query_exists(null)) return;
+            const bytes = (await this.segmentsCache.load_bytes_async(null))[0];
+            if (!bytes) return;
+            const data = bytes.get_data();
+            if (!data) return;
+            const parsed = JSON.parse(
+                new TextDecoder("utf-8").decode(data),
+            ) as unknown;
+            if (Array.isArray(parsed)) {
+                this._segments = (parsed as unknown[]).filter(
+                    (s): s is TranscriptionSegment =>
+                        typeof s === "object" && s !== null &&
+                        typeof (s as Record<string, unknown>)["startMs"] === "number" &&
+                        typeof (s as Record<string, unknown>)["endMs"] === "number" &&
+                        typeof (s as Record<string, unknown>)["text"] === "string",
+                );
+            }
+        } catch (_err) { /* no segments yet */ }
+    }
+
+    public async saveSegments(segs: TranscriptionSegment[]): Promise<void> {
+        this._segments = [...segs];
+        await this.segmentsCache.replace_contents_async(
+            new TextEncoder().encode(JSON.stringify(segs)),
+            null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null,
+        );
     }
 
     public async saveTranscription(text: string): Promise<void> {
