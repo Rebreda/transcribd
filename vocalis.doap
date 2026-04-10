@@ -4,10 +4,10 @@
          xmlns:gnome="http://api.gnome.org/doap-extensions#"
          xmlns="http://usefulinc.com/ns/doap#">
 
-  <name xml:lang="en">Vocalis</name>
-  <shortdesc xml:lang="en">Make simple recordings from your desktop</shortdesc>
-  <description>A simple sound recorder for your desktop</description>
-  <bug-database rdf:resource="https://gitlab.gnome.org/World/vocalis/issues/" />
+  <name xml:lang="en">Transcribd</name>
+  <shortdesc xml:lang="en">Audio recorder with AI transcription</shortdesc>
+  <description>A GNOME audio recorder with built-in AI transcription via local Lemonade/OpenAI-compatible speech-to-text servers</description>
+  <bug-database rdf:resource="https://github.com/rebreda/transcribd/issues" />
 
   <category rdf:resource="http://api.gnome.org/doap-extensions#apps" />
   <programming-language>JavaScript</programming-language>

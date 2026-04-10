@@ -1,16 +1,16 @@
 app_conf = configuration_data()
 app_conf.set('profile', profile)
-app_conf.set('prefix', vocalis_prefix)
-app_conf.set('libdir', vocalis_libdir)
+app_conf.set('prefix', transcribd_prefix)
+app_conf.set('libdir', transcribd_libdir)
 app_conf.set('PACKAGE_VERSION', meson.project_version() + version_suffix)
 app_conf.set('GJS', gjs_console)
 app_conf.set('APPLICATION_ID', application_id)
 
 app = configure_file(
-  input: 'app.drey.Vocalis.in',
+  input: 'app.rebreda.Transcribd.in',
   output: application_id,
   install: true,
-  install_dir: vocalis_pkgdatadir,
+  install_dir: transcribd_pkgdatadir,
   configuration: app_conf
 )
 
@@ -48,7 +48,7 @@ source_res_conf.set('profile', profile)
 src_res = gnome.compile_resources(
   application_id + '.src',
   configure_file(
-  	input: 'app.drey.Vocalis.src.gresource.xml.in',
+  input: 'app.rebreda.Transcribd.src.gresource.xml.in',
   	output: '@BASENAME@',
   	configuration: source_res_conf
   ),
@@ -56,7 +56,7 @@ src_res = gnome.compile_resources(
   source_dir: tsc_out,
   gresource_bundle: true,
   install: true,
-  install_dir: vocalis_pkgdatadir
+  install_dir: transcribd_pkgdatadir
 )
 
 run_target('run',

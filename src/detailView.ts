@@ -10,7 +10,7 @@ import { WaveForm, WaveType } from "./waveform.js";
 import { displayDateTime, formatTime } from "./utils.js";
 import { injectText } from "./transcriber.js";
 
-export class RecordingDetailView extends Adw.ToolbarView {
+export class RecordingDetailView extends Adw.Bin {
     private _titleLabel!: Gtk.EditableLabel;
     private _actionsMenuBtn!: Gtk.MenuButton;
     private _dateLabel!: Gtk.Label;
@@ -35,13 +35,11 @@ export class RecordingDetailView extends Adw.ToolbarView {
     private player: Gst.Element;
     private waveform: WaveForm | null = null;
     private positionTimer: number | null = null;
-    private isPlaying = false;
-    private seekBlocked = false;
 
     static {
         GObject.registerClass(
             {
-                Template: "resource:///app/drey/Vocalis/ui/detailView.ui",
+                Template: "resource:///app/rebreda/Transcribd/ui/detailView.ui",
                 InternalChildren: [
                     "titleLabel",
                     "actionsMenuBtn",
@@ -304,33 +302,25 @@ export class RecordingDetailView extends Adw.ToolbarView {
         if (!this._recording) return;
         this.player.set_property("uri", this._recording.uri);
         this.player.set_state(Gst.State.PLAYING);
-        this.isPlaying = true;
         this._playPauseStack.visible_child_name = "pause";
     }
 
     private _pause(): void {
         this.player.set_state(Gst.State.PAUSED);
-        this.isPlaying = false;
         this._playPauseStack.visible_child_name = "play";
     }
 
     private _stopPlayback(): void {
         this.player.set_state(Gst.State.NULL);
-        this.isPlaying = false;
         this._playPauseStack.visible_child_name = "play";
         if (this.waveform) this.waveform.position = 0;
-        this.seekBlocked = true;
         this._seekBar.set_value(0);
-        this.seekBlocked = false;
     }
 
     private _onPlaybackEnded(): void {
-        this.isPlaying = false;
         this._playPauseStack.visible_child_name = "play";
         if (this.waveform) this.waveform.position = 0;
-        this.seekBlocked = true;
         this._seekBar.set_value(0);
-        this.seekBlocked = false;
     }
 
     private _skip(seconds: number): void {
@@ -358,9 +348,7 @@ export class RecordingDetailView extends Adw.ToolbarView {
 
         if (this.waveform) this.waveform.position = fraction;
 
-        this.seekBlocked = true;
         this._seekBar.set_value(fraction);
-        this.seekBlocked = false;
 
         this._positionLabel.set_markup(formatTime(pos));
 
@@ -388,7 +376,9 @@ export class RecordingDetailView extends Adw.ToolbarView {
 
         let tag = buffer.get_tag_table().lookup("highlight");
         if (!tag) {
-            tag = buffer.create_tag("highlight", { background: "#FFD500" });
+            const t = new Gtk.TextTag({ name: "highlight", background: "#FFD500" });
+            buffer.get_tag_table().add(t);
+            tag = t;
         }
         buffer.remove_all_tags(
             buffer.get_start_iter(),
@@ -396,7 +386,7 @@ export class RecordingDetailView extends Adw.ToolbarView {
         );
         const start = buffer.get_iter_at_offset(idx);
         const end = buffer.get_iter_at_offset(idx + seg.text.length);
-        buffer.apply_tag(tag, start, end);
+        buffer.apply_tag(tag!, start, end);
 
         // Scroll to highlighted text
         this._transcriptionView.scroll_to_iter(start, 0, false, 0, 0);

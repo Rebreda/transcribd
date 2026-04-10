@@ -14,7 +14,7 @@ export class PreferencesDialog extends Adw.PreferencesDialog {
     static {
         GObject.registerClass(
             {
-                Template: "resource:///app/drey/Vocalis/ui/preferences.ui",
+                Template: "resource:///app/rebreda/Transcribd/ui/preferences.ui",
                 InternalChildren: [
                     "enabledSwitch",
                     "serverUrlEntry",

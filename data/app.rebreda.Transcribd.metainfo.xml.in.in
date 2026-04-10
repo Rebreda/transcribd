@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2014 Richard Hughes <richard@hughsie.com> -->
+<!-- Transcribd: Based on Vocalis (https://gitlab.gnome.org/World/vocalis) -->
 <component type="desktop-application">
   <id>@app-id@</id>
-  <name>Vocalis</name>
-  <summary>Take notes with your voice</summary>
+  <name>Transcribd</name>
+  <summary>Record and transcribe audio with AI</summary>
   <project_license>GPL-2.0+</project_license>
   <metadata_license>CC0-1.0</metadata_license>
   <description>
     <p>
-      Vocalis provides a simple and modern interface that provides a
-      straight-forward way to record and play voice memos.
+      Transcribd provides a simple and modern GNOME audio recorder with integrated
+      AI-powered transcription via local Lemonade or OpenAI-compatible speech-to-text servers.
     </p>
     <p>
-      Vocalis automatically handles the saving process so that you
+      Transcribd automatically handles the saving process so that you
       do not need to worry about accidentally discarding the previous recording.
+    </p>
+    <p>
+      Live transcription: Real-time speech-to-text as you record.
+      Batch transcription: Transcribe existing audio files.
     </p>
     <p>Supported audio formats:</p>
     <ul>
@@ -22,10 +27,10 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://gitlab.gnome.org/World/vocalis/raw/master/data/resources/screenshots/screenshot1.png</image>
+      <image>https://github.com/rebreda/transcribd/raw/main/data/resources/screenshots/screenshot1.png</image>
     </screenshot>
     <screenshot>
-      <image>https://gitlab.gnome.org/World/vocalis/raw/master/data/resources/screenshots/screenshot2.png</image>
+      <image>https://github.com/rebreda/transcribd/raw/main/data/resources/screenshots/screenshot2.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.0" />
@@ -34,12 +39,11 @@
     <release version="1.0.0" date="2024-01-09"/>
   </releases>
   <launchable type="desktop-id">@app-id@.desktop</launchable>
-  <url type="homepage">https://gitlab.gnome.org/World/vocalis/</url>
-  <url type="bugtracker">https://gitlab.gnome.org/World/vocalis/issues</url>
-  <url type="vcs-browser">https://gitlab.gnome.org/World/vocalis/</url>
-  <url type="translate">https://l10n.gnome.org/module/vocalis/</url>
-  <developer_name>Christopher Davis</developer_name>
-  <update_contact>chistopherdavis_at_gnome.org</update_contact>
+  <url type="homepage">https://github.com/rebreda/transcribd</url>
+  <url type="bugtracker">https://github.com/rebreda/transcribd/issues</url>
+  <url type="vcs-browser">https://github.com/rebreda/transcribd</url>
+  <developer_name>Rebreda (based on Vocalis by Christopher Davis)</developer_name>
+  <update_contact>rebreda@example.com</update_contact>
   <translation type="gettext">@gettext-package@</translation>
   <branding>
     <color type="primary" scheme_preference="light">#f7796b</color>

@@ -47,7 +47,7 @@ export class Application extends Adw.Application {
     constructor() {
         super({
             application_id: pkg.name,
-            resource_base_path: "/app/drey/Vocalis/",
+            resource_base_path: "/app/rebreda/Transcribd/",
         });
         GLib.set_application_name(_("Vocalis"));
         GLib.setenv("PULSE_PROP_media.role", "production", true);

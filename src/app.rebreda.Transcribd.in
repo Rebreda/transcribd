@@ -12,6 +12,6 @@ imports.package.init({
 pkg.initGettext();
 pkg.initFormat();
 
-const module = await import('resource:///app/drey/Vocalis@profile@/js/main.js');
+const module = await import('resource:///app/rebreda/Transcribd@profile@/js/main.js');
 const exitCode = await module.main(programArgs);
 exit(exitCode);

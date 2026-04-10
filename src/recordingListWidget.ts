@@ -60,11 +60,6 @@ export class RecordingsListWidget extends Adw.Bin {
             const recording = item as Recording;
             const row = new Row(recording);
 
-            row.connect("deleted", () => {
-                const index = row.get_index();
-                this.emit("row-deleted", row.recording, index);
-            });
-
             return row;
         });
 

@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="Gjs_RecordingDetailView" parent="AdwToolbarView">
-    <child type="top">
-      <object class="AdwHeaderBar" id="headerBar">
-        <property name="show-back-button">False</property>
-        <property name="title-widget">
-          <object class="GtkEditableLabel" id="titleLabel">
-            <property name="halign">center</property>
-            <property name="hexpand">True</property>
-          </object>
-        </property>
-        <child type="end">
-          <object class="GtkMenuButton" id="actionsMenuBtn">
-            <property name="icon_name">view-more-symbolic</property>
-            <property name="tooltip_text" translatable="yes">More Actions</property>
-            <style>
-              <class name="image-button"/>
-            </style>
+  <template class="Gjs_RecordingDetailView" parent="AdwBin">
+    <property name="child">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar" id="headerBar">
+            <property name="show-back-button">False</property>
+            <property name="title-widget">
+              <object class="GtkEditableLabel" id="titleLabel">
+                <property name="halign">center</property>
+                <property name="hexpand">True</property>
+              </object>
+            </property>
+            <child type="end">
+              <object class="GtkMenuButton" id="actionsMenuBtn">
+                <property name="icon_name">view-more-symbolic</property>
+                <property name="tooltip_text" translatable="yes">More Actions</property>
+                <style>
+                  <class name="image-button"/>
+                </style>
+              </object>
+            </child>
           </object>
         </child>
-      </object>
-    </child>
-    <property name="content">
-      <object class="GtkScrolledWindow">
+        <property name="content">
+          <object class="GtkScrolledWindow">
         <property name="hscrollbar_policy">never</property>
         <property name="vexpand">True</property>
         <property name="child">
@@ -312,6 +314,8 @@
 
               </object>
             </property>
+          </object>
+        </property>
           </object>
         </property>
       </object>

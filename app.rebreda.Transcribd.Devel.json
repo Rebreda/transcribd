@@ -1,5 +1,5 @@
 {
-    "id" : "app.drey.Vocalis.Devel",
+    "id" : "app.rebreda.Transcribd.Devel",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
@@ -7,7 +7,7 @@
         "org.freedesktop.Sdk.Extension.node20",
         "org.freedesktop.Sdk.Extension.typescript"
     ],
-    "command" : "vocalis",
+    "command" : "transcribd",
     "tags" : [
         "nightly"
     ],
@@ -24,7 +24,7 @@
     },
     "modules" : [
         {
-            "name" : "vocalis",
+            "name" : "transcribd",
             "buildsystem" : "meson",
             "config-opts" : [
                 "-Dprofile=development",
@@ -33,7 +33,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "https://gitlab.gnome.org/World/vocalis.git"
+                    "url" : "https://github.com/rebreda/transcribd.git"
                 }
             ]
         }

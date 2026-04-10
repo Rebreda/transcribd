@@ -1,8 +1,8 @@
 {
-  "name": "vocalis",
+  "name": "transcribd",
   "version": "1.0.0",
   "main": "src/main.ts",
-  "repository": "git@gitlab.gnome.org:World/vocalis.git",
+  "repository": "https://github.com/rebreda/transcribd.git",
   "contributors": [
     "Meg Ford <medford@gnome.org>",
     "Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>",

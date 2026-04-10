@@ -51,7 +51,7 @@ export class Window extends Adw.ApplicationWindow {
     static {
         GObject.registerClass(
             {
-                Template: "resource:///app/drey/Vocalis/ui/window.ui",
+                Template: "resource:///app/rebreda/Transcribd/ui/window.ui",
                 InternalChildren: [
                     "toastOverlay",
                     "sidebarContent",
@@ -334,12 +334,12 @@ export class Window extends Adw.ApplicationWindow {
         if (this.transcriberService) {
             const service = this.transcriberService;
             this.transcriberService = null;
-            for (const [id, field] of [
-                [this.partialHandlerId, "partialHandlerId"],
-                [this.doneHandlerId, "doneHandlerId"],
-                [this.errorHandlerId, "errorHandlerId"],
-                [this.segmentHandlerId, "segmentHandlerId"],
-            ] as [number | null, string][]) {
+            for (const id of [
+                this.partialHandlerId,
+                this.doneHandlerId,
+                this.errorHandlerId,
+                this.segmentHandlerId,
+            ]) {
                 if (id !== null) {
                     this._safeDisconnect(service, id);
                 }

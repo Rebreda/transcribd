@@ -1,5 +1,5 @@
 project(
-  'vocalis',
+  'transcribd',
   version: '1.0.0',
   license: 'GPL2+',
   meson_version: '>= 0.63.0',
@@ -21,16 +21,16 @@ else
   version_suffix = ''
 endif
 
-application_id = 'app.drey.Vocalis@0@'.format(profile)
+application_id = 'app.rebreda.Transcribd@0@'.format(profile)
 
 gettext_package = application_id
-vocalis_prefix = get_option('prefix')
-vocalis_bindir = vocalis_prefix / get_option('bindir')
-vocalis_libdir = vocalis_prefix / get_option('libdir')
-vocalis_datadir = vocalis_prefix / get_option('datadir')
-vocalis_pkgdatadir = vocalis_datadir / application_id
+transcribd_prefix = get_option('prefix')
+transcribd_bindir = transcribd_prefix / get_option('bindir')
+transcribd_libdir = transcribd_prefix / get_option('libdir')
+transcribd_datadir = transcribd_prefix / get_option('datadir')
+transcribd_pkgdatadir = transcribd_datadir / application_id
 
-vocalis_schemadir = vocalis_datadir / 'glib-2.0' / 'schemas'
+transcribd_schemadir = transcribd_datadir / 'glib-2.0' / 'schemas'
 
 po_dir = meson.project_source_root() / 'po'
 
@@ -60,8 +60,8 @@ subdir('po')
 
 install_symlink(
   meson.project_name(),
-  pointing_to: vocalis_pkgdatadir / application_id,
-  install_dir: vocalis_bindir
+  pointing_to: transcribd_pkgdatadir / application_id,
+  install_dir: transcribd_bindir
 )
 
 gnome.post_install(
