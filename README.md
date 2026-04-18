@@ -1,86 +1,67 @@
 # Transcribd
-An audio note taking app with built-in AI transcription via local Lemonade/OpenAI-compatible STT servers.
 
-![Transcribd in action](image.png)
+Transcribd is now a Tauri v2 desktop app with React + TypeScript.
 
-**Credit:** This project started as a fork of [Vocalis](https://gitlab.gnome.org/World/vocalis) by the GNOME project.
+## Prerequisites (Linux)
 
+Install Tauri prerequisites:
+https://v2.tauri.app/start/prerequisites/
 
+Fedora packages typically required for desktop builds:
 
+- webkit2gtk4.1-devel
+- javascriptcoregtk4.1-devel
+- libsoup3-devel
+- libappindicator-gtk3-devel
+- librsvg2-devel
+- openssl-devel
+- patchelf
+- gcc
+- gcc-c++
+- make
 
-### Features
+Rust toolchain is also required.
 
-- **Live Transcription**: Real-time speech-to-text while recording via WebSocket
-- **Batch Transcription**: Transcribe existing audio files via HTTP multipart upload
-- **Local STT Support**: Works with Lemonade, OpenAI-compatible, or any Whisper-based API
-- **Multiple Audio Formats**: Opus, FLAC, MP3, MOV
-- **Simple Interface**: Modern GNOME app with Gtk4 and Libadwaita
+## Development
 
-### Hacking on Transcribd
-
-To build the development version of Transcribd and hack on the code
-see the [general guide](https://wiki.gnome.org/Newcomers/BuildProject)
-for building GNOME apps with Flatpak and GNOME Builder.
-
-### Contributor Quick Start
-
-Use this if you want to get productive quickly on Linux.
-
-1. Install system dependencies (GNOME + build tools): `meson`, `ninja`, `gjs`, `gtk4`, `libadwaita`, `gstreamer`, `glib2`, Node.js.
-2. Install JS dependencies:
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Configure the development build:
+2. Run tests:
 
 ```bash
-meson setup build -Dprofile=development
+npm run test
 ```
 
-4. Build:
+3. Run web dev server:
 
 ```bash
-ninja -C build
+npm run dev
 ```
 
-5. Run in development mode:
+4. Run Tauri desktop app:
 
 ```bash
-ninja -C build run
+npm run tauri:dev
 ```
 
-6. Validate code before opening a PR:
+## Build
+
+Web build:
 
 ```bash
-npm run typecheck
-npm run lint
-npm run test:local-api
+npm run build
 ```
 
-If `meson setup` fails because the build dir is stale, recreate it:
+Desktop build:
 
 ```bash
-rm -rf build
-meson setup build -Dprofile=development
+npm run tauri:build
 ```
 
-### Developer Docs
+Default Linux bundle targets are `deb` and `rpm`.
 
-- [Contributing Guide](CONTRIBUTING.md)
-- [Development Guide](docs/DEVELOPMENT.md)
-- [Architecture Overview](docs/ARCHITECTURE.md)
-- [Flatpak Build Guide](docs/FLATPAK.md)
-
-### Configuration
-
-Set the transcription server URL in the app preferences:
-- Default: `http://localhost:8080/api/v1`
-- For Lemonade: `http://localhost:13305/api/v1`
-
-Run the test suite to validate your setup:
-```bash
-npm run test:local-api
-```
-
+Note on AppImage: on newer Fedora toolchains, linuxdeploy can fail while stripping shared libraries with `.relr.dyn` sections. If you need AppImage output, build it in an environment with compatible linuxdeploy/binutils tooling.

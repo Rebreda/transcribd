@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* exported Window */
 import Adw from "gi://Adw";
 import Gio from "gi://Gio";
@@ -23,6 +24,7 @@ import {
     suggestTitle,
     suggestTitleFallback,
 } from "./transcriber.js";
+import { AlwaysOnListener, type AlwaysOnState } from "./alwaysOnListener.js";
 
 export class Window extends Adw.ApplicationWindow {
     private _toastOverlay!: Adw.ToastOverlay;
@@ -73,6 +75,17 @@ export class Window extends Adw.ApplicationWindow {
     private pendingTranscript = "";
     private pendingSegments: TranscriptionSegment[] = [];
     private isTranscribingRecording = false;
+    private alwaysOnListener: AlwaysOnListener | null = null;
+    private alwaysOnClipHandlerId: number | null = null;
+    private alwaysOnStateHandlerId: number | null = null;
+    private alwaysOnClipTimerId: number | null = null;
+    private alwaysOnClipStartMs = 0;
+    private alwaysOnWasActive = false;
+    private _alwaysOnBtn!: Gtk.ToggleButton;
+    private _alwaysOnStatusRevealer!: Gtk.Revealer;
+    private _alwaysOnStatusLabel!: Gtk.Label;
+    private _alwaysOnStatusIcon!: Gtk.Image;
+    private _alwaysOnStatusBox!: Gtk.Box;
     private selectedCategoryFilters = new Set<string>();
     private selectedTagFilters = new Set<string>();
     private selectedSpeakerFilters = new Set<string>();
@@ -98,6 +111,11 @@ export class Window extends Adw.ApplicationWindow {
                     "clearFiltersBtn",
                     "sidebarLoadingRevealer",
                     "sidebarLoadingLabel",
+                    "alwaysOnBtn",
+                    "alwaysOnStatusRevealer",
+                    "alwaysOnStatusLabel",
+                    "alwaysOnStatusIcon",
+                    "alwaysOnStatusBox",
                 ],
             },
             this,
@@ -274,6 +292,16 @@ export class Window extends Adw.ApplicationWindow {
         this.recorderWidget.actionsGroup.add_action(dictateAction);
 
         this._emptyPage.icon_name = `${pkg.name}-symbolic`;
+
+        // Always-on recording toggle button
+        this._alwaysOnBtn.connect("toggled", () => {
+            if (this._alwaysOnBtn.active) {
+                this._startAlwaysOnListening();
+            } else {
+                this._deactivateAlwaysOn();
+            }
+        });
+
         this._rebuildFilterOptions();
         this._updateFilterAffordance();
         this._updateEmpty();
@@ -290,6 +318,7 @@ export class Window extends Adw.ApplicationWindow {
             const recording = this.recordingList.get_item(i) as Recording;
             if (recording.pipeline) recording.pipeline.set_state(Gst.State.NULL);
         }
+        this._deactivateAlwaysOn(true);
         this.recorder.stop();
         this.detailView.cleanup();
         return false;
@@ -316,6 +345,14 @@ export class Window extends Adw.ApplicationWindow {
     private _onRecorderStarted(): void {
         this.player.set_state(Gst.State.NULL);
         this._contentStack.visible_child_name = "recorder";
+
+        // Suspend always-on while a manual recording is active
+        if (this.alwaysOnListener) {
+            this.alwaysOnWasActive = true;
+            this._deactivateAlwaysOn(true);
+        } else {
+            this.alwaysOnWasActive = false;
+        }
 
         if (Settings.get_boolean("transcription-enabled")) {
             this.pendingTranscript = "";
@@ -413,6 +450,10 @@ export class Window extends Adw.ApplicationWindow {
         this._contentStack.visible_child_name =
             this.recordingList.get_n_items() > 0 ? "empty" : "empty";
         this._updateEmpty();
+        if (this.alwaysOnWasActive) {
+            this.alwaysOnWasActive = false;
+            this._startAlwaysOnListening();
+        }
     }
 
     private async _onRecorderStopped(
@@ -448,6 +489,12 @@ export class Window extends Adw.ApplicationWindow {
         }
 
         this.recordingList.insert(0, recording);
+
+        // Resume always-on if it was active before the manual recording
+        if (this.alwaysOnWasActive) {
+            this.alwaysOnWasActive = false;
+            this._startAlwaysOnListening();
+        }
 
         // Show the new recording in detail view
         this.detailView.recording = recording;
@@ -943,6 +990,125 @@ export class Window extends Adw.ApplicationWindow {
 
         values.sort((left, right) => left.localeCompare(right));
         return values;
+    }
+
+    // ── Always-on recording ───────────────────────────────────────────────
+
+    private _startAlwaysOnListening(): void {
+        if (this.alwaysOnListener) return;
+        const listener = AlwaysOnListener.getDefault();
+        this.alwaysOnListener = listener;
+        this.alwaysOnClipHandlerId = listener.connect(
+            "clip-ready",
+            (_l: AlwaysOnListener, recording: Recording) => {
+                void this._onAlwaysOnClip(recording);
+            },
+        );
+        this.alwaysOnStateHandlerId = listener.connect(
+            "state-changed",
+            (_l: AlwaysOnListener, state: string) => {
+                this._onAlwaysOnStateChanged(state as AlwaysOnState);
+            },
+        );
+        listener.activate();
+        this._alwaysOnBtn.active = true;
+        this._toastOverlay.add_toast(Adw.Toast.new(_("Always-on recording started")));
+        console.log("[Window] Always-on recording activated");
+    }
+
+    private _deactivateAlwaysOn(silent = false): void {
+        if (!this.alwaysOnListener) return;
+        const listener = this.alwaysOnListener;
+        this.alwaysOnListener = null;
+        if (this.alwaysOnClipHandlerId !== null) {
+            this._safeDisconnect(listener, this.alwaysOnClipHandlerId);
+            this.alwaysOnClipHandlerId = null;
+        }
+        if (this.alwaysOnStateHandlerId !== null) {
+            this._safeDisconnect(listener, this.alwaysOnStateHandlerId);
+            this.alwaysOnStateHandlerId = null;
+        }
+        if (this.alwaysOnClipTimerId !== null) {
+            GLib.source_remove(this.alwaysOnClipTimerId);
+            this.alwaysOnClipTimerId = null;
+        }
+        this._alwaysOnStatusRevealer.reveal_child = false;
+        this._alwaysOnStatusBox.remove_css_class("recording");
+        listener.deactivate();
+        this._alwaysOnBtn.active = false;
+        if (!silent) {
+            this._toastOverlay.add_toast(Adw.Toast.new(_("Always-on recording stopped")));
+        }
+        console.log("[Window] Always-on recording deactivated");
+    }
+
+    private _onAlwaysOnStateChanged(state: AlwaysOnState): void {
+        if (state === "idle") {
+            this._alwaysOnStatusRevealer.reveal_child = false;
+            this._alwaysOnStatusBox.remove_css_class("recording");
+            if (this.alwaysOnClipTimerId !== null) {
+                GLib.source_remove(this.alwaysOnClipTimerId);
+                this.alwaysOnClipTimerId = null;
+            }
+        } else if (state === "listening") {
+            this._alwaysOnStatusRevealer.reveal_child = true;
+            this._alwaysOnStatusBox.remove_css_class("recording");
+            this._alwaysOnStatusIcon.set_from_icon_name("microphone-sensitivity-high-symbolic");
+            this._alwaysOnStatusLabel.label = _("Listening…");
+            if (this.alwaysOnClipTimerId !== null) {
+                GLib.source_remove(this.alwaysOnClipTimerId);
+                this.alwaysOnClipTimerId = null;
+            }
+        } else if (state === "recording") {
+            this._alwaysOnStatusRevealer.reveal_child = true;
+            this._alwaysOnStatusBox.add_css_class("recording");
+            this._alwaysOnStatusIcon.set_from_icon_name("media-record-symbolic");
+            this.alwaysOnClipStartMs = Date.now();
+            this._alwaysOnStatusLabel.label = _("Recording clip…");
+            if (this.alwaysOnClipTimerId !== null) {
+                GLib.source_remove(this.alwaysOnClipTimerId);
+            }
+            this.alwaysOnClipTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+                const elapsed = Math.floor((Date.now() - this.alwaysOnClipStartMs) / 1000);
+                const mins = Math.floor(elapsed / 60);
+                const secs = elapsed % 60;
+                this._alwaysOnStatusLabel.label =
+                    `${_("Recording clip")} — ${mins.toString()}:${secs.toString().padStart(2, "0")}`;
+                return GLib.SOURCE_CONTINUE;
+            });
+        }
+    }
+
+    private async _onAlwaysOnClip(recording: Recording): Promise<void> {
+        // Add clip to the list immediately so the user sees it appear
+        this.recordingList.insert(0, recording);
+        this.recordingListWidget.refresh();
+        this._updateEmpty();
+        this._rebuildFilterOptions();
+
+        if (!Settings.get_boolean("transcription-enabled")) return;
+
+        // Transcribe + annotate in the background — doesn't block the next clip
+        try {
+            const service = new TranscriberService();
+            const result = await service.transcribeFileHttp(recording.file);
+            const text = result.text.trim();
+            if (text.length > 0) {
+                await recording.saveTranscription(text);
+                if (result.segments.length > 0) {
+                    await recording.saveSegments(result.segments);
+                }
+                void this._autoAnnotateRecording(recording, text).finally(() => {
+                    this.recordingListWidget.refresh();
+                    this._rebuildFilterOptions();
+                });
+            }
+        } catch (err) {
+            console.error(
+                "[AlwaysOn] Clip post-processing failed:",
+                err instanceof Error ? err.message : String(err),
+            );
+        }
     }
 
     private _sendDeleteToast(recording: Recording, index: number): void {

@@ -1,16 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ES2022",
-    "lib": ["ES2022"],
-    "useDefineForClassFields": false,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": false,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
-    "outDir": "dist",
-    "rootDir": "src",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -19,23 +15,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
+    "useDefineForClassFields": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "@girs/gjs",
-      "@girs/adw-1",
-      "@girs/gdk-4.0",
-      "@girs/gio-2.0",
-      "@girs/glib-2.0",
-      "@girs/gobject-2.0",
-      "@girs/gst-1.0",
-      "@girs/gstpbutils-1.0",
-      "@girs/gtk-4.0",
-      "@girs/soup-3.0"
-    ]
+    "jsx": "react-jsx",
+    "types": ["node", "vite/client", "vitest/globals"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["src/window.ts"]
 }

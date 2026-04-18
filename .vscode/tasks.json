@@ -1,0 +1,65 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Validate new tauri root",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; cd /home/g/Code/vocalis; rm -f vite.config.js src/App.js src/main.js src/lib/transcriptionParsing.js src/lib/transcriptionParsing.test.js; npm run test; npm run build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Check tauri desktop build",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; source \"$HOME/.cargo/env\"; cd /home/g/Code/vocalis; npm run tauri:build -- --no-bundle"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Tauri appimage verbose",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; source \"$HOME/.cargo/env\"; cd /home/g/Code/vocalis; npm run tauri:build -- --bundles appimage --verbose"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Tauri appimage rebuild",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; source \"$HOME/.cargo/env\"; cd /home/g/Code/vocalis; npm run tauri:build -- --bundles appimage --verbose"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Tauri default build verify",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; source \"$HOME/.cargo/env\"; cd /home/g/Code/vocalis; npm run tauri:build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Validate functional UI changes",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; cd /home/g/Code/vocalis; npm run test; npm run build"
+			],
+			"isBackground": false
+		}
+	]
+}
