@@ -36,10 +36,6 @@ body {
   min-height: 100vh;
 }
 
-.appShell.navCollapsed {
-  grid-template-columns: 76px minmax(0, 1fr);
-}
-
 .sidebar {
   background: #1a1b1e;
   border-right: 1px solid #151619;
@@ -47,37 +43,6 @@ body {
   display: grid;
   gap: 0.55rem;
   align-content: start;
-}
-
-.sidebarHeader {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.sidebarBrand {
-  min-width: 0;
-}
-
-.collapseButton {
-  border: 1px solid #3a3d43;
-  background: #202226;
-  color: var(--text-dim);
-  border-radius: 0.5rem;
-  width: 2rem;
-  height: 2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.collapseButton:hover {
-  color: var(--text);
-  background: #2a2d31;
 }
 
 .sidebar h1 {
@@ -103,13 +68,6 @@ body {
   padding: 0.55rem 0.7rem;
   text-align: left;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.navButton span {
-  white-space: nowrap;
 }
 
 .navButton:hover {
@@ -122,31 +80,17 @@ body {
   color: #fff;
 }
 
-.sidebar.collapsed {
-  padding: 0.9rem 0.55rem;
-}
-
-.sidebar.collapsed .sidebarBrand {
-  display: none;
-}
-
-.sidebar.collapsed .sidebarHeader {
-  justify-content: center;
-}
-
-.sidebar.collapsed .navButton {
-  justify-content: center;
-  padding: 0.55rem;
-}
-
-.sidebar.collapsed .navButton span {
-  display: none;
-}
-
 .app {
   min-width: 0;
   background: var(--bg-elev);
   padding: 0;
+}
+
+.pageMain {
+  padding: 1.1rem 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+  align-content: start;
 }
 
 .studioLayout {
@@ -723,39 +667,9 @@ ul {
     grid-template-columns: 1fr;
   }
 
-  .appShell.navCollapsed {
-    grid-template-columns: 1fr;
-  }
-
   .sidebar {
     position: static;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .sidebar.collapsed {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    padding: 0.9rem;
-  }
-
-  .sidebarHeader {
-    grid-column: 1 / -1;
-  }
-
-  .sidebar.collapsed .sidebarBrand {
-    display: block;
-  }
-
-  .sidebar.collapsed .sidebarHeader {
-    justify-content: space-between;
-  }
-
-  .sidebar.collapsed .navButton {
-    justify-content: flex-start;
-    padding: 0.55rem 0.7rem;
-  }
-
-  .sidebar.collapsed .navButton span {
-    display: inline;
   }
 
   .sidebar p {

@@ -73,7 +73,10 @@ function normalizeTranscriptObject(value: unknown): TranscriptObject | null {
   const title = typeof item.title === "string" ? item.title : "Untitled Clip";
   const notes = typeof item.notes === "string" ? item.notes : "";
   const categories = Array.isArray(item.categories)
-    ? item.categories.filter((entry): entry is string => typeof entry === "string").map(entry => entry.trim()).filter(Boolean)
+    ? item.categories
+        .filter((entry: unknown): entry is string => typeof entry === "string")
+        .map((entry: string) => entry.trim())
+        .filter((entry: string) => entry.length > 0)
     : [];
 
   const inferenceState =

@@ -1,4 +1,4 @@
-import type { ClipSort, ManifestClip } from "./appTypes";
+import type { ClipSort, ManifestClip, RealtimeObjectRecord } from "./appTypes";
 
 export function filterAndSortClips(input: {
   clips: ManifestClip[];
@@ -64,4 +64,64 @@ export function selectClip(clips: ManifestClip[], selectedClipId: string): Manif
 
   const first = clips[0];
   return clips.find(clip => clip.id === selectedClipId) ?? first ?? null;
+}
+
+// ── Record filtering (operates on RealtimeObjectRecord[]) ──────────────────
+
+/**
+ * Filters and sorts the unified live/saved record list.
+ * This is the single source of truth for what the recordings sidebar shows.
+ */
+export function filterAndSortRecords(input: {
+  records: RealtimeObjectRecord[];
+  searchQuery: string;
+  categoryFilter: string;
+  sortBy: ClipSort;
+}): RealtimeObjectRecord[] {
+  const { records, searchQuery, categoryFilter, sortBy } = input;
+  const query = searchQuery.trim().toLowerCase();
+
+  let filtered = records;
+
+  if (query.length > 0) {
+    filtered = filtered.filter(record => {
+      const haystack = [record.title, record.notes, record.text, record.categories.join(" ")]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+
+  if (categoryFilter !== "all") {
+    filtered = filtered.filter(record => record.categories.includes(categoryFilter));
+  }
+
+  const sorted = [...filtered];
+  if (sortBy === "title") {
+    sorted.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortBy === "oldest") {
+    sorted.sort((a, b) => a.updatedAtMs - b.updatedAtMs);
+  } else {
+    // newest (default)
+    sorted.sort((a, b) => b.updatedAtMs - a.updatedAtMs);
+  }
+
+  return sorted;
+}
+
+/**
+ * Extracts the sorted unique category set from the live/saved record list.
+ * Use this instead of extractClipCategories when Tauri manifest may not be available.
+ */
+export function extractRecordCategories(records: RealtimeObjectRecord[]): string[] {
+  const values = new Set<string>();
+  for (const record of records) {
+    for (const category of record.categories) {
+      const clean = category.trim();
+      if (clean.length > 0) {
+        values.add(clean);
+      }
+    }
+  }
+  return Array.from(values).sort((a, b) => a.localeCompare(b));
 }

@@ -13,12 +13,10 @@
     "debug:transcribe:realtime": "node scripts/debug-realtime-transcription.mjs",
     "tauri:dev": "tauri dev",
     "tauri:build": "CARGO_BUILD_JOBS=1 tauri build --no-bundle",
-    "tauri:build:clean": "rm -rf dist src-tauri/target && CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 tauri build --no-bundle",
     "tauri:bundle": "CARGO_BUILD_JOBS=1 tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
-    "lucide-react": "^1.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

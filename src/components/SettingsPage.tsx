@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import type { AudioInputDevice, MicPermission } from "../lib/appTypes";
+import { MICROPHONE_TROUBLESHOOTING_STEPS, normalizeEndpointList } from "../lib/settingsUploadUtils";
 
 type SettingsPageProps = {
   baseUrl: string;
@@ -56,6 +58,8 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
     setLlmApiKey,
     endpoints,
   } = props;
+
+  const endpointList = useMemo(() => normalizeEndpointList(endpoints), [endpoints]);
 
   return (
     <>
@@ -132,9 +136,9 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
             then return here and click Detect Microphones.
           </p>
           <ul>
-            <li>Close other apps that may hold the microphone exclusively.</li>
-            <li>Ensure an input device appears in the Microphone dropdown.</li>
-            <li>After changing permissions, fully restart the app and try Start Realtime again.</li>
+            {MICROPHONE_TROUBLESHOOTING_STEPS.map(step => (
+              <li key={step}>{step}</li>
+            ))}
           </ul>
           <p className="status">Linux hint: check portal and PipeWire permissions/settings for desktop audio input.</p>
         </section>
@@ -173,7 +177,7 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
       <section className="panel">
         <h2>Endpoint Resolution</h2>
         <ul>
-          {endpoints.map(endpoint => (
+          {endpointList.map(endpoint => (
             <li key={endpoint}>{endpoint}</li>
           ))}
         </ul>

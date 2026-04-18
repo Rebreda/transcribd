@@ -11,8 +11,16 @@ type HomePageProps = {
   clipSort: ClipSort;
   onChangeClipSort: (value: ClipSort) => void;
   clipCategories: string[];
-  filteredClips: ManifestClip[];
+  /** Sidebar list — already filtered + sorted by App.tsx. */
+  realtimeRecords: RealtimeObjectRecord[];
+  selectedRecord: RealtimeObjectRecord | null;
+  selectedRecordId: string | null;
+  onSelectRecord: (recordId: string) => void;
+
+  /** Kept for the audio waveform / timeline when the selected record has a saved file. */
   selectedClip: ManifestClip | null;
+  /** @deprecated use onSelectRecord */
+  filteredClips: ManifestClip[];
   onSelectClip: (clipId: string) => void;
   manifestStatus: string;
   onRefreshManifest: () => void;
@@ -27,7 +35,6 @@ type HomePageProps = {
   onSeekForward: () => void;
 
   realtimeStatus: string;
-  realtimeRecords: RealtimeObjectRecord[];
   realtimeCurrentRecord: RealtimeTranscriptRecord | null;
   micPermissionText: string;
   realtimeError: string;
@@ -51,9 +58,11 @@ export function HomePage(props: HomePageProps): JSX.Element {
     clipSort,
     onChangeClipSort,
     clipCategories,
-    filteredClips,
+    realtimeRecords,
+    selectedRecord,
+    selectedRecordId,
+    onSelectRecord,
     selectedClip,
-    onSelectClip,
     manifestStatus,
     onRefreshManifest,
     waveformBars,
@@ -65,7 +74,6 @@ export function HomePage(props: HomePageProps): JSX.Element {
     onSeekBackward,
     onSeekForward,
     realtimeStatus,
-    realtimeRecords,
     realtimeCurrentRecord,
     micPermissionText,
     realtimeError,
@@ -108,7 +116,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
                 onChangeClipCategoryFilter(event.target.value)
               }
             >
-              <option value="all">All Categories</option>
+              <option value="all">All Dates</option>
               {clipCategories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -133,21 +141,30 @@ export function HomePage(props: HomePageProps): JSX.Element {
         </div>
 
         <div className="clipListCompact listMode">
-          {filteredClips.length === 0 && (
-            <p className="status">No saved recordings match the current filter.</p>
+          {realtimeRecords.length === 0 && (
+            <p className="status">
+              {clipSearch.trim().length > 0 || clipCategoryFilter !== "all"
+                ? "No recordings match the current filter."
+                : "No recordings yet. Enable live listening to start."}
+            </p>
           )}
-          {filteredClips.map((clip) => (
+          {realtimeRecords.map((record) => (
             <button
-              key={clip.id}
-              className={`clipItemButton ${selectedClip?.id === clip.id ? "active" : ""}`}
-              onClick={() => onSelectClip(clip.id)}
+              key={record.id}
+              className={`clipItemButton ${selectedRecordId === record.id ? "active" : ""}`}
+              onClick={() => {
+                onSelectRecord(record.id);
+                if (record.clipId) {
+                  onOpenRecordClip(record.clipId);
+                }
+              }}
             >
-              <strong>{clip.title}</strong>
+              <strong>{record.title}</strong>
               <span>
-                {new Date(clip.createdAtMs).toLocaleTimeString()} |{" "}
-                {formatClock(clip.durationMs)}
+                {new Date(record.updatedAtMs).toLocaleTimeString()}
+                {record.hasAudioFile ? " • saved" : ""}
               </span>
-              <span>{clip.categories.join(" • ") || "uncategorized"}</span>
+              <span>{record.categories.join(" • ") || "uncategorized"}</span>
             </button>
           ))}
         </div>
@@ -195,109 +212,83 @@ export function HomePage(props: HomePageProps): JSX.Element {
               </header>
               <p>{realtimeCurrentRecord?.text || realtimeText || "Waiting for speech input..."}</p>
             </div>
-
-            {realtimeRecords.length === 0 && (
-              <p className="status">No live records match the current filter.</p>
-            )}
-
-            {realtimeRecords.map((record) => (
-              <article key={record.id} className="liveRecordCard">
-                <header>
-                  <strong>{record.title}</strong>
-                  <span>{new Date(record.updatedAtMs).toLocaleTimeString()}</span>
-                </header>
-                <p>{record.text}</p>
-                <footer>
-                  <span>{record.categories.join(" • ") || "uncategorized"}</span>
-                  <span>
-                    {record.hasAudioFile ? "saved clip" : record.inferenceState === "pending" ? "inferring" : "no audio file"}
-                  </span>
-                </footer>
-                <p className="status">{record.notes}</p>
-                {record.clipId && (
-                  <button className="textButton" onClick={() => onOpenRecordClip(record.clipId!)}>
-                    Open Clip
-                  </button>
-                )}
-              </article>
-            ))}
           </div>
         </section>
 
-        {!selectedClip && (
+        {!selectedRecord && (
           <p className="status">Select a recording to view details.</p>
         )}
 
-        {selectedClip && (
+        {selectedRecord && (
           <>
             <header className="clipHeaderBar">
-              <h2>{selectedClip.title}</h2>
-              <span>{selectedClip.fileName}</span>
+              <h2>{selectedRecord.title}</h2>
+              <span>
+                {selectedRecord.hasAudioFile ? (selectedClip?.fileName ?? "saved") : selectedRecord.inferenceState}
+              </span>
             </header>
 
             <div className="clipMetaRow">
-              <span>
-                {new Date(selectedClip.createdAtMs).toLocaleTimeString()}
-              </span>
-              <span>{formatClock(selectedClip.durationMs)}</span>
-              <span>
-                {selectedClip.categories.join(" • ") || "uncategorized"}
-              </span>
+              <span>{new Date(selectedRecord.updatedAtMs).toLocaleTimeString()}</span>
+              {selectedClip && <span>{formatClock(selectedClip.durationMs)}</span>}
+              <span>{selectedRecord.categories.join(" • ") || "uncategorized"}</span>
             </div>
 
-            <section className="wavePanel">
-              <div
-                className="waveBars"
-                role="img"
-                aria-label="Recording waveform preview"
-              >
-                {waveformBars.map((value, index) => (
-                  <span
-                    key={`${selectedClip.id}-${index}`}
-                    style={{
-                      height: `${18 + value * 88}%`,
-                      opacity:
-                        index / waveformBars.length <=
-                        safePlayheadMs / Math.max(selectedDurationMs, 1)
-                          ? 1
-                          : 0.5,
-                    }}
+            {selectedClip && (
+              <section className="wavePanel">
+                <div
+                  className="waveBars"
+                  role="img"
+                  aria-label="Recording waveform preview"
+                >
+                  {waveformBars.map((value, index) => (
+                    <span
+                      key={`${selectedClip.id}-${index}`}
+                      style={{
+                        height: `${18 + value * 88}%`,
+                        opacity:
+                          index / waveformBars.length <=
+                          safePlayheadMs / Math.max(selectedDurationMs, 1)
+                            ? 1
+                            : 0.5,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <div className="timelineRow">
+                  <span>{formatClock(safePlayheadMs)}</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={Math.max(selectedDurationMs, 1)}
+                    step={25}
+                    value={safePlayheadMs}
+                    onChange={(event) =>
+                      onSetPlayheadMs(Number(event.target.value))
+                    }
                   />
-                ))}
-              </div>
+                  <span>{formatClock(selectedDurationMs)}</span>
+                </div>
 
-              <div className="timelineRow">
-                <span>{formatClock(safePlayheadMs)}</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(selectedDurationMs, 1)}
-                  step={25}
-                  value={safePlayheadMs}
-                  onChange={(event) =>
-                    onSetPlayheadMs(Number(event.target.value))
-                  }
-                />
-                <span>{formatClock(selectedDurationMs)}</span>
-              </div>
-
-              <div className="transportRow">
-                <button className="iconButton" onClick={onSeekBackward}>
-                  ◀◀
-                </button>
-                <button className="playButton" onClick={onToggleTimelinePlay}>
-                  {isTimelinePlaying ? "Pause" : "Play"}
-                </button>
-                <button className="iconButton" onClick={onSeekForward}>
-                  ▶▶
-                </button>
-              </div>
-            </section>
+                <div className="transportRow">
+                  <button className="iconButton" onClick={onSeekBackward}>
+                    ◀◀
+                  </button>
+                  <button className="playButton" onClick={onToggleTimelinePlay}>
+                    {isTimelinePlaying ? "Pause" : "Play"}
+                  </button>
+                  <button className="iconButton" onClick={onSeekForward}>
+                    ▶▶
+                  </button>
+                </div>
+              </section>
+            )}
 
             <section className="transcriptCard">
               <h3>Transcript</h3>
-              <p>{selectedClip.transcript || "No transcript captured."}</p>
-              <p className="status">{selectedClip.notes}</p>
+              <p>{selectedRecord.text || "No transcript captured."}</p>
+              <p className="status">{selectedRecord.notes}</p>
             </section>
           </>
         )}

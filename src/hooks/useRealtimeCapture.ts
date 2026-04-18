@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { bytesToBase64, concatChunks, float32ToPcm16Bytes } from "../lib/audioCodec";
 import type { RealtimeMessage, RealtimeTranscriptRecord } from "../lib/appTypes";
-import {
-  AUDIO_SAMPLE_RATE,
-  FORCE_COMMIT_INTERVAL_MS,
-  FORCE_COMMIT_MIN_CHUNKS,
-  MAX_CLIP_SECONDS,
-  MIN_CLIP_BYTES,
-  PRE_ROLL_MS,
-} from "../lib/constants";
 import { getBestEffortMicrophoneStream } from "../lib/microphone";
 import { discoverRealtimeEndpoint, extractRealtimeText } from "../lib/realtime";
 
@@ -44,6 +36,10 @@ type UseRealtimeCaptureOutput = {
   setRealtimeError: (value: string) => void;
 };
 
+const TARGET_SAMPLE_RATE = 16000;
+const PRE_ROLL_MS = 1200;
+const MAX_CLIP_SECONDS = 90;
+const MIN_CLIP_BYTES = 3200;
 
 type PendingSegment = {
   pcm: Uint8Array;
@@ -91,22 +87,6 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   const smoothedLevelRef = useRef(0);
   const pendingCloseAfterCommitRef = useRef(false);
   const commitCloseTimerRef = useRef<number | null>(null);
-  const forceCommitTimerRef = useRef<number | null>(null);
-  const sentChunksRef = useRef(0);
-  const receivedEventsRef = useRef(0);
-  const lastEventTypeRef = useRef("(none)");
-
-  useEffect(() => {
-    sentChunksRef.current = sentAudioChunks;
-  }, [sentAudioChunks]);
-
-  useEffect(() => {
-    receivedEventsRef.current = receivedEvents;
-  }, [receivedEvents]);
-
-  useEffect(() => {
-    lastEventTypeRef.current = lastEventType;
-  }, [lastEventType]);
 
   useEffect(() => {
     return () => {
@@ -158,7 +138,6 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
     const ws = new WebSocket(wsInfo.url);
     wsRef.current = ws;
-    debugRealtime("Connecting websocket", { url: wsInfo.url, model: model.trim() });
 
     ws.onopen = () => {
       setIsRunning(true);
@@ -177,10 +156,8 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
           },
         }),
       );
-      debugRealtime("Session update sent", { isAlwaysOnEnabled, selectedMicId });
 
       setupRealtimeAudioPipeline(stream.value, ws);
-      startForceCommitTimer(ws);
     };
 
     ws.onmessage = event => {
@@ -223,15 +200,12 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     };
 
     ws.onerror = () => {
-      debugRealtime("Websocket error");
       setRealtimeStatus("Error");
       setRealtimeError("Realtime websocket connection error.");
     };
 
     ws.onclose = () => {
-      debugRealtime("Websocket closed");
       clearCommitCloseTimer();
-      clearForceCommitTimer();
       teardownRealtimeAudioPipeline();
       wsRef.current = null;
       setIsRunning(false);
@@ -259,7 +233,6 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
     pendingCloseAfterCommitRef.current = true;
     setRealtimeStatus("Committing...");
-    debugRealtime("Stopping realtime and committing buffer");
 
     try {
       ws.send(JSON.stringify({ type: "input_audio_buffer.commit" }));
@@ -292,37 +265,6 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     }
   }
 
-  function startForceCommitTimer(ws: WebSocket): void {
-    clearForceCommitTimer();
-    forceCommitTimerRef.current = window.setInterval(() => {
-      if (pendingCloseAfterCommitRef.current || ws.readyState !== WebSocket.OPEN) {
-        return;
-      }
-
-      if (sentChunksRef.current < FORCE_COMMIT_MIN_CHUNKS) {
-        return;
-      }
-
-      try {
-        ws.send(JSON.stringify({ type: "input_audio_buffer.commit" }));
-        debugRealtime("Forced commit sent", {
-          sentAudioChunks: sentChunksRef.current,
-          receivedEvents: receivedEventsRef.current,
-          lastEventType: lastEventTypeRef.current,
-        });
-      } catch {
-        // Ignore send failures; normal close/error handlers will handle state.
-      }
-    }, FORCE_COMMIT_INTERVAL_MS);
-  }
-
-  function clearForceCommitTimer(): void {
-    if (forceCommitTimerRef.current !== null) {
-      window.clearInterval(forceCommitTimerRef.current);
-      forceCommitTimerRef.current = null;
-    }
-  }
-
   function setupRealtimeAudioPipeline(stream: MediaStream, ws: WebSocket): void {
     const ctx = new AudioContext();
     audioContextRef.current = ctx;
@@ -349,7 +291,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         return next;
       });
 
-      const pcm16 = float32ToPcm16Bytes(inputBuffer, event.inputBuffer.sampleRate, AUDIO_SAMPLE_RATE);
+      const pcm16 = float32ToPcm16Bytes(inputBuffer, event.inputBuffer.sampleRate, TARGET_SAMPLE_RATE);
       if (pcm16.length === 0) {
         return;
       }
@@ -360,7 +302,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       if (speechActiveRef.current) {
         activeClipChunksRef.current.push(pcm16);
         activeClipBytesRef.current += pcm16.byteLength;
-        if (activeClipBytesRef.current > AUDIO_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS) {
+        if (activeClipBytesRef.current > TARGET_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS) {
           void finalizeActiveClip("max-duration");
         }
       }
@@ -433,7 +375,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   }
 
   function pushPreRollChunk(chunk: Uint8Array): void {
-    const maxBytes = Math.floor((AUDIO_SAMPLE_RATE * 2 * PRE_ROLL_MS) / 1000);
+    const maxBytes = Math.floor((TARGET_SAMPLE_RATE * 2 * PRE_ROLL_MS) / 1000);
     preRollChunksRef.current.push(chunk);
     preRollBytesRef.current += chunk.byteLength;
 
@@ -451,18 +393,17 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     segmentChunksRef.current.push(chunk);
     segmentBytesRef.current += chunk.byteLength;
 
-    const maxBytes = AUDIO_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS;
+    const maxBytes = TARGET_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS;
     while (segmentBytesRef.current > maxBytes && segmentChunksRef.current.length > 0) {
       const removed = segmentChunksRef.current.shift();
       segmentBytesRef.current -= removed?.byteLength ?? 0;
       if (segmentStartedMsRef.current !== 0) {
-        segmentStartedMsRef.current += Math.round(((removed?.byteLength ?? 0) / (AUDIO_SAMPLE_RATE * 2)) * 1000);
+        segmentStartedMsRef.current += Math.round(((removed?.byteLength ?? 0) / (TARGET_SAMPLE_RATE * 2)) * 1000);
       }
     }
   }
 
   function handleRealtimeMessage(message: RealtimeMessage): void {
-    debugRealtime("Received event", { type: message.type });
     setReceivedEvents(previous => previous + 1);
     setLastEventType(message.type || "(unknown)");
 
@@ -489,10 +430,9 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     }
 
     if (message.type === "conversation.item.input_audio_transcription.completed") {
-      const transcript = (textPiece || currentInterimTextRef.current || activeClipTranscriptRef.current || "").trim();
-      const itemId = message.item_id ?? message.item?.id ?? "";
-
-      if (transcript.length > 0 && isMeaningfulTranscript(transcript)) {
+      const transcript = textPiece || "";
+      if (transcript.length > 0) {
+        const itemId = message.item_id ?? message.item?.id ?? "";
         if (itemId.length === 0 || itemId === currentInterimItemIdRef.current) {
           currentInterimItemIdRef.current = "";
           currentInterimTextRef.current = "";
@@ -502,27 +442,14 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, transcript);
         const now = Date.now();
         const recordId = itemId.length > 0 ? `final-${itemId}` : `final-${now}`;
-        setRealtimeRecords(previous => {
-          if (isDuplicateFinalRecord(previous[0] ?? null, itemId, transcript, now)) {
-            return previous;
-          }
-
-          return [{
-            id: recordId,
-            itemId,
-            text: transcript,
-            isFinal: true,
-            updatedAtMs: now,
-          }, ...previous].slice(0, 120);
-        });
-        void finalizeCompletedSegment(itemId, transcript);
-      } else {
-        debugRealtime("Completed event had no transcript text", {
+        setRealtimeRecords(previous => [{
+          id: recordId,
           itemId,
-          pendingByItem: pendingSegmentsRef.current.has(itemId),
-          hasFallbackPending: fallbackPendingSegmentRef.current !== null,
-          eventType: message.type,
-        });
+          text: transcript,
+          isFinal: true,
+          updatedAtMs: now,
+        }, ...previous].slice(0, 120));
+        void finalizeCompletedSegment(itemId, transcript);
       }
     }
 
@@ -548,8 +475,6 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       const itemId = message.item_id ?? "";
       if (itemId.length > 0 && !pendingSegmentsRef.current.has(itemId)) {
         stageBufferedSegmentForItem(itemId, "vad-stop");
-      } else if (itemId.length === 0) {
-        stageBufferedSegmentAsFallback("vad-stop");
       }
     }
 
@@ -594,11 +519,6 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   async function finalizeCompletedSegment(itemId: string, transcript: string): Promise<void> {
     const pending = resolvePendingSegment(itemId);
     if (!pending || transcript.trim().length === 0) {
-      debugRealtime("Skipping finalized segment", {
-        itemId,
-        hasPendingSegment: Boolean(pending),
-        transcriptLength: transcript.trim().length,
-      });
       return;
     }
 
@@ -663,25 +583,6 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       endedAtMs,
       reason,
     });
-  }
-
-  function stageBufferedSegmentAsFallback(reason: "vad-stop" | "max-duration"): void {
-    const pcm = concatChunks(segmentChunksRef.current);
-    const endedAtMs = Date.now();
-    const startedAtMs = segmentStartedMsRef.current || endedAtMs;
-
-    clearSegmentBuffer();
-
-    if (pcm.byteLength < MIN_CLIP_BYTES) {
-      return;
-    }
-
-    fallbackPendingSegmentRef.current = {
-      pcm,
-      startedAtMs,
-      endedAtMs,
-      reason,
-    };
   }
 
   function resolvePendingSegment(itemId: string): PendingSegment | null {
@@ -800,56 +701,4 @@ function parseRealtimeFrame(raw: string): RealtimeMessage {
   }
 
   return JSON.parse(trimmed) as RealtimeMessage;
-}
-
-function debugRealtime(message: string, details?: Record<string, unknown>): void {
-  if (!import.meta.env.DEV) {
-    return;
-  }
-
-  if (details) {
-    console.debug(`[realtime] ${message}`, details);
-    return;
-  }
-
-  console.debug(`[realtime] ${message}`);
-}
-
-function isMeaningfulTranscript(transcript: string): boolean {
-  const normalized = transcript.trim().toLowerCase();
-  if (normalized.length === 0) {
-    return false;
-  }
-
-  const noiseTokens = new Set([
-    "[ silence ]",
-    "silence",
-    "[blank_audio]",
-    "[ blank_audio ]",
-    "blank_audio",
-    "[noise]",
-  ]);
-
-  return !noiseTokens.has(normalized);
-}
-
-function isDuplicateFinalRecord(
-  latest: RealtimeTranscriptRecord | null,
-  itemId: string,
-  transcript: string,
-  nowMs: number,
-): boolean {
-  if (!latest || !latest.isFinal) {
-    return false;
-  }
-
-  const sameItem = itemId.length > 0 && latest.itemId === itemId;
-  const sameTranscript = normalizeRealtimeText(latest.text) === normalizeRealtimeText(transcript);
-  const closeInTime = Math.abs(nowMs - latest.updatedAtMs) < 12_000;
-
-  return closeInTime && (sameItem || sameTranscript);
-}
-
-function normalizeRealtimeText(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }

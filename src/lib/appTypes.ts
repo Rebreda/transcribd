@@ -1,8 +1,6 @@
 export type ManifestClip = {
   id: string;
   fileName: string;
-  transcriptFileName?: string;
-  objectFileName?: string;
   createdAtMs: number;
   startedAtMs: number;
   endedAtMs: number;
@@ -74,15 +72,6 @@ export type RealtimeObjectRecord = {
   clipId: string | null;
 };
 
-export type ClipMetadata = {
-  title: string;
-  notes: string;
-  categories: string[];
-};
-
-export type TranscriptObjectInferenceState = "pending" | "processing" | "ready" | "error";
-export type TranscriptObjectFileState = "pending" | "saved" | "error" | "skipped";
-
 export type TranscriptObject = {
   id: string;
   source: "realtime" | "upload";
@@ -95,13 +84,19 @@ export type TranscriptObject = {
   title: string;
   notes: string;
   categories: string[];
-  inferenceState: TranscriptObjectInferenceState;
-  fileState: TranscriptObjectFileState;
+  inferenceState: "pending" | "processing" | "ready" | "error";
+  fileState: "pending" | "saved" | "error" | "skipped";
   fileError: string;
   clipId: string | null;
   fileName: string;
   transcriptFileName: string;
   objectFileName: string;
+};
+
+export type ClipMetadata = {
+  title: string;
+  notes: string;
+  categories: string[];
 };
 
 export type AudioInputDevice = {
