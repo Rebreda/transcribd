@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type { Manifest, ManifestClip } from "./appTypes";
 
 type PersistClipPayload = {
+  objectId: string;
   audioBase64: string;
   transcript: string;
   title: string;

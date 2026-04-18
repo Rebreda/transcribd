@@ -155,7 +155,7 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
 
           <label className="field">
             <span>LLM Model</span>
-            <input value={llmModel} onChange={event => setLlmModel(event.target.value)} placeholder="gpt-4o-mini" />
+            <input value={llmModel} onChange={event => setLlmModel(event.target.value)} placeholder="Gemma-4-E4B-it-GGUF" />
           </label>
 
           <label className="field">

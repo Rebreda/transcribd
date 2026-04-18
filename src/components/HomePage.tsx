@@ -108,7 +108,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
                 onChangeClipCategoryFilter(event.target.value)
               }
             >
-              <option value="all">All Dates</option>
+              <option value="all">All Categories</option>
               {clipCategories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -134,7 +134,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
 
         <div className="clipListCompact listMode">
           {filteredClips.length === 0 && (
-            <p className="status">No matching recordings.</p>
+            <p className="status">No saved recordings match the current filter.</p>
           )}
           {filteredClips.map((clip) => (
             <button
@@ -197,7 +197,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
             </div>
 
             {realtimeRecords.length === 0 && (
-              <p className="status">No transcription records yet.</p>
+              <p className="status">No live records match the current filter.</p>
             )}
 
             {realtimeRecords.map((record) => (

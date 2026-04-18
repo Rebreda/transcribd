@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, House, Settings, Upload } from "lucide-react";
 import { bytesToBase64, pcm16ToWav } from "./lib/audioCodec";
 import {
   type AppPage,
@@ -8,15 +9,35 @@ import {
   type Manifest,
   type MicPermission,
   type RealtimeObjectRecord,
+  type TranscriptObject,
 } from "./lib/appTypes";
 import { extractClipCategories, filterAndSortClips, selectClip } from "./lib/clipFinder";
-import { buildFallbackTitle, buildChatEndpoints, tryParseMetadata } from "./lib/metadata";
+import { buildChatEndpoints, tryParseMetadata } from "./lib/metadata";
 import {
   formatMicrophoneError,
   getMicrophonePermissionState,
   getMicrophonePermissionText,
 } from "./lib/microphone";
 import { loadManifestSafe, persistClipSafe } from "./lib/manifestStore";
+import { SerialTaskQueue } from "./lib/serialTaskQueue";
+import { loadTranscriptObjects, persistTranscriptObjects } from "./lib/transcriptObjectStore";
+import { createPendingTranscriptObject, mapTranscriptObjectToRealtimeRecord } from "./lib/transcriptObjectPipeline";
+import {
+  AUDIO_SAMPLE_RATE,
+  AUDIO_CHANNELS,
+  DEFAULT_LLM_MODEL,
+  LLM_CLASSIFY_SYSTEM_PROMPT,
+  MAX_REALTIME_DISPLAY,
+  MAX_TRANSCRIPT_OBJECTS,
+  MIN_CLIP_BYTES,
+  STORAGE_KEY_NAV_COLLAPSED,
+} from "./lib/constants";
+import {
+  buildLocalFallbackMetadata,
+  buildObjectFallbackTitle,
+  buildObjectId,
+  normalizeLiveRecordKey,
+} from "./lib/objectHelpers";
 import {
   buildTranscriptionEndpoints,
   extractTranscriptionResult,
@@ -29,9 +50,6 @@ import { AppConfigProvider, useAppConfig } from "./context/AppConfigContext";
 import { useRealtimeCapture } from "./hooks/useRealtimeCapture";
 import { useTimelinePlayback } from "./hooks/useTimelinePlayback";
 
-const TARGET_SAMPLE_RATE = 16000;
-const MIN_CLIP_BYTES = 3200;
-
 export function App(): JSX.Element {
   return (
     <AppConfigProvider>
@@ -42,6 +60,7 @@ export function App(): JSX.Element {
 
 function AppContainer(): JSX.Element {
   const [activePage, setActivePage] = useState<AppPage>("home");
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
   const {
     baseUrl,
     setBaseUrl,
@@ -77,13 +96,20 @@ function AppContainer(): JSX.Element {
   const [clipCategoryFilter, setClipCategoryFilter] = useState("all");
   const [selectedClipId, setSelectedClipId] = useState("");
   const [micPermission, setMicPermission] = useState<MicPermission>("unknown");
-  const [realtimeMetadataByRecordId, setRealtimeMetadataByRecordId] = useState<Record<string, {
-    title: string;
-    notes: string;
-    categories: string[];
-    inferenceState: "pending" | "ready" | "error";
-  }>>({});
-  const realtimeInferenceInFlightRef = useState(() => new Set<string>())[0];
+  const [transcriptObjects, setTranscriptObjects] = useState<TranscriptObject[]>([]);
+
+  const queueRef = useRef(new SerialTaskQueue());
+
+  useEffect(() => {
+    const persisted = window.localStorage.getItem(STORAGE_KEY_NAV_COLLAPSED);
+    if (persisted === "1") {
+      setIsNavCollapsed(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY_NAV_COLLAPSED, isNavCollapsed ? "1" : "0");
+  }, [isNavCollapsed]);
 
   const endpoints = useMemo(() => buildTranscriptionEndpoints(baseUrl), [baseUrl]);
   const canSubmit = selectedFile !== null && model.trim().length > 0;
@@ -99,7 +125,7 @@ function AppContainer(): JSX.Element {
     [clipSearch, clipCategoryFilter, clipSort, manifest.clips],
   );
 
-  const clipCategories = useMemo(() => extractClipCategories(manifest.clips), [manifest.clips]);
+  const manifestClipCategories = useMemo(() => extractClipCategories(manifest.clips), [manifest.clips]);
   const selectedClip = useMemo(() => selectClip(filteredClips, selectedClipId), [filteredClips, selectedClipId]);
 
   const waveformBars = useMemo(() => {
@@ -125,21 +151,6 @@ function AppContainer(): JSX.Element {
   const selectedDurationMs = selectedClip?.durationMs ?? 0;
   const timeline = useTimelinePlayback(selectedClip?.id ?? "", selectedDurationMs);
   const micPermissionText = useMemo(() => getMicrophonePermissionText(micPermission), [micPermission]);
-  const newestClips = useMemo(
-    () => [...manifest.clips].sort((a, b) => b.createdAtMs - a.createdAtMs).slice(0, 80),
-    [manifest.clips],
-  );
-
-  const clipByTranscript = useMemo(() => {
-    const map = new Map<string, (typeof newestClips)[number]>();
-    for (const clip of newestClips) {
-      const key = normalizeTranscriptKey(clip.transcript);
-      if (!map.has(key)) {
-        map.set(key, clip);
-      }
-    }
-    return map;
-  }, [newestClips]);
 
   const realtime = useRealtimeCapture({
     baseUrl,
@@ -153,83 +164,68 @@ function AppContainer(): JSX.Element {
   });
 
   const realtimeObjectRecords = useMemo<RealtimeObjectRecord[]>(() => {
-    return realtime.realtimeRecords.map(record => {
-      const matchedClip = clipByTranscript.get(normalizeTranscriptKey(record.text));
-      if (matchedClip) {
-        return {
-          id: record.id,
-          itemId: record.itemId,
-          text: record.text,
-          updatedAtMs: record.updatedAtMs,
-          title: matchedClip.title,
-          notes: matchedClip.notes,
-          categories: matchedClip.categories,
-          inferenceState: "from-clip",
-          hasAudioFile: true,
-          clipId: matchedClip.id,
-        };
-      }
+    const fromObjects = [...transcriptObjects]
+      .sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+      .slice(0, MAX_REALTIME_DISPLAY)
+      .map(mapTranscriptObjectToRealtimeRecord);
 
-      const meta = realtimeMetadataByRecordId[record.id];
-      const fallbackTitle = buildFallbackTitle(record.text);
-
-      return {
+    const existingIds = new Set(fromObjects.map(record => record.id));
+    const existingKeys = new Set(fromObjects.map(record => normalizeLiveRecordKey(record.text)));
+    const fromRealtime = realtime.realtimeRecords
+      .filter(record => record.isFinal)
+      .filter(record => !existingIds.has(record.id))
+      .filter(record => !existingKeys.has(normalizeLiveRecordKey(record.text)))
+      .map(record => ({
         id: record.id,
         itemId: record.itemId,
         text: record.text,
         updatedAtMs: record.updatedAtMs,
-        title: meta?.title ?? fallbackTitle,
-        notes: meta?.notes ?? "Inferring metadata for live object...",
-        categories: meta?.categories ?? ["capture"],
-        inferenceState: meta?.inferenceState ?? "pending",
+        title: buildObjectFallbackTitle(record.updatedAtMs),
+        notes: "Live transcript received. Awaiting object persistence.",
+        categories: ["capture"],
+        inferenceState: "pending" as const,
         hasAudioFile: false,
         clipId: null,
-      };
+      }));
+
+    return [...fromObjects, ...fromRealtime]
+      .sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+      .slice(0, MAX_REALTIME_DISPLAY);
+  }, [transcriptObjects, realtime.realtimeRecords]);
+
+  const clipCategories = useMemo(() => {
+    const values = new Set<string>(manifestClipCategories);
+    for (const record of realtimeObjectRecords) {
+      for (const category of record.categories) {
+        const clean = category.trim();
+        if (clean.length > 0) {
+          values.add(clean);
+        }
+      }
+    }
+
+    return [...values].sort((a, b) => a.localeCompare(b));
+  }, [manifestClipCategories, realtimeObjectRecords]);
+
+  const filteredRealtimeRecords = useMemo(() => {
+    const query = clipSearch.trim().toLowerCase();
+
+    return realtimeObjectRecords.filter(record => {
+      if (clipCategoryFilter !== "all" && !record.categories.includes(clipCategoryFilter)) {
+        return false;
+      }
+
+      if (query.length === 0) {
+        return true;
+      }
+
+      const haystack = [record.title, record.text, record.notes, record.categories.join(" ")]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(query);
     });
-  }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId]);
-
-  async function handleClipCaptured(input: {
-    pcm: Uint8Array;
-    transcript: string;
-    startedAtMs: number;
-    endedAtMs: number;
-  }): Promise<void> {
-    const { pcm, transcript, startedAtMs, endedAtMs } = input;
-
-    if (pcm.byteLength < MIN_CLIP_BYTES || transcript.length === 0) {
-      return;
-    }
-
-    const metadata = llmEnabled
-      ? await enrichMetadataWithLlm({ transcript, titleFallback: buildFallbackTitle(transcript) })
-      : {
-          title: buildFallbackTitle(transcript),
-          notes: "Auto-saved from always-on listener.",
-          categories: ["capture"],
-        };
-
-    const wav = pcm16ToWav(pcm, TARGET_SAMPLE_RATE, 1);
-    const payload = {
-      audioBase64: bytesToBase64(wav),
-      transcript,
-      title: metadata.title,
-      notes: metadata.notes,
-      categories: metadata.categories,
-      startedAtMs,
-      endedAtMs,
-      sampleRate: TARGET_SAMPLE_RATE,
-      channels: 1,
-    };
-
-    try {
-      const { clip } = await persistClipSafe(payload);
-      setManifest(previous => ({ ...previous, updatedAtMs: Date.now(), clips: [...previous.clips, clip] }));
-      setManifestStatus(`Saved clip ${clip.id}`);
-    } catch (persistError) {
-      const detail = persistError instanceof Error ? persistError.message : String(persistError);
-      setManifestStatus(`Failed to save clip: ${detail}`);
-    }
-  }
+  }, [realtimeObjectRecords, clipSearch, clipCategoryFilter]);
 
   useEffect(() => {
     if (selectedClip) {
@@ -261,6 +257,7 @@ function AppContainer(): JSX.Element {
   }, [isAlwaysOnEnabled, micPermission, selectedMicId, baseUrl, apiKey, model, realtime.isRunning]);
 
   useEffect(() => {
+    setTranscriptObjects(loadTranscriptObjects());
     void loadManifest();
     void refreshAudioInputs();
     void refreshMicPermission();
@@ -283,6 +280,10 @@ function AppContainer(): JSX.Element {
       realtime.stopRealtime();
     };
   }, []);
+
+  useEffect(() => {
+    persistTranscriptObjects(transcriptObjects);
+  }, [transcriptObjects]);
 
   async function refreshAudioInputs(): Promise<void> {
     try {
@@ -398,14 +399,13 @@ function AppContainer(): JSX.Element {
 
   async function enrichMetadataWithLlm(input: { transcript: string; titleFallback: string }): Promise<ClipMetadata> {
     const requestBody = {
-      model: llmModel.trim() || "gpt-4o-mini",
+      model: llmModel.trim() || DEFAULT_LLM_MODEL,
       temperature: 0.2,
       response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
-          content:
-            "You classify transcript clips. Return strict JSON with keys: title (string), notes (string), categories (array of 1-4 short lowercase tags).",
+          content: LLM_CLASSIFY_SYSTEM_PROMPT,
         },
         {
           role: "user",
@@ -444,99 +444,174 @@ function AppContainer(): JSX.Element {
       }
     }
 
-    return {
-      title: input.titleFallback,
-      notes: "Auto-generated fallback metadata.",
-      categories: ["capture"],
-    };
+    throw new Error("All LLM endpoints failed or returned unparseable responses.");
   }
 
-  useEffect(() => {
-    for (const record of realtime.realtimeRecords) {
-      if (!record.isFinal) {
-        continue;
-      }
+  async function handleClipCaptured(input: {
+    pcm: Uint8Array;
+    transcript: string;
+    startedAtMs: number;
+    endedAtMs: number;
+  }): Promise<void> {
+    const transcript = input.transcript.trim();
+    if (input.pcm.byteLength < MIN_CLIP_BYTES || transcript.length === 0) {
+      return;
+    }
 
-      const matchedClip = clipByTranscript.get(normalizeTranscriptKey(record.text));
-      if (matchedClip) {
-        continue;
-      }
+    const createdAtMs = Date.now();
+    const objectId = buildObjectId(createdAtMs);
+    const object: TranscriptObject = createPendingTranscriptObject({
+      id: objectId,
+      source: "realtime",
+      itemId: "",
+      transcript,
+      startedAtMs: input.startedAtMs,
+      endedAtMs: input.endedAtMs,
+      createdAtMs,
+    });
 
-      if (realtimeMetadataByRecordId[record.id] || realtimeInferenceInFlightRef.has(record.id)) {
-        continue;
-      }
+    setTranscriptObjects(previous => [object, ...previous].slice(0, MAX_TRANSCRIPT_OBJECTS));
 
-      realtimeInferenceInFlightRef.add(record.id);
-      const fallback = {
-        title: buildFallbackTitle(record.text),
-        notes: "Inferring metadata for live object...",
-        categories: ["capture"],
+    queueRef.current.enqueue(async () => {
+      await processTranscriptObject(object, input.pcm, {
+        llmEnabled,
+      });
+    });
+  }
+
+  async function processTranscriptObject(
+    object: TranscriptObject,
+    pcm: Uint8Array,
+    options: { llmEnabled: boolean },
+  ): Promise<void> {
+    updateTranscriptObject(object.id, {
+      inferenceState: "processing",
+      notes: "Classifying and preparing files.",
+      fileError: "",
+    });
+
+    const fallback = buildLocalFallbackMetadata(object.transcript, object.createdAtMs);
+
+    let metadata: ClipMetadata = fallback;
+
+    if (options.llmEnabled) {
+      try {
+        metadata = await enrichMetadataWithLlm({ transcript: object.transcript, titleFallback: fallback.title });
+      } catch {
+        metadata = {
+          ...fallback,
+          notes: "Metadata inference failed. Using fallback metadata.",
+        };
+      }
+    }
+
+    updateTranscriptObject(object.id, {
+      title: metadata.title,
+      notes: metadata.notes,
+      categories: metadata.categories,
+      inferenceState: "ready",
+    });
+
+    try {
+      const wav = pcm16ToWav(pcm, AUDIO_SAMPLE_RATE, AUDIO_CHANNELS);
+      const payload = {
+        objectId: object.id,
+        audioBase64: bytesToBase64(wav),
+        transcript: object.transcript,
+        title: metadata.title,
+        notes: metadata.notes,
+        categories: metadata.categories,
+        startedAtMs: object.startedAtMs,
+        endedAtMs: object.endedAtMs,
+        sampleRate: AUDIO_SAMPLE_RATE,
+        channels: AUDIO_CHANNELS,
       };
 
-      setRealtimeMetadataByRecordId(previous => ({
-        ...previous,
-        [record.id]: {
-          ...fallback,
-          inferenceState: "pending",
-        },
-      }));
+      const { clip } = await persistClipSafe(payload);
+      setManifest(previous => ({ ...previous, updatedAtMs: Date.now(), clips: [...previous.clips, clip] }));
+      setManifestStatus(`Saved clip ${clip.id}`);
 
-      void (async () => {
-        try {
-          const inferred = llmEnabled
-            ? await enrichMetadataWithLlm({ transcript: record.text, titleFallback: fallback.title })
-            : {
-                title: fallback.title,
-                notes: "Live object captured without file attachment.",
-                categories: ["capture"],
-              };
+      updateTranscriptObject(object.id, {
+        fileState: "saved",
+        clipId: clip.id,
+        fileName: clip.fileName,
+        transcriptFileName: clip.transcriptFileName ?? "",
+        objectFileName: clip.objectFileName ?? "",
+      });
+    } catch (persistError) {
+      const detail = persistError instanceof Error ? persistError.message : String(persistError);
+      setManifestStatus(`Failed to save clip: ${detail}`);
 
-          setRealtimeMetadataByRecordId(previous => ({
-            ...previous,
-            [record.id]: {
-              ...inferred,
-              inferenceState: "ready",
-            },
-          }));
-        } catch {
-          setRealtimeMetadataByRecordId(previous => ({
-            ...previous,
-            [record.id]: {
-              ...fallback,
-              notes: "Metadata inference failed for this live object.",
-              inferenceState: "error",
-            },
-          }));
-        } finally {
-          realtimeInferenceInFlightRef.delete(record.id);
-        }
-      })();
+      updateTranscriptObject(object.id, {
+        fileState: "error",
+        fileError: detail,
+      });
     }
-  }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId, llmEnabled]);
+  }
+
+  function updateTranscriptObject(objectId: string, patch: Partial<TranscriptObject>): void {
+    setTranscriptObjects(previous =>
+      previous.map(object => {
+        if (object.id !== objectId) {
+          return object;
+        }
+
+        return {
+          ...object,
+          ...patch,
+          updatedAtMs: Date.now(),
+        };
+      }),
+    );
+  }
 
   return (
-    <main className="appShell">
-      <aside className="sidebar">
-        <h1>Transcribd</h1>
-        <p>Transcription workspace</p>
+    <main className={`appShell ${isNavCollapsed ? "navCollapsed" : ""}`}>
+      <aside className={`sidebar ${isNavCollapsed ? "collapsed" : ""}`}>
+        <div className="sidebarHeader">
+          <div className="sidebarBrand">
+            <h1>Transcribd</h1>
+            <p>Transcription workspace</p>
+          </div>
+          <button
+            type="button"
+            className="collapseButton"
+            onClick={() => {
+              setIsNavCollapsed(previous => !previous);
+            }}
+            aria-label={isNavCollapsed ? "Expand navigation" : "Collapse navigation"}
+            title={isNavCollapsed ? "Expand navigation" : "Collapse navigation"}
+          >
+            {isNavCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+        </div>
 
         <button
           className={`navButton ${activePage === "home" ? "active" : ""}`}
           onClick={() => setActivePage("home")}
+          aria-label="Home"
+          title="Home"
         >
-          Home
+          <House size={16} />
+          <span>Home</span>
         </button>
         <button
           className={`navButton ${activePage === "upload" ? "active" : ""}`}
           onClick={() => setActivePage("upload")}
+          aria-label="Upload"
+          title="Upload"
         >
-          Upload
+          <Upload size={16} />
+          <span>Upload</span>
         </button>
         <button
           className={`navButton ${activePage === "settings" ? "active" : ""}`}
           onClick={() => setActivePage("settings")}
+          aria-label="Settings"
+          title="Settings"
         >
-          Settings
+          <Settings size={16} />
+          <span>Settings</span>
         </button>
       </aside>
 
@@ -579,7 +654,7 @@ function AppContainer(): JSX.Element {
             onSeekBackward={() => timeline.seekByMs(-3000)}
             onSeekForward={() => timeline.seekByMs(3000)}
             realtimeStatus={realtime.realtimeStatus}
-            realtimeRecords={realtimeObjectRecords}
+            realtimeRecords={filteredRealtimeRecords}
             realtimeCurrentRecord={realtime.realtimeCurrentRecord}
             micPermissionText={micPermissionText}
             realtimeError={realtime.realtimeError}
@@ -639,6 +714,4 @@ function AppContainer(): JSX.Element {
   );
 }
 
-function normalizeTranscriptKey(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
-}
+

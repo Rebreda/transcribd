@@ -18,6 +18,7 @@ fn health() -> &'static str {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct PersistClipRequest {
+    object_id: String,
     audio_base64: String,
     transcript: String,
     title: String,
@@ -34,6 +35,8 @@ struct PersistClipRequest {
 struct ManifestClip {
     id: String,
     file_name: String,
+    transcript_file_name: Option<String>,
+    object_file_name: Option<String>,
     created_at_ms: i64,
     started_at_ms: i64,
     ended_at_ms: i64,
@@ -66,27 +69,67 @@ fn persist_clip(app: AppHandle, payload: PersistClipRequest) -> Result<ManifestC
         .app_data_dir()
         .map_err(|error| format!("failed to locate app data dir: {error}"))?;
     let clips_dir = app_data_dir.join("clips");
+    let transcripts_dir = app_data_dir.join("transcripts");
+    let objects_dir = app_data_dir.join("objects");
 
     fs::create_dir_all(&clips_dir)
         .map_err(|error| format!("failed to create clips directory: {error}"))?;
+    fs::create_dir_all(&transcripts_dir)
+        .map_err(|error| format!("failed to create transcripts directory: {error}"))?;
+    fs::create_dir_all(&objects_dir)
+        .map_err(|error| format!("failed to create objects directory: {error}"))?;
 
     let clip_id = format!("clip-{}", now_ms());
     let file_name = format!("{clip_id}.wav");
     let clip_path = clips_dir.join(&file_name);
+    let transcript_file_name = format!("{}.txt", payload.object_id);
+    let transcript_path = transcripts_dir.join(&transcript_file_name);
+    let object_file_name = format!("{}.json", payload.object_id);
+    let object_path = objects_dir.join(&object_file_name);
 
     let bytes = BASE64
         .decode(payload.audio_base64.as_bytes())
         .map_err(|error| format!("invalid base64 audio payload: {error}"))?;
 
     fs::write(&clip_path, bytes).map_err(|error| format!("failed to write clip file: {error}"))?;
+    fs::write(&transcript_path, payload.transcript.as_bytes())
+        .map_err(|error| format!("failed to write transcript file: {error}"))?;
 
-    let mut manifest = load_manifest(&app)?;
     let created_at = now_ms();
     let duration_ms = (payload.ended_at_ms - payload.started_at_ms).max(0);
+    let snapshot_categories = payload.categories.clone();
+    let snapshot_title = payload.title.clone();
+    let snapshot_notes = payload.notes.clone();
+    let snapshot_transcript_file_name = transcript_file_name.clone();
+    let snapshot_audio_file_name = file_name.clone();
+
+    let snapshot_clip_id = clip_id.clone();
+
+    let object_snapshot = serde_json::json!({
+        "id": payload.object_id,
+        "clipId": snapshot_clip_id,
+        "transcriptFileName": snapshot_transcript_file_name,
+        "audioFileName": snapshot_audio_file_name,
+        "title": snapshot_title,
+        "notes": snapshot_notes,
+        "categories": snapshot_categories,
+        "createdAtMs": created_at,
+        "startedAtMs": payload.started_at_ms,
+        "endedAtMs": payload.ended_at_ms,
+        "durationMs": duration_ms,
+    });
+    let object_raw = serde_json::to_string_pretty(&object_snapshot)
+        .map_err(|error| format!("failed to serialize object snapshot: {error}"))?;
+    fs::write(&object_path, object_raw)
+        .map_err(|error| format!("failed to write object file: {error}"))?;
+
+    let mut manifest = load_manifest(&app)?;
 
     let clip = ManifestClip {
         id: clip_id,
         file_name,
+        transcript_file_name: Some(transcript_file_name),
+        object_file_name: Some(object_file_name),
         created_at_ms: created_at,
         started_at_ms: payload.started_at_ms,
         ended_at_ms: payload.ended_at_ms,

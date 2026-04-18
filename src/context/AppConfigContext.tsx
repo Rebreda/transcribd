@@ -1,4 +1,9 @@
 import { createContext, useContext, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import {
+  DEFAULT_LLM_MODEL,
+  DEFAULT_SERVER_BASE_URL,
+  DEFAULT_WHISPER_MODEL,
+} from "../lib/constants";
 
 type AppConfigContextValue = {
   baseUrl: string;
@@ -24,15 +29,15 @@ type AppConfigContextValue = {
 const AppConfigContext = createContext<AppConfigContextValue | null>(null);
 
 export function AppConfigProvider({ children }: { children: React.ReactNode }): JSX.Element {
-  const [baseUrl, setBaseUrl] = useState("http://localhost:13305/api/v1");
+  const [baseUrl, setBaseUrl] = useState(DEFAULT_SERVER_BASE_URL);
   const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("Whisper-Base");
+  const [model, setModel] = useState(DEFAULT_WHISPER_MODEL);
   const [isAlwaysOnEnabled, setIsAlwaysOnEnabled] = useState(true);
   const [selectedMicId, setSelectedMicId] = useState("");
 
   const [llmEnabled, setLlmEnabled] = useState(true);
-  const [llmBaseUrl, setLlmBaseUrl] = useState("http://localhost:13305/api/v1");
-  const [llmModel, setLlmModel] = useState("gpt-4o-mini");
+  const [llmBaseUrl, setLlmBaseUrl] = useState(DEFAULT_SERVER_BASE_URL);
+  const [llmModel, setLlmModel] = useState(DEFAULT_LLM_MODEL);
   const [llmApiKey, setLlmApiKey] = useState("");
 
   const value = useMemo<AppConfigContextValue>(
