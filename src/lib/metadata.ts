@@ -1,10 +1,8 @@
 import type { ClipMetadata } from "./appTypes";
+import { buildOpenAiEndpoint } from "./openaiCompat";
 
 export function buildChatEndpoints(baseUrl: string): string[] {
-  const trimmed = baseUrl.replace(/\/+$/, "");
-  const root = trimmed.replace(/\/v1$/i, "");
-  const values = [`${trimmed}/chat/completions`, `${root}/v1/chat/completions`, `${root}/chat/completions`];
-  return values.filter((value, index, arr) => arr.indexOf(value) === index);
+  return [buildOpenAiEndpoint(baseUrl, "chat/completions")];
 }
 
 export function tryParseMetadata(raw: string): ClipMetadata | null {

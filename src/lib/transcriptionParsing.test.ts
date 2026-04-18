@@ -11,12 +11,9 @@ describe("buildTranscriptionEndpoints", () => {
     expect(endpoints).toEqual(["http://localhost:13305/api/v1/audio/transcriptions"]);
   });
 
-  it("returns both base and fallback endpoint when needed", () => {
+  it("normalizes plain host to /api/v1 endpoint", () => {
     const endpoints = buildTranscriptionEndpoints("http://localhost:13305");
-    expect(endpoints).toEqual([
-      "http://localhost:13305/audio/transcriptions",
-      "http://localhost:13305/api/v1/audio/transcriptions",
-    ]);
+    expect(endpoints).toEqual(["http://localhost:13305/api/v1/audio/transcriptions"]);
   });
 });
 

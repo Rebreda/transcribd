@@ -2,6 +2,7 @@
  * Pure transcription response parsing utilities.
  * Ported from the current GJS app to establish parity in Tauri.
  */
+import { buildOpenAiEndpoint } from "./openaiCompat";
 
 export const NON_SPEECH_TOKEN = /^\s*\[(?:blank_audio|silence|[a-z][a-z _-]{0,31})\]\s*$/i;
 
@@ -17,21 +18,11 @@ export interface TranscriptionResult {
 }
 
 /**
- * Build the ordered list of transcription endpoint URLs to try, deduplicating
- * when the base URL is already at /api/v1 or /v1.
+ * Build the ordered list of transcription endpoint URLs using Lemonade's
+ * OpenAI-compatible /api/v1 contract.
  */
 export function buildTranscriptionEndpoints(baseUrl: string): string[] {
-  const rawBase = baseUrl.replace(/\/+$/, "");
-  const root = rawBase.replace(/\/(api\/)?v1$/i, "");
-  const candidates = [`${rawBase}/audio/transcriptions`, `${root}/api/v1/audio/transcriptions`];
-
-  const unique: string[] = [];
-  for (const url of candidates) {
-    if (!unique.includes(url)) {
-      unique.push(url);
-    }
-  }
-  return unique;
+  return [buildOpenAiEndpoint(baseUrl, "audio/transcriptions")];
 }
 
 /**
