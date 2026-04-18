@@ -51,6 +51,27 @@ export type RealtimeEndpointResult =
   | { ok: true; url: string }
   | { ok: false; error: string };
 
+export type RealtimeTranscriptRecord = {
+  id: string;
+  itemId: string;
+  text: string;
+  isFinal: boolean;
+  updatedAtMs: number;
+};
+
+export type RealtimeObjectRecord = {
+  id: string;
+  itemId: string;
+  text: string;
+  updatedAtMs: number;
+  title: string;
+  notes: string;
+  categories: string[];
+  inferenceState: "pending" | "ready" | "error" | "from-clip";
+  hasAudioFile: boolean;
+  clipId: string | null;
+};
+
 export type ClipMetadata = {
   title: string;
   notes: string;

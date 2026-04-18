@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { bytesToBase64, concatChunks, float32ToPcm16Bytes } from "../lib/audioCodec";
-import type { RealtimeMessage } from "../lib/appTypes";
+import type { RealtimeMessage, RealtimeTranscriptRecord } from "../lib/appTypes";
 import { getBestEffortMicrophoneStream } from "../lib/microphone";
 import { discoverRealtimeEndpoint, extractRealtimeText } from "../lib/realtime";
 
@@ -22,7 +22,8 @@ type UseRealtimeCaptureInput = {
 type UseRealtimeCaptureOutput = {
   realtimeStatus: string;
   realtimeText: string;
-  realtimeUtterances: string[];
+  realtimeRecords: RealtimeTranscriptRecord[];
+  realtimeCurrentRecord: RealtimeTranscriptRecord | null;
   realtimeError: string;
   isRunning: boolean;
   liveAudioLevel: number;
@@ -52,7 +53,8 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
   const [realtimeStatus, setRealtimeStatus] = useState("Idle");
   const [realtimeText, setRealtimeText] = useState("");
-  const [realtimeUtterances, setRealtimeUtterances] = useState<string[]>([]);
+  const [realtimeRecords, setRealtimeRecords] = useState<RealtimeTranscriptRecord[]>([]);
+  const [realtimeCurrentRecord, setRealtimeCurrentRecord] = useState<RealtimeTranscriptRecord | null>(null);
   const [realtimeError, setRealtimeError] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [liveAudioLevel, setLiveAudioLevel] = useState(0);
@@ -100,7 +102,8 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
     setRealtimeError("");
     setRealtimeText("");
-    setRealtimeUtterances([]);
+    setRealtimeRecords([]);
+    setRealtimeCurrentRecord(null);
     setRealtimeStatus("Connecting...");
     setLiveAudioLevel(0);
     setAudioLevelBars(Array.from({ length: 48 }, () => 0));
@@ -360,6 +363,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     activeClipItemIdRef.current = "";
     currentInterimItemIdRef.current = "";
     currentInterimTextRef.current = "";
+    setRealtimeCurrentRecord(null);
     pendingSegmentsRef.current.clear();
     fallbackPendingSegmentRef.current = null;
 
@@ -412,6 +416,13 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         currentInterimItemIdRef.current = itemId;
         currentInterimTextRef.current = interimText;
         setRealtimeText(interimText);
+        setRealtimeCurrentRecord({
+          id: itemId.length > 0 ? `interim-${itemId}` : `interim-${Date.now()}`,
+          itemId,
+          text: interimText,
+          isFinal: false,
+          updatedAtMs: Date.now(),
+        });
         if (speechActiveRef.current) {
           activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, interimText);
         }
@@ -426,9 +437,18 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
           currentInterimItemIdRef.current = "";
           currentInterimTextRef.current = "";
           setRealtimeText("");
+          setRealtimeCurrentRecord(null);
         }
         activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, transcript);
-        setRealtimeUtterances(previous => [...previous, transcript]);
+        const now = Date.now();
+        const recordId = itemId.length > 0 ? `final-${itemId}` : `final-${now}`;
+        setRealtimeRecords(previous => [{
+          id: recordId,
+          itemId,
+          text: transcript,
+          isFinal: true,
+          updatedAtMs: now,
+        }, ...previous].slice(0, 120));
         void finalizeCompletedSegment(itemId, transcript);
       }
     }
@@ -437,6 +457,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       currentInterimItemIdRef.current = "";
       currentInterimTextRef.current = "";
       setRealtimeText("");
+      setRealtimeCurrentRecord(null);
       beginActiveClip(message.item_id ?? message.item?.id ?? "");
       return;
     }
@@ -616,7 +637,8 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   return {
     realtimeStatus,
     realtimeText,
-    realtimeUtterances,
+    realtimeRecords,
+    realtimeCurrentRecord,
     realtimeError,
     isRunning,
     liveAudioLevel,

@@ -1,4 +1,4 @@
-import type { ClipSort, ManifestClip } from "../lib/appTypes";
+import type { ClipSort, ManifestClip, RealtimeObjectRecord, RealtimeTranscriptRecord } from "../lib/appTypes";
 type HomePageProps = {
   isAlwaysOnEnabled: boolean;
   isRealtimeRunning: boolean;
@@ -27,7 +27,8 @@ type HomePageProps = {
   onSeekForward: () => void;
 
   realtimeStatus: string;
-  realtimeUtterances: string[];
+  realtimeRecords: RealtimeObjectRecord[];
+  realtimeCurrentRecord: RealtimeTranscriptRecord | null;
   micPermissionText: string;
   realtimeError: string;
   realtimeText: string;
@@ -35,6 +36,7 @@ type HomePageProps = {
   sentAudioChunks: number;
   receivedEvents: number;
   lastEventType: string;
+  onOpenRecordClip: (clipId: string) => void;
 };
 
 export function HomePage(props: HomePageProps): JSX.Element {
@@ -63,7 +65,8 @@ export function HomePage(props: HomePageProps): JSX.Element {
     onSeekBackward,
     onSeekForward,
     realtimeStatus,
-    realtimeUtterances,
+    realtimeRecords,
+    realtimeCurrentRecord,
     micPermissionText,
     realtimeError,
     realtimeText,
@@ -71,6 +74,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
     sentAudioChunks,
     receivedEvents,
     lastEventType,
+    onOpenRecordClip,
   } = props;
 
   return (
@@ -84,7 +88,6 @@ export function HomePage(props: HomePageProps): JSX.Element {
                 ? "Listening"
                 : "Enable Live"}
           </button>
-          <strong className="paneBrand">Transcribd</strong>
         </div>
 
         <label className="field">
@@ -185,13 +188,38 @@ export function HomePage(props: HomePageProps): JSX.Element {
           </div>
 
           <div className="liveTranscriptFeed">
-            <p className="status">
-              {realtimeText || (realtimeUtterances.length === 0 ? "(no realtime transcript yet)" : "Listening for the next utterance...")}
-            </p>
-            {realtimeUtterances.map((utterance, index) => (
-              <p key={`utterance-${index}`} className="transcriptBubble">
-                {utterance}
-              </p>
+            <div className="liveRecordCard liveRecordCardCurrent">
+              <header>
+                <strong>Current turn</strong>
+                <span>{isRealtimeRunning ? "live" : "idle"}</span>
+              </header>
+              <p>{realtimeCurrentRecord?.text || realtimeText || "Waiting for speech input..."}</p>
+            </div>
+
+            {realtimeRecords.length === 0 && (
+              <p className="status">No transcription records yet.</p>
+            )}
+
+            {realtimeRecords.map((record) => (
+              <article key={record.id} className="liveRecordCard">
+                <header>
+                  <strong>{record.title}</strong>
+                  <span>{new Date(record.updatedAtMs).toLocaleTimeString()}</span>
+                </header>
+                <p>{record.text}</p>
+                <footer>
+                  <span>{record.categories.join(" • ") || "uncategorized"}</span>
+                  <span>
+                    {record.hasAudioFile ? "saved clip" : record.inferenceState === "pending" ? "inferring" : "no audio file"}
+                  </span>
+                </footer>
+                <p className="status">{record.notes}</p>
+                {record.clipId && (
+                  <button className="textButton" onClick={() => onOpenRecordClip(record.clipId!)}>
+                    Open Clip
+                  </button>
+                )}
+              </article>
             ))}
           </div>
         </section>
@@ -274,20 +302,14 @@ export function HomePage(props: HomePageProps): JSX.Element {
           </>
         )}
 
-        <section className="panel subtlePanel liveStatusPanel">
-          <h2>Live Status</h2>
-          <p className="status">Realtime: {realtimeStatus}</p>
-          <p className="status debugLine">
-            Realtime debug: sent={sentAudioChunks}, recv={receivedEvents},
-            event={lastEventType}
-          </p>
-          <p className="status">{micPermissionText}</p>
-          {realtimeError.length > 0 && <p className="error">{realtimeError}</p>}
-          <p className="resultBlock">
-            {realtimeText || "Waiting for interim/final transcript events..."}
-          </p>
-        </section>
       </section>
+
+      <nav className="bottomStatusBar" aria-label="Live transcription status">
+        <span>Realtime: {realtimeStatus}</span>
+        <span className="debugLine">sent={sentAudioChunks} recv={receivedEvents} event={lastEventType}</span>
+        <span>{micPermissionText}</span>
+        {realtimeError.length > 0 && <span className="error">{realtimeError}</span>}
+      </nav>
     </section>
   );
 }

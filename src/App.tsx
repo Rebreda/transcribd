@@ -7,6 +7,7 @@ import {
   type ClipSort,
   type Manifest,
   type MicPermission,
+  type RealtimeObjectRecord,
 } from "./lib/appTypes";
 import { extractClipCategories, filterAndSortClips, selectClip } from "./lib/clipFinder";
 import { buildFallbackTitle, buildChatEndpoints, tryParseMetadata } from "./lib/metadata";
@@ -76,6 +77,13 @@ function AppContainer(): JSX.Element {
   const [clipCategoryFilter, setClipCategoryFilter] = useState("all");
   const [selectedClipId, setSelectedClipId] = useState("");
   const [micPermission, setMicPermission] = useState<MicPermission>("unknown");
+  const [realtimeMetadataByRecordId, setRealtimeMetadataByRecordId] = useState<Record<string, {
+    title: string;
+    notes: string;
+    categories: string[];
+    inferenceState: "pending" | "ready" | "error";
+  }>>({});
+  const realtimeInferenceInFlightRef = useState(() => new Set<string>())[0];
 
   const endpoints = useMemo(() => buildTranscriptionEndpoints(baseUrl), [baseUrl]);
   const canSubmit = selectedFile !== null && model.trim().length > 0;
@@ -117,6 +125,68 @@ function AppContainer(): JSX.Element {
   const selectedDurationMs = selectedClip?.durationMs ?? 0;
   const timeline = useTimelinePlayback(selectedClip?.id ?? "", selectedDurationMs);
   const micPermissionText = useMemo(() => getMicrophonePermissionText(micPermission), [micPermission]);
+  const newestClips = useMemo(
+    () => [...manifest.clips].sort((a, b) => b.createdAtMs - a.createdAtMs).slice(0, 80),
+    [manifest.clips],
+  );
+
+  const clipByTranscript = useMemo(() => {
+    const map = new Map<string, (typeof newestClips)[number]>();
+    for (const clip of newestClips) {
+      const key = normalizeTranscriptKey(clip.transcript);
+      if (!map.has(key)) {
+        map.set(key, clip);
+      }
+    }
+    return map;
+  }, [newestClips]);
+
+  const realtime = useRealtimeCapture({
+    baseUrl,
+    apiKey,
+    model,
+    selectedMicId,
+    isAlwaysOnEnabled,
+    onClipCaptured: async input => {
+      await handleClipCaptured(input);
+    },
+  });
+
+  const realtimeObjectRecords = useMemo<RealtimeObjectRecord[]>(() => {
+    return realtime.realtimeRecords.map(record => {
+      const matchedClip = clipByTranscript.get(normalizeTranscriptKey(record.text));
+      if (matchedClip) {
+        return {
+          id: record.id,
+          itemId: record.itemId,
+          text: record.text,
+          updatedAtMs: record.updatedAtMs,
+          title: matchedClip.title,
+          notes: matchedClip.notes,
+          categories: matchedClip.categories,
+          inferenceState: "from-clip",
+          hasAudioFile: true,
+          clipId: matchedClip.id,
+        };
+      }
+
+      const meta = realtimeMetadataByRecordId[record.id];
+      const fallbackTitle = buildFallbackTitle(record.text);
+
+      return {
+        id: record.id,
+        itemId: record.itemId,
+        text: record.text,
+        updatedAtMs: record.updatedAtMs,
+        title: meta?.title ?? fallbackTitle,
+        notes: meta?.notes ?? "Inferring metadata for live object...",
+        categories: meta?.categories ?? ["capture"],
+        inferenceState: meta?.inferenceState ?? "pending",
+        hasAudioFile: false,
+        clipId: null,
+      };
+    });
+  }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId]);
 
   async function handleClipCaptured(input: {
     pcm: Uint8Array;
@@ -160,17 +230,6 @@ function AppContainer(): JSX.Element {
       setManifestStatus(`Failed to save clip: ${detail}`);
     }
   }
-
-  const realtime = useRealtimeCapture({
-    baseUrl,
-    apiKey,
-    model,
-    selectedMicId,
-    isAlwaysOnEnabled,
-    onClipCaptured: async input => {
-      await handleClipCaptured(input);
-    },
-  });
 
   useEffect(() => {
     if (selectedClip) {
@@ -392,6 +451,69 @@ function AppContainer(): JSX.Element {
     };
   }
 
+  useEffect(() => {
+    for (const record of realtime.realtimeRecords) {
+      if (!record.isFinal) {
+        continue;
+      }
+
+      const matchedClip = clipByTranscript.get(normalizeTranscriptKey(record.text));
+      if (matchedClip) {
+        continue;
+      }
+
+      if (realtimeMetadataByRecordId[record.id] || realtimeInferenceInFlightRef.has(record.id)) {
+        continue;
+      }
+
+      realtimeInferenceInFlightRef.add(record.id);
+      const fallback = {
+        title: buildFallbackTitle(record.text),
+        notes: "Inferring metadata for live object...",
+        categories: ["capture"],
+      };
+
+      setRealtimeMetadataByRecordId(previous => ({
+        ...previous,
+        [record.id]: {
+          ...fallback,
+          inferenceState: "pending",
+        },
+      }));
+
+      void (async () => {
+        try {
+          const inferred = llmEnabled
+            ? await enrichMetadataWithLlm({ transcript: record.text, titleFallback: fallback.title })
+            : {
+                title: fallback.title,
+                notes: "Live object captured without file attachment.",
+                categories: ["capture"],
+              };
+
+          setRealtimeMetadataByRecordId(previous => ({
+            ...previous,
+            [record.id]: {
+              ...inferred,
+              inferenceState: "ready",
+            },
+          }));
+        } catch {
+          setRealtimeMetadataByRecordId(previous => ({
+            ...previous,
+            [record.id]: {
+              ...fallback,
+              notes: "Metadata inference failed for this live object.",
+              inferenceState: "error",
+            },
+          }));
+        } finally {
+          realtimeInferenceInFlightRef.delete(record.id);
+        }
+      })();
+    }
+  }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId, llmEnabled]);
+
   return (
     <main className="appShell">
       <aside className="sidebar">
@@ -457,7 +579,8 @@ function AppContainer(): JSX.Element {
             onSeekBackward={() => timeline.seekByMs(-3000)}
             onSeekForward={() => timeline.seekByMs(3000)}
             realtimeStatus={realtime.realtimeStatus}
-            realtimeUtterances={realtime.realtimeUtterances}
+            realtimeRecords={realtimeObjectRecords}
+            realtimeCurrentRecord={realtime.realtimeCurrentRecord}
             micPermissionText={micPermissionText}
             realtimeError={realtime.realtimeError}
             realtimeText={realtime.realtimeText}
@@ -465,6 +588,7 @@ function AppContainer(): JSX.Element {
             sentAudioChunks={realtime.sentAudioChunks}
             receivedEvents={realtime.receivedEvents}
             lastEventType={realtime.lastEventType}
+            onOpenRecordClip={setSelectedClipId}
           />
         ) : activePage === "upload" ? (
           <UploadPage
@@ -513,4 +637,8 @@ function AppContainer(): JSX.Element {
       </div>
     </main>
   );
+}
+
+function normalizeTranscriptKey(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }

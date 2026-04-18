@@ -12,7 +12,7 @@
     "debug:transcribe:http": "node scripts/debug-http-transcription.mjs",
     "debug:transcribe:realtime": "node scripts/debug-realtime-transcription.mjs",
     "tauri:dev": "tauri dev",
-    "tauri:build": "CARGO_BUILD_JOBS=1 tauri build --bundles none",
+    "tauri:build": "CARGO_BUILD_JOBS=1 tauri build --no-bundle",
     "tauri:bundle": "CARGO_BUILD_JOBS=1 tauri build"
   },
   "dependencies": {

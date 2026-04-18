@@ -62,6 +62,14 @@ Desktop build:
 npm run tauri:build
 ```
 
+This default desktop build is intentionally throttled for local machines: it limits Cargo to one job and skips OS package bundling.
+
+Full Linux package build:
+
+```bash
+npm run tauri:bundle
+```
+
 Default Linux bundle targets are `deb` and `rpm`.
 
 Note on AppImage: on newer Fedora toolchains, linuxdeploy can fail while stripping shared libraries with `.relr.dyn` sections. If you need AppImage output, build it in an environment with compatible linuxdeploy/binutils tooling.
