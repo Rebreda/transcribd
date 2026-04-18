@@ -59,5 +59,5 @@ export type AudioInputDevice = {
 };
 
 export type ClipSort = "newest" | "oldest" | "title";
-export type AppPage = "home" | "settings";
+export type AppPage = "home" | "upload" | "settings";
 export type MicPermission = "unknown" | "granted" | "denied" | "prompt";

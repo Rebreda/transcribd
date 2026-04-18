@@ -22,8 +22,11 @@ type UseRealtimeCaptureInput = {
 type UseRealtimeCaptureOutput = {
   realtimeStatus: string;
   realtimeText: string;
+  realtimeUtterances: string[];
   realtimeError: string;
   isRunning: boolean;
+  liveAudioLevel: number;
+  audioLevelBars: number[];
   sentAudioChunks: number;
   receivedEvents: number;
   lastEventType: string;
@@ -42,8 +45,11 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
   const [realtimeStatus, setRealtimeStatus] = useState("Idle");
   const [realtimeText, setRealtimeText] = useState("");
+  const [realtimeUtterances, setRealtimeUtterances] = useState<string[]>([]);
   const [realtimeError, setRealtimeError] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [liveAudioLevel, setLiveAudioLevel] = useState(0);
+  const [audioLevelBars, setAudioLevelBars] = useState<number[]>(() => Array.from({ length: 48 }, () => 0));
   const [sentAudioChunks, setSentAudioChunks] = useState(0);
   const [receivedEvents, setReceivedEvents] = useState(0);
   const [lastEventType, setLastEventType] = useState("(none)");
@@ -56,12 +62,16 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
   const preRollChunksRef = useRef<Uint8Array[]>([]);
   const preRollBytesRef = useRef(0);
+  const segmentChunksRef = useRef<Uint8Array[]>([]);
+  const segmentBytesRef = useRef(0);
+  const segmentStartedMsRef = useRef(0);
   const activeClipChunksRef = useRef<Uint8Array[]>([]);
   const activeClipBytesRef = useRef(0);
   const activeClipStartedMsRef = useRef(0);
   const activeClipTranscriptRef = useRef("");
   const speechActiveRef = useRef(false);
   const lastTextPieceRef = useRef("");
+  const smoothedLevelRef = useRef(0);
   const pendingCloseAfterCommitRef = useRef(false);
   const commitCloseTimerRef = useRef<number | null>(null);
 
@@ -79,7 +89,10 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
     setRealtimeError("");
     setRealtimeText("");
+    setRealtimeUtterances([]);
     setRealtimeStatus("Connecting...");
+    setLiveAudioLevel(0);
+    setAudioLevelBars(Array.from({ length: 48 }, () => 0));
     setSentAudioChunks(0);
     setReceivedEvents(0);
     setLastEventType("(none)");
@@ -260,12 +273,22 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       }
 
       const inputBuffer = event.inputBuffer.getChannelData(0);
+      const rms = calculateRms(inputBuffer);
+      const smoothed = smoothedLevelRef.current * 0.75 + rms * 0.25;
+      smoothedLevelRef.current = smoothed;
+      setLiveAudioLevel(smoothed);
+      setAudioLevelBars(previous => {
+        const next = [...previous.slice(1), Math.min(1, smoothed * 5)];
+        return next;
+      });
+
       const pcm16 = float32ToPcm16Bytes(inputBuffer, event.inputBuffer.sampleRate, TARGET_SAMPLE_RATE);
       if (pcm16.length === 0) {
         return;
       }
 
       pushPreRollChunk(pcm16);
+      pushSegmentChunk(pcm16);
 
       if (speechActiveRef.current) {
         activeClipChunksRef.current.push(pcm16);
@@ -323,6 +346,12 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
     preRollChunksRef.current = [];
     preRollBytesRef.current = 0;
+    segmentChunksRef.current = [];
+    segmentBytesRef.current = 0;
+    segmentStartedMsRef.current = 0;
+    smoothedLevelRef.current = 0;
+    setLiveAudioLevel(0);
+    setAudioLevelBars(Array.from({ length: 48 }, () => 0));
   }
 
   function pushPreRollChunk(chunk: Uint8Array): void {
@@ -333,6 +362,24 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     while (preRollBytesRef.current > maxBytes && preRollChunksRef.current.length > 0) {
       const removed = preRollChunksRef.current.shift();
       preRollBytesRef.current -= removed?.byteLength ?? 0;
+    }
+  }
+
+  function pushSegmentChunk(chunk: Uint8Array): void {
+    if (segmentStartedMsRef.current === 0) {
+      segmentStartedMsRef.current = Date.now();
+    }
+
+    segmentChunksRef.current.push(chunk);
+    segmentBytesRef.current += chunk.byteLength;
+
+    const maxBytes = TARGET_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS;
+    while (segmentBytesRef.current > maxBytes && segmentChunksRef.current.length > 0) {
+      const removed = segmentChunksRef.current.shift();
+      segmentBytesRef.current -= removed?.byteLength ?? 0;
+      if (segmentStartedMsRef.current !== 0) {
+        segmentStartedMsRef.current += Math.round(((removed?.byteLength ?? 0) / (TARGET_SAMPLE_RATE * 2)) * 1000);
+      }
     }
   }
 
@@ -351,6 +398,14 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         if (!current.endsWith(textPiece)) {
           activeClipTranscriptRef.current = `${current} ${textPiece}`.trim();
         }
+      }
+    }
+
+    if (message.type === "conversation.item.input_audio_transcription.completed") {
+      const transcript = textPiece || "";
+      if (transcript.length > 0) {
+        setRealtimeUtterances(previous => [...previous, transcript]);
+        void finalizeCompletedSegment(transcript);
       }
     }
 
@@ -400,6 +455,31 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     activeClipTranscriptRef.current = "";
     activeClipChunksRef.current = [...preRollChunksRef.current];
     activeClipBytesRef.current = activeClipChunksRef.current.reduce((total, chunk) => total + chunk.byteLength, 0);
+    segmentChunksRef.current = [...preRollChunksRef.current];
+    segmentBytesRef.current = segmentChunksRef.current.reduce((total, chunk) => total + chunk.byteLength, 0);
+    segmentStartedMsRef.current = Date.now() - PRE_ROLL_MS;
+  }
+
+  async function finalizeCompletedSegment(transcript: string): Promise<void> {
+    const pcm = concatChunks(segmentChunksRef.current);
+    const endedAtMs = Date.now();
+    const startedAtMs = segmentStartedMsRef.current || endedAtMs;
+
+    segmentChunksRef.current = [];
+    segmentBytesRef.current = 0;
+    segmentStartedMsRef.current = 0;
+
+    if (pcm.byteLength < MIN_CLIP_BYTES || transcript.trim().length === 0) {
+      return;
+    }
+
+    await onClipCaptured({
+      pcm,
+      transcript: transcript.trim(),
+      startedAtMs,
+      endedAtMs,
+      reason: "vad-stop",
+    });
   }
 
   async function finalizeActiveClip(reason: "vad-stop" | "max-duration"): Promise<void> {
@@ -433,8 +513,11 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   return {
     realtimeStatus,
     realtimeText,
+    realtimeUtterances,
     realtimeError,
     isRunning,
+    liveAudioLevel,
+    audioLevelBars,
     sentAudioChunks,
     receivedEvents,
     lastEventType,
@@ -442,6 +525,20 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     stopRealtime,
     setRealtimeError,
   };
+}
+
+function calculateRms(buffer: Float32Array): number {
+  if (buffer.length === 0) {
+    return 0;
+  }
+
+  let sum = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    const sample = buffer[i] ?? 0;
+    sum += sample * sample;
+  }
+
+  return Math.sqrt(sum / buffer.length);
 }
 
 function parseRealtimeFrame(raw: string): RealtimeMessage {

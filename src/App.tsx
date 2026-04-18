@@ -23,6 +23,7 @@ import {
 } from "./lib/transcriptionParsing";
 import { HomePage } from "./components/HomePage";
 import { SettingsPage } from "./components/SettingsPage";
+import { UploadPage } from "./components/UploadPage";
 import { AppConfigProvider, useAppConfig } from "./context/AppConfigContext";
 import { useRealtimeCapture } from "./hooks/useRealtimeCapture";
 import { useTimelinePlayback } from "./hooks/useTimelinePlayback";
@@ -151,13 +152,9 @@ function AppContainer(): JSX.Element {
     };
 
     try {
-      const { clip, backend } = await persistClipSafe(payload);
+      const { clip } = await persistClipSafe(payload);
       setManifest(previous => ({ ...previous, updatedAtMs: Date.now(), clips: [...previous.clips, clip] }));
-      setManifestStatus(
-        backend === "tauri"
-          ? `Saved clip ${clip.id}`
-          : `Saved clip ${clip.id} (web local storage)`,
-      );
+      setManifestStatus(`Saved clip ${clip.id}`);
     } catch (persistError) {
       const detail = persistError instanceof Error ? persistError.message : String(persistError);
       setManifestStatus(`Failed to save clip: ${detail}`);
@@ -182,6 +179,27 @@ function AppContainer(): JSX.Element {
       setSelectedClipId("");
     }
   }, [selectedClip]);
+
+  useEffect(() => {
+    if (!isAlwaysOnEnabled) {
+      if (realtime.isRunning) {
+        realtime.stopRealtime();
+      }
+      return;
+    }
+
+    if (micPermission !== "granted" || realtime.isRunning) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void realtime.startRealtime();
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isAlwaysOnEnabled, micPermission, selectedMicId, baseUrl, apiKey, model, realtime.isRunning]);
 
   useEffect(() => {
     void loadManifest();
@@ -256,13 +274,9 @@ function AppContainer(): JSX.Element {
 
   async function loadManifest(): Promise<void> {
     try {
-      const { manifest: loaded, backend } = await loadManifestSafe();
+      const { manifest: loaded } = await loadManifestSafe();
       setManifest(loaded);
-      setManifestStatus(
-        backend === "tauri"
-          ? `Loaded ${loaded.clips.length} clips`
-          : `Loaded ${loaded.clips.length} clips (web local storage)`,
-      );
+      setManifestStatus(`Loaded ${loaded.clips.length} clips`);
     } catch (manifestError) {
       const detail = manifestError instanceof Error ? manifestError.message : String(manifestError);
       setManifestStatus(`Manifest unavailable: ${detail}`);
@@ -391,6 +405,12 @@ function AppContainer(): JSX.Element {
           Home
         </button>
         <button
+          className={`navButton ${activePage === "upload" ? "active" : ""}`}
+          onClick={() => setActivePage("upload")}
+        >
+          Upload
+        </button>
+        <button
           className={`navButton ${activePage === "settings" ? "active" : ""}`}
           onClick={() => setActivePage("settings")}
         >
@@ -401,11 +421,16 @@ function AppContainer(): JSX.Element {
       <div className="app">
         {activePage === "home" ? (
           <HomePage
+            isAlwaysOnEnabled={isAlwaysOnEnabled}
             isRealtimeRunning={realtime.isRunning}
             onToggleRealtime={() => {
               if (realtime.isRunning) {
+                setIsAlwaysOnEnabled(false);
                 realtime.stopRealtime();
               } else {
+                if (!isAlwaysOnEnabled) {
+                  setIsAlwaysOnEnabled(true);
+                }
                 void realtime.startRealtime();
               }
             }}
@@ -431,20 +456,18 @@ function AppContainer(): JSX.Element {
             onToggleTimelinePlay={timeline.togglePlay}
             onSeekBackward={() => timeline.seekByMs(-3000)}
             onSeekForward={() => timeline.seekByMs(3000)}
-            onRequestMicAccessAndRefresh={() => {
-              void requestMicAccessAndRefresh();
-            }}
-            onRefreshMicPermission={() => {
-              void refreshMicPermission();
-            }}
-            onOpenSettings={() => setActivePage("settings")}
             realtimeStatus={realtime.realtimeStatus}
+            realtimeUtterances={realtime.realtimeUtterances}
             micPermissionText={micPermissionText}
             realtimeError={realtime.realtimeError}
             realtimeText={realtime.realtimeText}
+            audioLevelBars={realtime.audioLevelBars}
             sentAudioChunks={realtime.sentAudioChunks}
             receivedEvents={realtime.receivedEvents}
             lastEventType={realtime.lastEventType}
+          />
+        ) : activePage === "upload" ? (
+          <UploadPage
             onSelectFile={setSelectedFile}
             canSubmit={canSubmit}
             onTranscribe={() => {

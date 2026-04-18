@@ -1,7 +1,6 @@
 import type { ClipSort, ManifestClip } from "../lib/appTypes";
-import type { TranscriptionResult } from "../lib/transcriptionParsing";
-
 type HomePageProps = {
+  isAlwaysOnEnabled: boolean;
   isRealtimeRunning: boolean;
   onToggleRealtime: () => void;
 
@@ -27,28 +26,20 @@ type HomePageProps = {
   onSeekBackward: () => void;
   onSeekForward: () => void;
 
-  onRequestMicAccessAndRefresh: () => void;
-  onRefreshMicPermission: () => void;
-  onOpenSettings: () => void;
   realtimeStatus: string;
+  realtimeUtterances: string[];
   micPermissionText: string;
   realtimeError: string;
   realtimeText: string;
+  audioLevelBars: number[];
   sentAudioChunks: number;
   receivedEvents: number;
   lastEventType: string;
-
-  onSelectFile: (file: File | null) => void;
-  canSubmit: boolean;
-  onTranscribe: () => void;
-  status: string;
-  attemptedEndpoint: string;
-  transcriptionError: string;
-  transcriptionResult: TranscriptionResult | null;
 };
 
 export function HomePage(props: HomePageProps): JSX.Element {
   const {
+    isAlwaysOnEnabled,
     isRealtimeRunning,
     onToggleRealtime,
     clipSearch,
@@ -71,23 +62,15 @@ export function HomePage(props: HomePageProps): JSX.Element {
     onToggleTimelinePlay,
     onSeekBackward,
     onSeekForward,
-    onRequestMicAccessAndRefresh,
-    onRefreshMicPermission,
-    onOpenSettings,
     realtimeStatus,
+    realtimeUtterances,
     micPermissionText,
     realtimeError,
     realtimeText,
+    audioLevelBars,
     sentAudioChunks,
     receivedEvents,
     lastEventType,
-    onSelectFile,
-    canSubmit,
-    onTranscribe,
-    status,
-    attemptedEndpoint,
-    transcriptionError,
-    transcriptionResult,
   } = props;
 
   return (
@@ -95,7 +78,11 @@ export function HomePage(props: HomePageProps): JSX.Element {
       <aside className="recordingsPane">
         <div className="recordingsToolbar">
           <button className="recordAction" onClick={onToggleRealtime}>
-            {isRealtimeRunning ? "Stop" : "Record"}
+            {isRealtimeRunning
+              ? "Pause"
+              : isAlwaysOnEnabled
+                ? "Listening"
+                : "Enable Live"}
           </button>
           <strong className="paneBrand">Transcribd</strong>
         </div>
@@ -104,7 +91,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
           <span>Filter</span>
           <input
             value={clipSearch}
-            onChange={event => onChangeClipSearch(event.target.value)}
+            onChange={(event) => onChangeClipSearch(event.target.value)}
             placeholder="Filter by category, text, title..."
           />
         </label>
@@ -112,9 +99,14 @@ export function HomePage(props: HomePageProps): JSX.Element {
         <div className="finderControls compact">
           <label className="field">
             <span>Category</span>
-            <select value={clipCategoryFilter} onChange={event => onChangeClipCategoryFilter(event.target.value)}>
+            <select
+              value={clipCategoryFilter}
+              onChange={(event) =>
+                onChangeClipCategoryFilter(event.target.value)
+              }
+            >
               <option value="all">All Dates</option>
-              {clipCategories.map(category => (
+              {clipCategories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -124,7 +116,12 @@ export function HomePage(props: HomePageProps): JSX.Element {
 
           <label className="field">
             <span>Sort</span>
-            <select value={clipSort} onChange={event => onChangeClipSort(event.target.value as ClipSort)}>
+            <select
+              value={clipSort}
+              onChange={(event) =>
+                onChangeClipSort(event.target.value as ClipSort)
+              }
+            >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
               <option value="title">Title A-Z</option>
@@ -133,8 +130,10 @@ export function HomePage(props: HomePageProps): JSX.Element {
         </div>
 
         <div className="clipListCompact listMode">
-          {filteredClips.length === 0 && <p className="status">No matching recordings.</p>}
-          {filteredClips.map(clip => (
+          {filteredClips.length === 0 && (
+            <p className="status">No matching recordings.</p>
+          )}
+          {filteredClips.map((clip) => (
             <button
               key={clip.id}
               className={`clipItemButton ${selectedClip?.id === clip.id ? "active" : ""}`}
@@ -142,7 +141,8 @@ export function HomePage(props: HomePageProps): JSX.Element {
             >
               <strong>{clip.title}</strong>
               <span>
-                {new Date(clip.createdAtMs).toLocaleTimeString()} | {formatClock(clip.durationMs)}
+                {new Date(clip.createdAtMs).toLocaleTimeString()} |{" "}
+                {formatClock(clip.durationMs)}
               </span>
               <span>{clip.categories.join(" • ") || "uncategorized"}</span>
             </button>
@@ -158,7 +158,49 @@ export function HomePage(props: HomePageProps): JSX.Element {
       </aside>
 
       <section className="detailPane">
-        {!selectedClip && <p className="status">Select a recording to view details.</p>}
+        <section className="livePanel">
+          <header className="livePanelHeader">
+            <div>
+              <h2>Live Transcription</h2>
+              <p>
+                {isRealtimeRunning
+                  ? "Always-on transcription is active. Speech clips are auto-saved to disk and indexed below."
+                  : "Enable live listening to continuously transcribe and auto-save searchable clips."}
+              </p>
+            </div>
+            <div className={`liveDot ${isRealtimeRunning ? "active" : ""}`} />
+          </header>
+
+          <div
+            className="liveBars"
+            role="img"
+            aria-label="Realtime microphone level visualization"
+          >
+            {audioLevelBars.map((value, index) => (
+              <span
+                key={`live-bar-${index}`}
+                style={{ height: `${10 + value * 90}%` }}
+              />
+            ))}
+          </div>
+
+          <div className="liveTranscriptFeed">
+            {realtimeUtterances.length === 0 && (
+              <p className="status">
+                {realtimeText || "(no realtime transcript yet)"}
+              </p>
+            )}
+            {realtimeUtterances.map((utterance, index) => (
+              <p key={`utterance-${index}`} className="transcriptBubble">
+                {utterance}
+              </p>
+            ))}
+          </div>
+        </section>
+
+        {!selectedClip && (
+          <p className="status">Select a recording to view details.</p>
+        )}
 
         {selectedClip && (
           <>
@@ -168,21 +210,31 @@ export function HomePage(props: HomePageProps): JSX.Element {
             </header>
 
             <div className="clipMetaRow">
-              <span>{new Date(selectedClip.createdAtMs).toLocaleTimeString()}</span>
+              <span>
+                {new Date(selectedClip.createdAtMs).toLocaleTimeString()}
+              </span>
               <span>{formatClock(selectedClip.durationMs)}</span>
-              <span>{selectedClip.categories.join(" • ") || "uncategorized"}</span>
+              <span>
+                {selectedClip.categories.join(" • ") || "uncategorized"}
+              </span>
             </div>
 
             <section className="wavePanel">
-              <div className="waveBars" role="img" aria-label="Recording waveform preview">
+              <div
+                className="waveBars"
+                role="img"
+                aria-label="Recording waveform preview"
+              >
                 {waveformBars.map((value, index) => (
                   <span
                     key={`${selectedClip.id}-${index}`}
                     style={{
                       height: `${18 + value * 88}%`,
-                      opacity: index / waveformBars.length <= safePlayheadMs / Math.max(selectedDurationMs, 1)
-                        ? 1
-                        : 0.5,
+                      opacity:
+                        index / waveformBars.length <=
+                        safePlayheadMs / Math.max(selectedDurationMs, 1)
+                          ? 1
+                          : 0.5,
                     }}
                   />
                 ))}
@@ -196,7 +248,9 @@ export function HomePage(props: HomePageProps): JSX.Element {
                   max={Math.max(selectedDurationMs, 1)}
                   step={25}
                   value={safePlayheadMs}
-                  onChange={event => onSetPlayheadMs(Number(event.target.value))}
+                  onChange={(event) =>
+                    onSetPlayheadMs(Number(event.target.value))
+                  }
                 />
                 <span>{formatClock(selectedDurationMs)}</span>
               </div>
@@ -222,46 +276,18 @@ export function HomePage(props: HomePageProps): JSX.Element {
           </>
         )}
 
-        <section className="panel subtlePanel">
-          <h2>Quick Actions</h2>
-          <div className="row">
-            <button className="secondary" onClick={onRequestMicAccessAndRefresh}>
-              Detect Microphones
-            </button>
-            <button className="secondary" onClick={onRefreshMicPermission}>
-              Refresh Permission
-            </button>
-            <button className="secondary" onClick={onOpenSettings}>Open Settings</button>
-          </div>
+        <section className="panel subtlePanel liveStatusPanel">
+          <h2>Live Status</h2>
           <p className="status">Realtime: {realtimeStatus}</p>
-          <p className="status">Realtime debug: sent chunks={sentAudioChunks}, recv events={receivedEvents}, last event={lastEventType}</p>
+          <p className="status debugLine">
+            Realtime debug: sent={sentAudioChunks}, recv={receivedEvents},
+            event={lastEventType}
+          </p>
           <p className="status">{micPermissionText}</p>
           {realtimeError.length > 0 && <p className="error">{realtimeError}</p>}
-          <p className="resultBlock">{realtimeText || "(no realtime transcript yet)"}</p>
-        </section>
-
-        <section className="panel subtlePanel">
-          <h2>Manual File Transcription</h2>
-          <div className="grid2">
-            <label className="field">
-              <span>Audio File</span>
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={event => onSelectFile(event.target.files?.[0] ?? null)}
-              />
-            </label>
-          </div>
-
-          <button className="primary" onClick={onTranscribe} disabled={!canSubmit}>
-            Transcribe File
-          </button>
-
-          <p className="status">Status: {status}</p>
-          {attemptedEndpoint.length > 0 && <p className="status">Last endpoint: {attemptedEndpoint}</p>}
-          {transcriptionError.length > 0 && <p className="error">{transcriptionError}</p>}
-          <p>Parsed text: {transcriptionResult?.text || "(empty)"}</p>
-          <p>Segments: {transcriptionResult?.segments.length ?? 0}</p>
+          <p className="resultBlock">
+            {realtimeText || "Waiting for interim/final transcript events..."}
+          </p>
         </section>
       </section>
     </section>
