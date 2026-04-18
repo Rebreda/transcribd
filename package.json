@@ -12,7 +12,8 @@
     "debug:transcribe:http": "node scripts/debug-http-transcription.mjs",
     "debug:transcribe:realtime": "node scripts/debug-realtime-transcription.mjs",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "CARGO_BUILD_JOBS=1 tauri build --bundles none",
+    "tauri:bundle": "CARGO_BUILD_JOBS=1 tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",

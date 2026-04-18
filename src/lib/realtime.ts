@@ -29,7 +29,11 @@ export async function discoverRealtimeEndpoint(baseUrl: string, apiKey: string, 
     }
 
     const wsProtocol = base.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${wsProtocol}//${base.hostname}:${payload.websocket_port}/realtime?model=${encodeURIComponent(model || "Whisper-Base")}`;
+    const query = new URLSearchParams({ model: model || "Whisper-Base" });
+    if (apiKey.length > 0) {
+      query.set("api_key", apiKey);
+    }
+    const wsUrl = `${wsProtocol}//${base.hostname}:${payload.websocket_port}/realtime?${query.toString()}`;
 
     return {
       ok: true,

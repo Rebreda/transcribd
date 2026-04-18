@@ -21,9 +21,13 @@ export type Manifest = {
 
 export type RealtimeMessage = {
   type: string;
+  event_id?: string;
+  item_id?: string;
+  content_index?: number;
   transcript?: string;
   delta?: string;
   item?: {
+    id?: string;
     transcript?: string;
     text?: string;
     delta?: string;

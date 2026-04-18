@@ -40,6 +40,13 @@ const PRE_ROLL_MS = 1200;
 const MAX_CLIP_SECONDS = 90;
 const MIN_CLIP_BYTES = 3200;
 
+type PendingSegment = {
+  pcm: Uint8Array;
+  startedAtMs: number;
+  endedAtMs: number;
+  reason: "vad-stop" | "max-duration";
+};
+
 export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeCaptureOutput {
   const { baseUrl, apiKey, model, selectedMicId, isAlwaysOnEnabled, onClipCaptured } = input;
 
@@ -69,8 +76,12 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   const activeClipBytesRef = useRef(0);
   const activeClipStartedMsRef = useRef(0);
   const activeClipTranscriptRef = useRef("");
+  const activeClipItemIdRef = useRef("");
   const speechActiveRef = useRef(false);
-  const lastTextPieceRef = useRef("");
+  const currentInterimItemIdRef = useRef("");
+  const currentInterimTextRef = useRef("");
+  const pendingSegmentsRef = useRef<Map<string, PendingSegment>>(new Map());
+  const fallbackPendingSegmentRef = useRef<PendingSegment | null>(null);
   const smoothedLevelRef = useRef(0);
   const pendingCloseAfterCommitRef = useRef(false);
   const commitCloseTimerRef = useRef<number | null>(null);
@@ -134,15 +145,10 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
           type: "session.update",
           session: {
             model: model.trim(),
-            input_audio_format: "pcm16",
-            input_audio_transcription: {
-              model: model.trim(),
-            },
             turn_detection: {
-              type: "server_vad",
-              threshold: 0.45,
-              silence_duration_ms: 500,
-              prefix_padding_ms: 320,
+              threshold: 0.01,
+              silence_duration_ms: 800,
+              prefix_padding_ms: 250,
             },
           },
         }),
@@ -212,7 +218,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       return;
     }
 
-    teardownRealtimeAudioPipeline();
+    teardownRealtimeAudioInput();
 
     if (ws.readyState !== WebSocket.OPEN) {
       ws.close();
@@ -307,12 +313,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     processor.connect(ctx.destination);
   }
 
-  function teardownRealtimeAudioPipeline(): void {
-    speechActiveRef.current = false;
-    activeClipChunksRef.current = [];
-    activeClipBytesRef.current = 0;
-    activeClipTranscriptRef.current = "";
-
+  function teardownRealtimeAudioInput(): void {
     if (processorNodeRef.current) {
       try {
         processorNodeRef.current.disconnect();
@@ -344,14 +345,29 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       mediaStreamRef.current = null;
     }
 
+    smoothedLevelRef.current = 0;
+    setLiveAudioLevel(0);
+    setAudioLevelBars(Array.from({ length: 48 }, () => 0));
+  }
+
+  function teardownRealtimeAudioPipeline(): void {
+    teardownRealtimeAudioInput();
+
+    speechActiveRef.current = false;
+    activeClipChunksRef.current = [];
+    activeClipBytesRef.current = 0;
+    activeClipTranscriptRef.current = "";
+    activeClipItemIdRef.current = "";
+    currentInterimItemIdRef.current = "";
+    currentInterimTextRef.current = "";
+    pendingSegmentsRef.current.clear();
+    fallbackPendingSegmentRef.current = null;
+
     preRollChunksRef.current = [];
     preRollBytesRef.current = 0;
     segmentChunksRef.current = [];
     segmentBytesRef.current = 0;
     segmentStartedMsRef.current = 0;
-    smoothedLevelRef.current = 0;
-    setLiveAudioLevel(0);
-    setAudioLevelBars(Array.from({ length: 48 }, () => 0));
   }
 
   function pushPreRollChunk(chunk: Uint8Array): void {
@@ -388,15 +404,16 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     setLastEventType(message.type || "(unknown)");
 
     const textPiece = extractRealtimeText(message);
-    if (textPiece.length > 0) {
-      if (textPiece !== lastTextPieceRef.current) {
-        setRealtimeText(previous => (previous.length > 0 ? `${previous} ${textPiece}` : textPiece));
-        lastTextPieceRef.current = textPiece;
-      }
-      if (speechActiveRef.current) {
-        const current = activeClipTranscriptRef.current.trim();
-        if (!current.endsWith(textPiece)) {
-          activeClipTranscriptRef.current = `${current} ${textPiece}`.trim();
+
+    if (message.type === "conversation.item.input_audio_transcription.delta") {
+      const itemId = message.item_id ?? message.item?.id ?? "";
+      const interimText = textPiece;
+      if (interimText.length > 0) {
+        currentInterimItemIdRef.current = itemId;
+        currentInterimTextRef.current = interimText;
+        setRealtimeText(interimText);
+        if (speechActiveRef.current) {
+          activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, interimText);
         }
       }
     }
@@ -404,23 +421,40 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     if (message.type === "conversation.item.input_audio_transcription.completed") {
       const transcript = textPiece || "";
       if (transcript.length > 0) {
+        const itemId = message.item_id ?? message.item?.id ?? "";
+        if (itemId.length === 0 || itemId === currentInterimItemIdRef.current) {
+          currentInterimItemIdRef.current = "";
+          currentInterimTextRef.current = "";
+          setRealtimeText("");
+        }
+        activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, transcript);
         setRealtimeUtterances(previous => [...previous, transcript]);
-        void finalizeCompletedSegment(transcript);
+        void finalizeCompletedSegment(itemId, transcript);
       }
     }
 
     if (message.type === "input_audio_buffer.speech_started") {
-      beginActiveClip();
+      currentInterimItemIdRef.current = "";
+      currentInterimTextRef.current = "";
+      setRealtimeText("");
+      beginActiveClip(message.item_id ?? message.item?.id ?? "");
       return;
     }
 
     if (message.type === "input_audio_buffer.speech_stopped") {
       if (isAlwaysOnEnabled) {
-        void finalizeActiveClip("vad-stop");
+        stageActiveClipForItem(message.item_id ?? activeClipItemIdRef.current, "vad-stop");
       } else {
         speechActiveRef.current = false;
       }
       return;
+    }
+
+    if (message.type === "input_audio_buffer.committed") {
+      const itemId = message.item_id ?? "";
+      if (itemId.length > 0 && !pendingSegmentsRef.current.has(itemId)) {
+        stageBufferedSegmentForItem(itemId, "vad-stop");
+      }
     }
 
     if (
@@ -449,8 +483,9 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     }
   }
 
-  function beginActiveClip(): void {
+  function beginActiveClip(itemId: string): void {
     speechActiveRef.current = true;
+    activeClipItemIdRef.current = itemId;
     activeClipStartedMsRef.current = Date.now();
     activeClipTranscriptRef.current = "";
     activeClipChunksRef.current = [...preRollChunksRef.current];
@@ -460,26 +495,93 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     segmentStartedMsRef.current = Date.now() - PRE_ROLL_MS;
   }
 
-  async function finalizeCompletedSegment(transcript: string): Promise<void> {
-    const pcm = concatChunks(segmentChunksRef.current);
-    const endedAtMs = Date.now();
-    const startedAtMs = segmentStartedMsRef.current || endedAtMs;
-
-    segmentChunksRef.current = [];
-    segmentBytesRef.current = 0;
-    segmentStartedMsRef.current = 0;
-
-    if (pcm.byteLength < MIN_CLIP_BYTES || transcript.trim().length === 0) {
+  async function finalizeCompletedSegment(itemId: string, transcript: string): Promise<void> {
+    const pending = resolvePendingSegment(itemId);
+    if (!pending || transcript.trim().length === 0) {
       return;
     }
 
     await onClipCaptured({
-      pcm,
+      pcm: pending.pcm,
       transcript: transcript.trim(),
+      startedAtMs: pending.startedAtMs,
+      endedAtMs: pending.endedAtMs,
+      reason: pending.reason,
+    });
+  }
+
+  function stageActiveClipForItem(itemId: string, reason: "vad-stop" | "max-duration"): void {
+    if (!speechActiveRef.current && reason !== "max-duration") {
+      return;
+    }
+
+    speechActiveRef.current = false;
+    const endedAtMs = Date.now();
+    const startedAtMs = activeClipStartedMsRef.current || endedAtMs;
+    const pcm = concatChunks(activeClipChunksRef.current);
+
+    activeClipChunksRef.current = [];
+    activeClipBytesRef.current = 0;
+    activeClipTranscriptRef.current = "";
+    activeClipItemIdRef.current = "";
+    clearSegmentBuffer();
+
+    if (pcm.byteLength < MIN_CLIP_BYTES) {
+      return;
+    }
+
+    const pending: PendingSegment = {
+      pcm,
       startedAtMs,
       endedAtMs,
-      reason: "vad-stop",
+      reason,
+    };
+
+    if (itemId.length > 0) {
+      pendingSegmentsRef.current.set(itemId, pending);
+      return;
+    }
+
+    fallbackPendingSegmentRef.current = pending;
+  }
+
+  function stageBufferedSegmentForItem(itemId: string, reason: "vad-stop" | "max-duration"): void {
+    const pcm = concatChunks(segmentChunksRef.current);
+    const endedAtMs = Date.now();
+    const startedAtMs = segmentStartedMsRef.current || endedAtMs;
+
+    clearSegmentBuffer();
+
+    if (pcm.byteLength < MIN_CLIP_BYTES) {
+      return;
+    }
+
+    pendingSegmentsRef.current.set(itemId, {
+      pcm,
+      startedAtMs,
+      endedAtMs,
+      reason,
     });
+  }
+
+  function resolvePendingSegment(itemId: string): PendingSegment | null {
+    if (itemId.length > 0) {
+      const exact = pendingSegmentsRef.current.get(itemId) ?? null;
+      if (exact) {
+        pendingSegmentsRef.current.delete(itemId);
+        return exact;
+      }
+    }
+
+    const fallback = fallbackPendingSegmentRef.current;
+    fallbackPendingSegmentRef.current = null;
+    return fallback;
+  }
+
+  function clearSegmentBuffer(): void {
+    segmentChunksRef.current = [];
+    segmentBytesRef.current = 0;
+    segmentStartedMsRef.current = 0;
   }
 
   async function finalizeActiveClip(reason: "vad-stop" | "max-duration"): Promise<void> {
@@ -496,6 +598,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     activeClipChunksRef.current = [];
     activeClipBytesRef.current = 0;
     activeClipTranscriptRef.current = "";
+    activeClipItemIdRef.current = "";
 
     if (pcm.byteLength < MIN_CLIP_BYTES || transcript.length === 0) {
       return;
@@ -525,6 +628,28 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     stopRealtime,
     setRealtimeError,
   };
+}
+
+function mergeTranscriptText(existing: string, nextChunk: string): string {
+  const trimmedNext = nextChunk.trim();
+  if (trimmedNext.length === 0) {
+    return existing.trim();
+  }
+
+  const trimmedExisting = existing.trim();
+  if (trimmedExisting.length === 0) {
+    return trimmedNext;
+  }
+
+  if (trimmedNext === trimmedExisting || trimmedNext.startsWith(trimmedExisting)) {
+    return trimmedNext;
+  }
+
+  if (trimmedExisting.endsWith(trimmedNext)) {
+    return trimmedExisting;
+  }
+
+  return `${trimmedExisting} ${trimmedNext}`;
 }
 
 function calculateRms(buffer: Float32Array): number {

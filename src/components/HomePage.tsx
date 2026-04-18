@@ -185,11 +185,9 @@ export function HomePage(props: HomePageProps): JSX.Element {
           </div>
 
           <div className="liveTranscriptFeed">
-            {realtimeUtterances.length === 0 && (
-              <p className="status">
-                {realtimeText || "(no realtime transcript yet)"}
-              </p>
-            )}
+            <p className="status">
+              {realtimeText || (realtimeUtterances.length === 0 ? "(no realtime transcript yet)" : "Listening for the next utterance...")}
+            </p>
             {realtimeUtterances.map((utterance, index) => (
               <p key={`utterance-${index}`} className="transcriptBubble">
                 {utterance}
