@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "debug:transcribe:http": "node scripts/debug-http-transcription.mjs",
+    "debug:transcribe:realtime": "node scripts/debug-realtime-transcription.mjs",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
   },

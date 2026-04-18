@@ -24,6 +24,9 @@ type UseRealtimeCaptureOutput = {
   realtimeText: string;
   realtimeError: string;
   isRunning: boolean;
+  sentAudioChunks: number;
+  receivedEvents: number;
+  lastEventType: string;
   startRealtime: () => Promise<void>;
   stopRealtime: () => void;
   setRealtimeError: (value: string) => void;
@@ -41,6 +44,9 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   const [realtimeText, setRealtimeText] = useState("");
   const [realtimeError, setRealtimeError] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [sentAudioChunks, setSentAudioChunks] = useState(0);
+  const [receivedEvents, setReceivedEvents] = useState(0);
+  const [lastEventType, setLastEventType] = useState("(none)");
 
   const wsRef = useRef<WebSocket | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -74,6 +80,9 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     setRealtimeError("");
     setRealtimeText("");
     setRealtimeStatus("Connecting...");
+    setSentAudioChunks(0);
+    setReceivedEvents(0);
+    setLastEventType("(none)");
 
     const wsInfo = await discoverRealtimeEndpoint(baseUrl, apiKey.trim(), model.trim());
     if (!wsInfo.ok) {
@@ -132,7 +141,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     ws.onmessage = event => {
       if (typeof event.data === "string") {
         try {
-          const message = JSON.parse(event.data) as RealtimeMessage;
+          const message = parseRealtimeFrame(event.data);
           handleRealtimeMessage(message);
         } catch {
           // Ignore non-JSON websocket frames.
@@ -145,7 +154,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
           .text()
           .then(raw => {
             try {
-              const message = JSON.parse(raw) as RealtimeMessage;
+              const message = parseRealtimeFrame(raw);
               handleRealtimeMessage(message);
             } catch {
               // Ignore non-JSON websocket frames.
@@ -154,6 +163,17 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
           .catch(() => {
             // Ignore blob decode failures.
           });
+        return;
+      }
+
+      if (event.data instanceof ArrayBuffer) {
+        try {
+          const raw = new TextDecoder().decode(event.data);
+          const message = parseRealtimeFrame(raw);
+          handleRealtimeMessage(message);
+        } catch {
+          // Ignore binary decode failures.
+        }
       }
     };
 
@@ -213,7 +233,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       }
       pendingCloseAfterCommitRef.current = false;
       clearCommitCloseTimer();
-    }, 1200);
+    }, 30000);
   }
 
   function clearCommitCloseTimer(): void {
@@ -226,6 +246,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   function setupRealtimeAudioPipeline(stream: MediaStream, ws: WebSocket): void {
     const ctx = new AudioContext();
     audioContextRef.current = ctx;
+    void ctx.resume();
 
     const source = ctx.createMediaStreamSource(stream);
     sourceNodeRef.current = source;
@@ -256,6 +277,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
 
       const base64 = bytesToBase64(pcm16);
       ws.send(JSON.stringify({ type: "input_audio_buffer.append", audio: base64 }));
+      setSentAudioChunks(previous => previous + 1);
     };
 
     source.connect(processor);
@@ -315,6 +337,9 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   }
 
   function handleRealtimeMessage(message: RealtimeMessage): void {
+    setReceivedEvents(previous => previous + 1);
+    setLastEventType(message.type || "(unknown)");
+
     const textPiece = extractRealtimeText(message);
     if (textPiece.length > 0) {
       if (textPiece !== lastTextPieceRef.current) {
@@ -350,6 +375,11 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         || message.type === "conversation.item.input_audio_transcription.completed"
       )
     ) {
+      if (message.type === "input_audio_buffer.committed") {
+        setRealtimeStatus("Transcribing...");
+        return;
+      }
+
       const ws = wsRef.current;
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.close();
@@ -405,8 +435,26 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     realtimeText,
     realtimeError,
     isRunning,
+    sentAudioChunks,
+    receivedEvents,
+    lastEventType,
     startRealtime,
     stopRealtime,
     setRealtimeError,
   };
+}
+
+function parseRealtimeFrame(raw: string): RealtimeMessage {
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("data:")) {
+    const dataPayload = trimmed
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line.startsWith("data:"))
+      .map(line => line.slice(5).trim())
+      .join("\n");
+    return JSON.parse(dataPayload) as RealtimeMessage;
+  }
+
+  return JSON.parse(trimmed) as RealtimeMessage;
 }

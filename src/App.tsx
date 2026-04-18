@@ -442,6 +442,9 @@ function AppContainer(): JSX.Element {
             micPermissionText={micPermissionText}
             realtimeError={realtime.realtimeError}
             realtimeText={realtime.realtimeText}
+            sentAudioChunks={realtime.sentAudioChunks}
+            receivedEvents={realtime.receivedEvents}
+            lastEventType={realtime.lastEventType}
             onSelectFile={setSelectedFile}
             canSubmit={canSubmit}
             onTranscribe={() => {

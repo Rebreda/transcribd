@@ -34,6 +34,9 @@ type HomePageProps = {
   micPermissionText: string;
   realtimeError: string;
   realtimeText: string;
+  sentAudioChunks: number;
+  receivedEvents: number;
+  lastEventType: string;
 
   onSelectFile: (file: File | null) => void;
   canSubmit: boolean;
@@ -75,6 +78,9 @@ export function HomePage(props: HomePageProps): JSX.Element {
     micPermissionText,
     realtimeError,
     realtimeText,
+    sentAudioChunks,
+    receivedEvents,
+    lastEventType,
     onSelectFile,
     canSubmit,
     onTranscribe,
@@ -228,6 +234,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
             <button className="secondary" onClick={onOpenSettings}>Open Settings</button>
           </div>
           <p className="status">Realtime: {realtimeStatus}</p>
+          <p className="status">Realtime debug: sent chunks={sentAudioChunks}, recv events={receivedEvents}, last event={lastEventType}</p>
           <p className="status">{micPermissionText}</p>
           {realtimeError.length > 0 && <p className="error">{realtimeError}</p>}
           <p className="resultBlock">{realtimeText || "(no realtime transcript yet)"}</p>

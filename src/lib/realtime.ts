@@ -45,9 +45,19 @@ export async function discoverRealtimeEndpoint(baseUrl: string, apiKey: string, 
 }
 
 export function extractRealtimeText(message: RealtimeMessage): string {
+  const asRecord = message as Record<string, unknown>;
+  const response = asRecord["response"] as Record<string, unknown> | undefined;
+  const output = Array.isArray(response?.["output"]) ? response?.["output"] as Array<Record<string, unknown>> : [];
+  const outputContents = output.flatMap(entry => {
+    const content = entry["content"];
+    return Array.isArray(content) ? content as Array<Record<string, unknown>> : [];
+  });
+
   const candidates: unknown[] = [
     message.delta,
     message.transcript,
+    asRecord["text"],
+    asRecord["output_text"],
     message.item?.delta,
     message.item?.text,
     message.item?.transcript,
@@ -55,6 +65,8 @@ export function extractRealtimeText(message: RealtimeMessage): string {
     message.data?.text,
     message.data?.transcript,
     ...(message.item?.content ?? []).flatMap(entry => [entry.delta, entry.text, entry.transcript]),
+    ...outputContents.flatMap(entry => [entry["text"], entry["transcript"], entry["delta"]]),
+    ...collectNestedTextCandidates(message),
   ];
 
   for (const candidate of candidates) {
@@ -67,4 +79,37 @@ export function extractRealtimeText(message: RealtimeMessage): string {
   }
 
   return "";
+}
+
+function collectNestedTextCandidates(value: unknown, depth = 0): string[] {
+  if (depth > 4 || value === null || typeof value !== "object") {
+    return [];
+  }
+
+  const keysOfInterest = new Set(["text", "transcript", "delta", "output_text", "content"]);
+  const candidates: string[] = [];
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      candidates.push(...collectNestedTextCandidates(item, depth + 1));
+    }
+    return candidates;
+  }
+
+  const record = value as Record<string, unknown>;
+  for (const [key, nestedValue] of Object.entries(record)) {
+    if (typeof nestedValue === "string" && keysOfInterest.has(key)) {
+      const trimmed = nestedValue.trim();
+      if (trimmed.length > 0) {
+        candidates.push(trimmed);
+      }
+      continue;
+    }
+
+    if (typeof nestedValue === "object" && nestedValue !== null) {
+      candidates.push(...collectNestedTextCandidates(nestedValue, depth + 1));
+    }
+  }
+
+  return candidates;
 }
