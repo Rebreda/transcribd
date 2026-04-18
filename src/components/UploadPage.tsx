@@ -1,11 +1,11 @@
 import type { TranscriptionResult } from "../lib/transcriptionParsing";
 
 const UPLOAD_PAGE_TITLE = "File Transcription";
-const UPLOAD_PAGE_DESCRIPTION = "Upload an audio file and run a direct Lemonade transcription request.";
+const UPLOAD_PAGE_DESCRIPTION = "Create an artifact from a one-off audio file. It lands in the same Home feed as live captures.";
 const EMPTY_TRANSCRIPT_TEXT = "No transcript yet.";
 
 type UploadPageProps = {
-  onSelectFile: (file: File | null) => void;
+  onSelectFiles: (files: File[]) => void;
   canSubmit: boolean;
   onTranscribe: () => void;
   status: string;
@@ -16,7 +16,7 @@ type UploadPageProps = {
 
 export function UploadPage(props: UploadPageProps): JSX.Element {
   const {
-    onSelectFile,
+    onSelectFiles,
     canSubmit,
     onTranscribe,
     status,
@@ -35,14 +35,18 @@ export function UploadPage(props: UploadPageProps): JSX.Element {
       <section className="panel uploadPanel">
         <div className="uploadDropZone">
           <h3>Choose audio input</h3>
-          <p>Use this for one-off files. Always-on live capture stays on the Home page.</p>
+          <p>Uploads and realtime captures both produce artifacts in one shared workspace.</p>
           <input
             type="file"
             accept="audio/*"
-            onChange={event => onSelectFile(event.target.files?.[0] ?? null)}
+            multiple
+            onChange={event => {
+              const files = event.target.files;
+              onSelectFiles(files ? Array.from(files) : []);
+            }}
           />
           <button className="primary" onClick={onTranscribe} disabled={!canSubmit}>
-            Transcribe File
+            Transcribe
           </button>
         </div>
 

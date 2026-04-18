@@ -1,0 +1,8 @@
+{
+  "testing.automaticallyOpenTestResults": "openOnTestFailure",
+  "testing.openTesting": "neverOpen",
+  "testing.countBadge": "all",
+  "debug.javascript.autoAttachFilter": "smart",
+  "task.quickOpen.detail": true,
+  "terminal.integrated.defaultProfile.linux": "bash"
+}

@@ -1,4 +1,6 @@
-import type { ClipSort, ManifestClip, RealtimeObjectRecord, RealtimeTranscriptRecord } from "../lib/appTypes";
+import { useState } from "react";
+import type { Artifact, ClipSort, ManifestClip, RealtimeTranscriptRecord } from "../lib/appTypes";
+import type { RealtimeLogEntry } from "../hooks/useRealtimeCapture";
 type HomePageProps = {
   isAlwaysOnEnabled: boolean;
   isRealtimeRunning: boolean;
@@ -12,16 +14,13 @@ type HomePageProps = {
   onChangeClipSort: (value: ClipSort) => void;
   clipCategories: string[];
   /** Sidebar list — already filtered + sorted by App.tsx. */
-  realtimeRecords: RealtimeObjectRecord[];
-  selectedRecord: RealtimeObjectRecord | null;
-  selectedRecordId: string | null;
-  onSelectRecord: (recordId: string) => void;
+  artifacts: Artifact[];
+  selectedArtifact: Artifact | null;
+  selectedArtifactId: string | null;
+  onSelectArtifact: (artifactId: string | null) => void;
 
   /** Kept for the audio waveform / timeline when the selected record has a saved file. */
   selectedClip: ManifestClip | null;
-  /** @deprecated use onSelectRecord */
-  filteredClips: ManifestClip[];
-  onSelectClip: (clipId: string) => void;
   manifestStatus: string;
   onRefreshManifest: () => void;
 
@@ -43,7 +42,7 @@ type HomePageProps = {
   sentAudioChunks: number;
   receivedEvents: number;
   lastEventType: string;
-  onOpenRecordClip: (clipId: string) => void;
+  realtimeLog: RealtimeLogEntry[];
 };
 
 export function HomePage(props: HomePageProps): JSX.Element {
@@ -58,10 +57,10 @@ export function HomePage(props: HomePageProps): JSX.Element {
     clipSort,
     onChangeClipSort,
     clipCategories,
-    realtimeRecords,
-    selectedRecord,
-    selectedRecordId,
-    onSelectRecord,
+    artifacts,
+    selectedArtifact,
+    selectedArtifactId,
+    onSelectArtifact,
     selectedClip,
     manifestStatus,
     onRefreshManifest,
@@ -82,7 +81,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
     sentAudioChunks,
     receivedEvents,
     lastEventType,
-    onOpenRecordClip,
+    realtimeLog,
   } = props;
 
   return (
@@ -141,30 +140,27 @@ export function HomePage(props: HomePageProps): JSX.Element {
         </div>
 
         <div className="clipListCompact listMode">
-          {realtimeRecords.length === 0 && (
+          {artifacts.length === 0 && (
             <p className="status">
               {clipSearch.trim().length > 0 || clipCategoryFilter !== "all"
                 ? "No recordings match the current filter."
                 : "No recordings yet. Enable live listening to start."}
             </p>
           )}
-          {realtimeRecords.map((record) => (
+          {artifacts.map((artifact) => (
             <button
-              key={record.id}
-              className={`clipItemButton ${selectedRecordId === record.id ? "active" : ""}`}
+              key={artifact.id}
+              className={`clipItemButton ${selectedArtifactId === artifact.id ? "active" : ""}`}
               onClick={() => {
-                onSelectRecord(record.id);
-                if (record.clipId) {
-                  onOpenRecordClip(record.clipId);
-                }
+                onSelectArtifact(artifact.id);
               }}
             >
-              <strong>{record.title}</strong>
+              <strong>{artifact.title}</strong>
               <span>
-                {new Date(record.updatedAtMs).toLocaleTimeString()}
-                {record.hasAudioFile ? " • saved" : ""}
+                {new Date(artifact.updatedAtMs).toLocaleTimeString()}
+                {artifact.hasAudioFile ? " • saved" : ""}
               </span>
-              <span>{record.categories.join(" • ") || "uncategorized"}</span>
+              <span>{artifact.categories.join(" • ") || "uncategorized"}</span>
             </button>
           ))}
         </div>
@@ -215,23 +211,23 @@ export function HomePage(props: HomePageProps): JSX.Element {
           </div>
         </section>
 
-        {!selectedRecord && (
+        {!selectedArtifact && (
           <p className="status">Select a recording to view details.</p>
         )}
 
-        {selectedRecord && (
+        {selectedArtifact && (
           <>
             <header className="clipHeaderBar">
-              <h2>{selectedRecord.title}</h2>
+              <h2>{selectedArtifact.title}</h2>
               <span>
-                {selectedRecord.hasAudioFile ? (selectedClip?.fileName ?? "saved") : selectedRecord.inferenceState}
+                {selectedArtifact.hasAudioFile ? (selectedClip?.fileName ?? "saved") : selectedArtifact.inferenceState}
               </span>
             </header>
 
             <div className="clipMetaRow">
-              <span>{new Date(selectedRecord.updatedAtMs).toLocaleTimeString()}</span>
+              <span>{new Date(selectedArtifact.updatedAtMs).toLocaleTimeString()}</span>
               {selectedClip && <span>{formatClock(selectedClip.durationMs)}</span>}
-              <span>{selectedRecord.categories.join(" • ") || "uncategorized"}</span>
+              <span>{selectedArtifact.categories.join(" • ") || "uncategorized"}</span>
             </div>
 
             {selectedClip && (
@@ -287,8 +283,8 @@ export function HomePage(props: HomePageProps): JSX.Element {
 
             <section className="transcriptCard">
               <h3>Transcript</h3>
-              <p>{selectedRecord.text || "No transcript captured."}</p>
-              <p className="status">{selectedRecord.notes}</p>
+              <p>{selectedArtifact.text || "No transcript captured."}</p>
+              <p className="status">{selectedArtifact.notes}</p>
             </section>
           </>
         )}
@@ -300,6 +296,7 @@ export function HomePage(props: HomePageProps): JSX.Element {
         <span className="debugLine">sent={sentAudioChunks} recv={receivedEvents} event={lastEventType}</span>
         <span>{micPermissionText}</span>
         {realtimeError.length > 0 && <span className="error">{realtimeError}</span>}
+        <RealtimeEventLog entries={realtimeLog} />
       </nav>
     </section>
   );
@@ -312,4 +309,27 @@ function formatClock(durationMs: number): string {
   const seconds = totalSeconds % 60;
   const millis = Math.floor((totalMs % 1000) / 10);
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(millis).padStart(2, "0")}`;
+}
+
+function RealtimeEventLog({ entries }: { entries: RealtimeLogEntry[] }): JSX.Element {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="realtimeLogToggle">
+      <button className="textButton" onClick={() => setOpen(prev => !prev)}>
+        {open ? "Hide log" : `Events (${entries.length})`}
+      </button>
+      {open && (
+        <div className="realtimeLogPanel">
+          {entries.length === 0 && <span className="status">No events yet.</span>}
+          {entries.map(entry => (
+            <div key={entry.ts} className="realtimeLogRow">
+              <span className="logType">{entry.type}</span>
+              {entry.text.length > 0 && <span className="logText">&ldquo;{entry.text}&rdquo;</span>}
+              <span className="logRaw">{entry.raw}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

@@ -1,0 +1,6 @@
+{
+  "recommendations": [
+    "vitest.explorer",
+    "ms-vscode.test-adapter-converter"
+  ]
+}

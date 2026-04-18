@@ -1,4 +1,6 @@
-import type { ClipSort, ManifestClip, RealtimeObjectRecord } from "./appTypes";
+import type { Artifact, ClipSort, ManifestClip, RealtimeObjectRecord } from "./appTypes";
+
+type SearchableRecord = Artifact | RealtimeObjectRecord;
 
 export function filterAndSortClips(input: {
   clips: ManifestClip[];
@@ -66,18 +68,18 @@ export function selectClip(clips: ManifestClip[], selectedClipId: string): Manif
   return clips.find(clip => clip.id === selectedClipId) ?? first ?? null;
 }
 
-// ── Record filtering (operates on RealtimeObjectRecord[]) ──────────────────
+// ── Record filtering (operates on Artifact[]) ──────────────────
 
 /**
  * Filters and sorts the unified live/saved record list.
  * This is the single source of truth for what the recordings sidebar shows.
  */
-export function filterAndSortRecords(input: {
-  records: RealtimeObjectRecord[];
+export function filterAndSortRecords<T extends SearchableRecord>(input: {
+  records: T[];
   searchQuery: string;
   categoryFilter: string;
   sortBy: ClipSort;
-}): RealtimeObjectRecord[] {
+}): T[] {
   const { records, searchQuery, categoryFilter, sortBy } = input;
   const query = searchQuery.trim().toLowerCase();
 
@@ -113,7 +115,7 @@ export function filterAndSortRecords(input: {
  * Extracts the sorted unique category set from the live/saved record list.
  * Use this instead of extractClipCategories when Tauri manifest may not be available.
  */
-export function extractRecordCategories(records: RealtimeObjectRecord[]): string[] {
+export function extractRecordCategories<T extends SearchableRecord>(records: T[]): string[] {
   const values = new Set<string>();
   for (const record of records) {
     for (const category of record.categories) {

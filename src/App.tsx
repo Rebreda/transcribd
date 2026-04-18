@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { bytesToBase64, pcm16ToWav } from "./lib/audioCodec";
 import {
+  type Artifact,
   type AppPage,
   type AudioInputDevice,
   type ClipMetadata,
   type ClipSort,
   type Manifest,
+  type ManifestClip,
   type MicPermission,
-  type RealtimeObjectRecord,
 } from "./lib/appTypes";
-import { extractClipCategories, extractRecordCategories, filterAndSortClips, filterAndSortRecords, selectClip } from "./lib/clipFinder";
+import { extractRecordCategories, filterAndSortRecords } from "./lib/clipFinder";
 import { buildFallbackTitle, buildChatEndpoints, tryParseMetadata } from "./lib/metadata";
 import {
   formatMicrophoneError,
@@ -64,7 +65,7 @@ function AppContainer(): JSX.Element {
     setLlmApiKey,
   } = useAppConfig();
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [status, setStatus] = useState("Idle");
   const [error, setError] = useState("");
   const [result, setResult] = useState<TranscriptionResult | null>(null);
@@ -76,8 +77,8 @@ function AppContainer(): JSX.Element {
   const [clipSearch, setClipSearch] = useState("");
   const [clipSort, setClipSort] = useState<ClipSort>("newest");
   const [clipCategoryFilter, setClipCategoryFilter] = useState("all");
-  const [selectedClipId, setSelectedClipId] = useState("");
-  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+  const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
+  const [uploadedArtifacts, setUploadedArtifacts] = useState<Artifact[]>([]);
   const [micPermission, setMicPermission] = useState<MicPermission>("unknown");
   const [realtimeMetadataByRecordId, setRealtimeMetadataByRecordId] = useState<Record<string, {
     title: string;
@@ -88,26 +89,15 @@ function AppContainer(): JSX.Element {
   const realtimeInferenceInFlightRef = useState(() => new Set<string>())[0];
 
   const endpoints = useMemo(() => buildTranscriptionEndpoints(baseUrl), [baseUrl]);
-  const canSubmit = selectedFile !== null && model.trim().length > 0;
+  const canSubmit = selectedFiles.length > 0 && model.trim().length > 0;
 
-  const filteredClips = useMemo(
-    () =>
-      filterAndSortClips({
-        clips: manifest.clips,
-        searchQuery: clipSearch,
-        categoryFilter: clipCategoryFilter,
-        sortBy: clipSort,
-      }),
-    [clipSearch, clipCategoryFilter, clipSort, manifest.clips],
+  const persistedArtifacts = useMemo<Artifact[]>(
+    () => [...manifest.clips].map(clip => mapClipToArtifact(clip)).sort((a, b) => b.updatedAtMs - a.updatedAtMs),
+    [manifest.clips],
   );
 
-  // Categories sourced from live records so the dropdown is populated
-  // even when the Tauri manifest is unavailable (browser / dev mode).
-  const manifestClipCategories = useMemo(() => extractClipCategories(manifest.clips), [manifest.clips]);
-  const selectedClip = useMemo(() => selectClip(filteredClips, selectedClipId), [filteredClips, selectedClipId]);
-
   const waveformBars = useMemo(() => {
-    const id = selectedClip?.id;
+    const id = selectedArtifactId;
     if (!id) {
       return [] as number[];
     }
@@ -125,10 +115,8 @@ function AppContainer(): JSX.Element {
     }
 
     return bars;
-  }, [selectedClip]);
+  }, [selectedArtifactId]);
 
-  const selectedDurationMs = selectedClip?.durationMs ?? 0;
-  const timeline = useTimelinePlayback(selectedClip?.id ?? "", selectedDurationMs);
   const micPermissionText = useMemo(() => getMicrophonePermissionText(micPermission), [micPermission]);
   const newestClips = useMemo(
     () => [...manifest.clips].sort((a, b) => b.createdAtMs - a.createdAtMs).slice(0, 80),
@@ -157,7 +145,7 @@ function AppContainer(): JSX.Element {
     },
   });
 
-  const realtimeObjectRecords = useMemo<RealtimeObjectRecord[]>(() => {
+  const realtimeArtifacts = useMemo<Artifact[]>(() => {
     return realtime.realtimeRecords
       .filter(record => record.isFinal)
       .map(record => {
@@ -165,15 +153,21 @@ function AppContainer(): JSX.Element {
         if (matchedClip) {
           return {
             id: record.id,
+            source: "clip",
             itemId: record.itemId,
             text: record.text,
+            createdAtMs: matchedClip.createdAtMs,
             updatedAtMs: record.updatedAtMs,
             title: matchedClip.title,
             notes: matchedClip.notes,
             categories: matchedClip.categories,
-            inferenceState: "from-clip" as const,
+            inferenceState: "ready" as const,
             hasAudioFile: true,
             clipId: matchedClip.id,
+            fileName: matchedClip.fileName,
+            startedAtMs: matchedClip.startedAtMs,
+            endedAtMs: matchedClip.endedAtMs,
+            durationMs: matchedClip.durationMs,
           };
         }
 
@@ -182,8 +176,10 @@ function AppContainer(): JSX.Element {
 
         return {
           id: record.id,
+          source: "realtime",
           itemId: record.itemId,
           text: record.text,
+          createdAtMs: record.updatedAtMs,
           updatedAtMs: record.updatedAtMs,
           title: meta?.title ?? fallbackTitle,
           notes: meta?.notes ?? "Inferring metadata for live object...",
@@ -191,39 +187,68 @@ function AppContainer(): JSX.Element {
           inferenceState: meta?.inferenceState ?? ("pending" as const),
           hasAudioFile: false,
           clipId: null,
+          fileName: "",
+          startedAtMs: record.updatedAtMs,
+          endedAtMs: record.updatedAtMs,
+          durationMs: 0,
         };
       });
   }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId]);
 
+  const artifacts = useMemo(
+    () => mergeArtifacts([...persistedArtifacts, ...realtimeArtifacts, ...uploadedArtifacts]),
+    [persistedArtifacts, realtimeArtifacts, uploadedArtifacts],
+  );
+
   const filteredRealtimeRecords = useMemo(
     () =>
       filterAndSortRecords({
-        records: realtimeObjectRecords,
+        records: artifacts,
         searchQuery: clipSearch,
         categoryFilter: clipCategoryFilter,
         sortBy: clipSort,
       }),
-    [realtimeObjectRecords, clipSearch, clipCategoryFilter, clipSort],
+    [artifacts, clipSearch, clipCategoryFilter, clipSort],
   );
 
-  const selectedRecord = useMemo(
-    () => filteredRealtimeRecords.find(record => record.id === selectedRecordId) ?? filteredRealtimeRecords[0] ?? null,
-    [filteredRealtimeRecords, selectedRecordId],
+  const selectedArtifact = useMemo(
+    () => filteredRealtimeRecords.find(record => record.id === selectedArtifactId) ?? filteredRealtimeRecords[0] ?? null,
+    [filteredRealtimeRecords, selectedArtifactId],
   );
 
-  const selectedClipFromRecord = useMemo(() => {
-    if (selectedRecord?.clipId) {
-      return manifest.clips.find(clip => clip.id === selectedRecord.clipId) ?? null;
+  const selectedClipFromArtifact = useMemo(() => {
+    if (selectedArtifact?.clipId) {
+      return manifest.clips.find(clip => clip.id === selectedArtifact.clipId) ?? null;
     }
 
-    return selectedClip;
-  }, [selectedRecord, manifest.clips, selectedClip]);
-  // Categories merged from live records + saved manifest clips.
+    return null;
+  }, [selectedArtifact, manifest.clips]);
+
+  const selectedDurationMsResolved = selectedClipFromArtifact?.durationMs ?? 0;
+  const timelineResolved = useTimelinePlayback(selectedClipFromArtifact?.id ?? "", selectedDurationMsResolved);
+
   const clipCategories = useMemo(() => {
-    const fromRecords = extractRecordCategories(realtimeObjectRecords);
-    const fromManifest = manifestClipCategories;
-    return Array.from(new Set([...fromRecords, ...fromManifest])).sort((a, b) => a.localeCompare(b));
-  }, [realtimeObjectRecords, manifestClipCategories]);
+    return extractRecordCategories(artifacts);
+  }, [artifacts]);
+
+  useEffect(() => {
+    if (filteredRealtimeRecords.length === 0) {
+      setSelectedArtifactId(null);
+      return;
+    }
+
+    if (!selectedArtifactId || !filteredRealtimeRecords.some(artifact => artifact.id === selectedArtifactId)) {
+      setSelectedArtifactId(filteredRealtimeRecords[0]?.id ?? null);
+    }
+  }, [filteredRealtimeRecords, selectedArtifactId]);
+
+  useEffect(() => {
+    setUploadedArtifacts(loadUploadedArtifacts());
+  }, []);
+
+  useEffect(() => {
+    saveUploadedArtifacts(uploadedArtifacts);
+  }, [uploadedArtifacts]);
 
   async function handleClipCaptured(input: {
     pcm: Uint8Array;
@@ -373,57 +398,102 @@ function AppContainer(): JSX.Element {
   }
 
   async function onTranscribe(): Promise<void> {
-    if (!selectedFile) {
-      setError("Pick an audio file first.");
+    if (selectedFiles.length === 0) {
+      setError("Pick one or more audio files first.");
       return;
     }
 
     setError("");
     setResult(null);
-    setStatus("Transcribing...");
 
     const headers = new Headers();
     if (apiKey.trim().length > 0) {
       headers.set("Authorization", `Bearer ${apiKey.trim()}`);
     }
 
-    const attempts: string[] = [];
+    const newArtifacts: Artifact[] = [];
+    let lastResult: TranscriptionResult | null = null;
+    const allErrors: string[] = [];
 
-    for (const endpoint of endpoints) {
-      setAttemptedEndpoint(endpoint);
-      const formData = new FormData();
-      formData.append("model", model.trim());
-      formData.append("file", selectedFile, selectedFile.name);
+    for (const file of selectedFiles) {
+      setStatus(`Transcribing ${file.name}…`);
 
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers,
-          body: formData,
-        });
-        const body = await response.text();
+      let succeeded = false;
+      for (const endpoint of endpoints) {
+        setAttemptedEndpoint(endpoint);
+        const formData = new FormData();
+        formData.append("model", model.trim());
+        formData.append("file", file, file.name);
 
-        if (!response.ok) {
-          attempts.push(`${response.status} ${endpoint}`);
-          continue;
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers,
+            body: formData,
+          });
+          const body = await response.text();
+
+          if (!response.ok) {
+            allErrors.push(`${response.status} ${endpoint} (${file.name})`);
+            continue;
+          }
+
+          const parsed = extractTranscriptionResult(body);
+          lastResult = parsed;
+          setResult(parsed);
+
+          const transcript = parsed.text.trim();
+          const fallbackTitle = buildFallbackTitle(transcript);
+          const metadata = llmEnabled
+            ? await enrichMetadataWithLlm({ transcript, titleFallback: fallbackTitle })
+            : { title: fallbackTitle, notes: `Transcribed from ${file.name}`, categories: ["upload"] as string[] };
+
+          const now = Date.now();
+          const artifact: Artifact = {
+            id: `upload-${now}-${file.name}`,
+            source: "upload",
+            text: transcript,
+            title: metadata.title,
+            notes: metadata.notes,
+            categories: metadata.categories,
+            createdAtMs: now,
+            updatedAtMs: now,
+            inferenceState: "ready",
+            hasAudioFile: false,
+            clipId: null,
+            fileName: file.name,
+            itemId: "",
+            startedAtMs: now,
+            endedAtMs: now,
+            durationMs: 0,
+          };
+          newArtifacts.push(artifact);
+          succeeded = true;
+          break;
+        } catch (requestError) {
+          const detail = requestError instanceof Error ? requestError.message : String(requestError);
+          allErrors.push(`ERR ${endpoint} (${file.name}): ${detail}`);
         }
+      }
 
-        const parsed = extractTranscriptionResult(body);
-        setResult(parsed);
-        setStatus(`Done (${response.status})`);
-        return;
-      } catch (requestError) {
-        const detail = requestError instanceof Error ? requestError.message : String(requestError);
-        attempts.push(`ERR ${endpoint}: ${detail}`);
+      if (!succeeded) {
+        allErrors.push(`All endpoints failed for ${file.name}`);
       }
     }
 
-    setStatus("Failed");
-    setError(
-      attempts.length > 0
-        ? `All endpoints failed: ${attempts.join(" | ")}`
-        : "No endpoints available to try.",
-    );
+    if (newArtifacts.length > 0) {
+      setUploadedArtifacts(previous => [...newArtifacts, ...previous].slice(0, 200));
+      setSelectedArtifactId(newArtifacts[0]!.id);
+      setActivePage("home");
+      setStatus(`Done — ${newArtifacts.length} file${newArtifacts.length > 1 ? "s" : ""} transcribed`);
+    } else {
+      setStatus("Failed");
+      setError(allErrors.join(" | "));
+    }
+
+    if (lastResult) {
+      setResult(lastResult);
+    }
   }
 
   async function enrichMetadataWithLlm(input: { transcript: string; titleFallback: string }): Promise<ClipMetadata> {
@@ -593,26 +663,24 @@ function AppContainer(): JSX.Element {
             clipSort={clipSort}
             onChangeClipSort={setClipSort}
             clipCategories={clipCategories}
-            filteredClips={filteredClips}
-            selectedClip={selectedClipFromRecord}
-            selectedRecord={selectedRecord}
-            selectedRecordId={selectedRecordId}
-            onSelectRecord={setSelectedRecordId}
-            onSelectClip={setSelectedClipId}
+            selectedClip={selectedClipFromArtifact}
+            selectedArtifact={selectedArtifact}
+            selectedArtifactId={selectedArtifactId}
+            onSelectArtifact={setSelectedArtifactId}
             manifestStatus={manifestStatus}
             onRefreshManifest={() => {
               void loadManifest();
             }}
             waveformBars={waveformBars}
-            safePlayheadMs={timeline.safePlayheadMs}
-            selectedDurationMs={selectedDurationMs}
-            onSetPlayheadMs={timeline.setPlayheadMs}
-            isTimelinePlaying={timeline.isPlaying}
-            onToggleTimelinePlay={timeline.togglePlay}
-            onSeekBackward={() => timeline.seekByMs(-3000)}
-            onSeekForward={() => timeline.seekByMs(3000)}
+            safePlayheadMs={timelineResolved.safePlayheadMs}
+            selectedDurationMs={selectedDurationMsResolved}
+            onSetPlayheadMs={timelineResolved.setPlayheadMs}
+            isTimelinePlaying={timelineResolved.isPlaying}
+            onToggleTimelinePlay={timelineResolved.togglePlay}
+            onSeekBackward={() => timelineResolved.seekByMs(-3000)}
+            onSeekForward={() => timelineResolved.seekByMs(3000)}
             realtimeStatus={realtime.realtimeStatus}
-            realtimeRecords={filteredRealtimeRecords}
+            artifacts={filteredRealtimeRecords}
             realtimeCurrentRecord={realtime.realtimeCurrentRecord}
             micPermissionText={micPermissionText}
             realtimeError={realtime.realtimeError}
@@ -621,12 +689,12 @@ function AppContainer(): JSX.Element {
             sentAudioChunks={realtime.sentAudioChunks}
             receivedEvents={realtime.receivedEvents}
             lastEventType={realtime.lastEventType}
-            onOpenRecordClip={(clipId) => setSelectedClipId(clipId)}
+            realtimeLog={realtime.realtimeLog}
           />
         ) : activePage === "upload" ? (
           <section className="pageMain">
             <UploadPage
-              onSelectFile={setSelectedFile}
+              onSelectFiles={files => setSelectedFiles(files)}
               canSubmit={canSubmit}
               onTranscribe={() => {
                 void onTranscribe();
@@ -678,4 +746,89 @@ function AppContainer(): JSX.Element {
 
 function normalizeTranscriptKey(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function mapClipToArtifact(clip: ManifestClip): Artifact {
+  return {
+    id: `clip-${clip.id}`,
+    source: "clip",
+    text: clip.transcript,
+    title: clip.title,
+    notes: clip.notes,
+    categories: clip.categories,
+    createdAtMs: clip.createdAtMs,
+    updatedAtMs: clip.endedAtMs,
+    inferenceState: "ready",
+    hasAudioFile: true,
+    clipId: clip.id,
+    fileName: clip.fileName,
+    itemId: "",
+    startedAtMs: clip.startedAtMs,
+    endedAtMs: clip.endedAtMs,
+    durationMs: clip.durationMs,
+  };
+}
+
+function mergeArtifacts(items: Artifact[]): Artifact[] {
+  const byKey = new Map<string, Artifact>();
+
+  for (const artifact of items) {
+    const keyBase = normalizeTranscriptKey(artifact.text);
+    const key = keyBase.length > 0 ? keyBase : artifact.id;
+    const existing = byKey.get(key);
+    if (!existing) {
+      byKey.set(key, artifact);
+      continue;
+    }
+
+    if (existing.hasAudioFile !== artifact.hasAudioFile) {
+      byKey.set(key, artifact.hasAudioFile ? artifact : existing);
+      continue;
+    }
+
+    if (artifact.updatedAtMs > existing.updatedAtMs) {
+      byKey.set(key, artifact);
+    }
+  }
+
+  return [...byKey.values()].sort((a, b) => b.updatedAtMs - a.updatedAtMs);
+}
+
+function loadUploadedArtifacts(): Artifact[] {
+  try {
+    const raw = localStorage.getItem("vocalis.uploadArtifacts.v1");
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter((item): item is Artifact => {
+      if (typeof item !== "object" || item === null) {
+        return false;
+      }
+
+      const record = item as Record<string, unknown>;
+      return (
+        typeof record.id === "string"
+        && typeof record.text === "string"
+        && typeof record.title === "string"
+        && typeof record.notes === "string"
+        && Array.isArray(record.categories)
+      );
+    });
+  } catch {
+    return [];
+  }
+}
+
+function saveUploadedArtifacts(items: Artifact[]): void {
+  try {
+    localStorage.setItem("vocalis.uploadArtifacts.v1", JSON.stringify(items));
+  } catch {
+    // Ignore browser storage errors.
+  }
 }

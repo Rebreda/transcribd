@@ -22,8 +22,13 @@ type PersistClipResult = {
   clip: ManifestClip;
 };
 
+// ── In-memory fallback (used when running outside Tauri) ─────────────────────
+const memoryManifest: Manifest = { version: 1, updatedAtMs: Date.now(), clips: [] };
+
 export async function loadManifestSafe(): Promise<LoadManifestResult> {
-  ensureTauriRuntime();
+  if (!isTauriRuntime()) {
+    return { manifest: memoryManifest };
+  }
 
   try {
     const manifest = await invoke<Manifest>("get_manifest");
@@ -34,7 +39,25 @@ export async function loadManifestSafe(): Promise<LoadManifestResult> {
 }
 
 export async function persistClipSafe(payload: PersistClipPayload): Promise<PersistClipResult> {
-  ensureTauriRuntime();
+  if (!isTauriRuntime()) {
+    const clip: ManifestClip = {
+      id: payload.objectId,
+      fileName: `${payload.objectId}.wav`,
+      createdAtMs: Date.now(),
+      startedAtMs: payload.startedAtMs,
+      endedAtMs: payload.endedAtMs,
+      durationMs: payload.endedAtMs - payload.startedAtMs,
+      sampleRate: payload.sampleRate,
+      channels: payload.channels,
+      transcript: payload.transcript,
+      title: payload.title,
+      notes: payload.notes,
+      categories: payload.categories,
+    };
+    memoryManifest.clips.push(clip);
+    memoryManifest.updatedAtMs = Date.now();
+    return { clip };
+  }
 
   try {
     const clip = await invoke<ManifestClip>("persist_clip", { payload });
@@ -47,12 +70,6 @@ export async function persistClipSafe(payload: PersistClipPayload): Promise<Pers
 function isTauriRuntime(): boolean {
   const globalValue = globalThis as { __TAURI_INTERNALS__?: unknown };
   return typeof globalValue.__TAURI_INTERNALS__ !== "undefined";
-}
-
-function ensureTauriRuntime(): void {
-  if (!isTauriRuntime()) {
-    throw new Error("native storage is only available inside the Tauri desktop runtime");
-  }
 }
 
 function describeInvokeError(action: string, error: unknown): string {

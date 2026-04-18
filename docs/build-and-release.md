@@ -12,6 +12,29 @@ npm run test
 npm run build
 ```
 
+## VS Code Developer Loop
+
+Use the workspace tasks for continuous feedback while coding:
+
+- `Watch tests (Vitest)` keeps test execution running in watch mode.
+- `Run tests (Vitest)` executes a one-shot local test run.
+- `Validate app (test + build)` matches the expected pre-bundle gate.
+
+Recommended day-to-day flow:
+
+1. Start `Watch tests (Vitest)` in one terminal/task.
+2. Run `Validate app (test + build)` before desktop or bundle builds.
+3. If that passes, continue with `npm run tauri:build` or bundle commands.
+
+If `beforeBuildCommand npm run build` fails during bundling, first run:
+
+```bash
+npm run test
+npm run build
+```
+
+Fix those errors before rerunning any `tauri build` command.
+
 ## Desktop Builds (No Bundle)
 
 ```bash
@@ -78,3 +101,4 @@ https://v2.tauri.app/start/prerequisites/
 - Run tests/build before cutting bundles.
 - Prefer clean build for final release artifacts.
 - Archive checksums and artifact names in release notes.
+- Keep validation CI green on pull requests before invoking release packaging commands.

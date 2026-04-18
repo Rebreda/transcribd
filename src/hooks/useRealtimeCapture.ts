@@ -19,6 +19,13 @@ type UseRealtimeCaptureInput = {
   }) => Promise<void>;
 };
 
+export type RealtimeLogEntry = {
+  ts: number;
+  type: string;
+  text: string;
+  raw: string;
+};
+
 type UseRealtimeCaptureOutput = {
   realtimeStatus: string;
   realtimeText: string;
@@ -31,6 +38,7 @@ type UseRealtimeCaptureOutput = {
   sentAudioChunks: number;
   receivedEvents: number;
   lastEventType: string;
+  realtimeLog: RealtimeLogEntry[];
   startRealtime: () => Promise<void>;
   stopRealtime: () => void;
   setRealtimeError: (value: string) => void;
@@ -62,6 +70,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   const [sentAudioChunks, setSentAudioChunks] = useState(0);
   const [receivedEvents, setReceivedEvents] = useState(0);
   const [lastEventType, setLastEventType] = useState("(none)");
+  const [realtimeLog, setRealtimeLog] = useState<RealtimeLogEntry[]>([]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -143,15 +152,18 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       setIsRunning(true);
       pendingCloseAfterCommitRef.current = false;
       setRealtimeStatus(isAlwaysOnEnabled ? "Connected (Always-On)" : "Connected");
+      // Lemonade transcribes by default — no input_audio_transcription needed.
+      // Keep turn_detection minimal: let the server apply its own VAD defaults,
+      // only override silence timing for a reasonable capture window.
       ws.send(
         JSON.stringify({
           type: "session.update",
           session: {
             model: model.trim(),
             turn_detection: {
-              threshold: 0.01,
-              silence_duration_ms: 800,
-              prefix_padding_ms: 250,
+              threshold: 0.05,
+              silence_duration_ms: 1200,
+              prefix_padding_ms: 300,
             },
           },
         }),
@@ -164,9 +176,9 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       if (typeof event.data === "string") {
         try {
           const message = parseRealtimeFrame(event.data);
-          handleRealtimeMessage(message);
+          handleRealtimeMessage(message, event.data);
         } catch {
-          // Ignore non-JSON websocket frames.
+          console.warn("[realtime] non-JSON frame:", event.data.slice(0, 200));
         }
         return;
       }
@@ -177,9 +189,9 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
           .then(raw => {
             try {
               const message = parseRealtimeFrame(raw);
-              handleRealtimeMessage(message);
+              handleRealtimeMessage(message, raw);
             } catch {
-              // Ignore non-JSON websocket frames.
+              console.warn("[realtime] non-JSON blob:", raw.slice(0, 200));
             }
           })
           .catch(() => {
@@ -192,7 +204,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         try {
           const raw = new TextDecoder().decode(event.data);
           const message = parseRealtimeFrame(raw);
-          handleRealtimeMessage(message);
+          handleRealtimeMessage(message, raw);
         } catch {
           // Ignore binary decode failures.
         }
@@ -403,11 +415,20 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     }
   }
 
-  function handleRealtimeMessage(message: RealtimeMessage): void {
+  function handleRealtimeMessage(message: RealtimeMessage, raw: string): void {
     setReceivedEvents(previous => previous + 1);
     setLastEventType(message.type || "(unknown)");
 
     const textPiece = extractRealtimeText(message);
+
+    const entry: RealtimeLogEntry = {
+      ts: Date.now(),
+      type: message.type || "(unknown)",
+      text: textPiece,
+      raw: raw.length > 400 ? `${raw.slice(0, 400)}…` : raw,
+    };
+    console.log("[realtime]", entry.type, textPiece ? `text=${JSON.stringify(textPiece)}` : "", JSON.parse(raw));
+    setRealtimeLog(prev => [entry, ...prev].slice(0, 80));
 
     if (message.type === "conversation.item.input_audio_transcription.delta") {
       const itemId = message.item_id ?? message.item?.id ?? "";
@@ -425,6 +446,45 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         });
         if (speechActiveRef.current) {
           activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, interimText);
+        }
+      }
+    }
+
+    // Broad fallback for servers that use non-standard event types with a text/transcript/delta payload.
+    const isKnownEvent =
+      message.type === "conversation.item.input_audio_transcription.delta"
+      || message.type === "conversation.item.input_audio_transcription.completed"
+      || message.type === "input_audio_buffer.speech_started"
+      || message.type === "input_audio_buffer.speech_stopped"
+      || message.type === "input_audio_buffer.committed"
+      || message.type === "error";
+
+    if (!isKnownEvent && textPiece.length > 0) {
+      const typeHint = message.type.toLowerCase();
+      const isFinalHint = typeHint.includes("completed") || typeHint.includes("final") || typeHint.includes("result");
+      const itemId = message.item_id ?? message.item?.id ?? "";
+      if (isFinalHint) {
+        const now = Date.now();
+        const recordId = itemId.length > 0 ? `final-${itemId}` : `final-${now}`;
+        setRealtimeRecords(previous =>
+          [{ id: recordId, itemId, text: textPiece, isFinal: true, updatedAtMs: now }, ...previous].slice(0, 120)
+        );
+        activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, textPiece);
+        setRealtimeText("");
+        setRealtimeCurrentRecord(null);
+        void finalizeCompletedSegment(itemId, textPiece);
+      } else {
+        // Treat as in-progress interim text.
+        setRealtimeText(textPiece);
+        setRealtimeCurrentRecord({
+          id: itemId.length > 0 ? `interim-${itemId}` : `interim-${Date.now()}`,
+          itemId,
+          text: textPiece,
+          isFinal: false,
+          updatedAtMs: Date.now(),
+        });
+        if (speechActiveRef.current) {
+          activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, textPiece);
         }
       }
     }
@@ -646,6 +706,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     sentAudioChunks,
     receivedEvents,
     lastEventType,
+    realtimeLog,
     startRealtime,
     stopRealtime,
     setRealtimeError,

@@ -72,6 +72,27 @@ export type RealtimeObjectRecord = {
   clipId: string | null;
 };
 
+export type ArtifactSource = "realtime" | "upload" | "clip";
+
+export type Artifact = {
+  id: string;
+  source: ArtifactSource;
+  text: string;
+  title: string;
+  notes: string;
+  categories: string[];
+  createdAtMs: number;
+  updatedAtMs: number;
+  inferenceState: "pending" | "ready" | "error";
+  hasAudioFile: boolean;
+  clipId: string | null;
+  fileName: string;
+  itemId: string;
+  startedAtMs: number;
+  endedAtMs: number;
+  durationMs: number;
+};
+
 export type TranscriptObject = {
   id: string;
   source: "realtime" | "upload";

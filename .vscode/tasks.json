@@ -2,6 +2,39 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Watch tests (Vitest)",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; cd /home/g/Code/vocalis; npm run test:watch"
+			],
+			"isBackground": true,
+			"group": "test"
+		},
+		{
+			"label": "Run tests (Vitest)",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; cd /home/g/Code/vocalis; npm run test"
+			],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Validate app (test + build)",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"set -e; cd /home/g/Code/vocalis; npm run test; npm run build"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
 			"label": "Validate new tauri root",
 			"type": "shell",
 			"command": "bash",
