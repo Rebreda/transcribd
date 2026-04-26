@@ -430,12 +430,13 @@ input::placeholder {
   display: flex;
   align-items: center;
   gap: 3px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .waveBars span {
-  flex: 1;
-  min-width: 2px;
-  max-width: 10px;
+  flex: 1 1 0;
+  min-width: 1px;
   border-radius: 99px;
   background: linear-gradient(180deg, #8ab4ff 0%, #dfe8ff 100%);
 }

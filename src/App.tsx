@@ -7,11 +7,10 @@ import {
   type ClipMetadata,
   type ClipSort,
   type Manifest,
-  type ManifestClip,
   type MicPermission,
 } from "./lib/appTypes";
 import { extractRecordCategories, filterAndSortRecords } from "./lib/clipFinder";
-import { buildFallbackTitle, buildChatEndpoints, tryParseMetadata } from "./lib/metadata";
+import { buildFallbackTitle } from "./lib/metadata";
 import {
   formatMicrophoneError,
   getMicrophonePermissionState,
@@ -25,6 +24,16 @@ import {
   extractTranscriptionResult,
   type TranscriptionResult,
 } from "./lib/transcriptionParsing";
+import {
+  buildArtifactExportJson,
+  buildClipByTranscriptMap,
+  buildRealtimeArtifacts,
+  buildWaveformBars,
+  mapClipToArtifact,
+  mergeArtifacts,
+  normalizeTranscriptKey,
+} from "./lib/artifactDomain";
+import { inferClipMetadataWithLlm, transcribePcmFallback } from "./lib/transcriptionWorkflow";
 import { HomePage } from "./components/HomePage";
 import { LiveBar } from "./components/LiveBar";
 import { SettingsPage } from "./components/SettingsPage";
@@ -100,26 +109,7 @@ function AppContainer(): JSX.Element {
     [manifest.clips],
   );
 
-  const waveformBars = useMemo(() => {
-    const id = selectedArtifactId;
-    if (!id) {
-      return [] as number[];
-    }
-
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-    }
-
-    const bars: number[] = [];
-    for (let i = 0; i < 64; i++) {
-      const wave = Math.abs(Math.sin((i + 1) * 0.45 + hash * 0.0002));
-      const noise = ((hash >>> (i % 24)) & 15) / 30;
-      bars.push(Math.min(1, 0.18 + wave * 0.6 + noise));
-    }
-
-    return bars;
-  }, [selectedArtifactId]);
+  const waveformBars = useMemo(() => buildWaveformBars(selectedArtifactId), [selectedArtifactId]);
 
   const micPermissionText = useMemo(() => getMicrophonePermissionText(micPermission), [micPermission]);
   const newestClips = useMemo(
@@ -127,16 +117,7 @@ function AppContainer(): JSX.Element {
     [manifest.clips],
   );
 
-  const clipByTranscript = useMemo(() => {
-    const map = new Map<string, (typeof newestClips)[number]>();
-    for (const clip of newestClips) {
-      const key = normalizeTranscriptKey(clip.transcript);
-      if (!map.has(key)) {
-        map.set(key, clip);
-      }
-    }
-    return map;
-  }, [newestClips]);
+  const clipByTranscript = useMemo(() => buildClipByTranscriptMap(newestClips), [newestClips]);
 
   const realtime = useRealtimeCapture({
     baseUrl,
@@ -149,55 +130,14 @@ function AppContainer(): JSX.Element {
     },
   });
 
-  const realtimeArtifacts = useMemo<Artifact[]>(() => {
-    return realtime.realtimeRecords
-      .filter(record => record.isFinal)
-      .map(record => {
-        const matchedClip = clipByTranscript.get(normalizeTranscriptKey(record.text));
-        if (matchedClip) {
-          return {
-            id: record.id,
-            source: "clip",
-            itemId: record.itemId,
-            text: record.text,
-            createdAtMs: matchedClip.createdAtMs,
-            updatedAtMs: record.updatedAtMs,
-            title: matchedClip.title,
-            notes: matchedClip.notes,
-            categories: matchedClip.categories,
-            inferenceState: "ready" as const,
-            hasAudioFile: true,
-            clipId: matchedClip.id,
-            fileName: matchedClip.fileName,
-            startedAtMs: matchedClip.startedAtMs,
-            endedAtMs: matchedClip.endedAtMs,
-            durationMs: matchedClip.durationMs,
-          };
-        }
-
-        const meta = realtimeMetadataByRecordId[record.id];
-        const fallbackTitle = buildFallbackTitle(record.text);
-
-        return {
-          id: record.id,
-          source: "realtime",
-          itemId: record.itemId,
-          text: record.text,
-          createdAtMs: record.updatedAtMs,
-          updatedAtMs: record.updatedAtMs,
-          title: meta?.title ?? fallbackTitle,
-          notes: meta?.notes ?? "Inferring metadata for live object...",
-          categories: meta?.categories ?? ["capture"],
-          inferenceState: meta?.inferenceState ?? ("pending" as const),
-          hasAudioFile: false,
-          clipId: null,
-          fileName: "",
-          startedAtMs: record.updatedAtMs,
-          endedAtMs: record.updatedAtMs,
-          durationMs: 0,
-        };
-      });
-  }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId]);
+  const realtimeArtifacts = useMemo<Artifact[]>(
+    () => buildRealtimeArtifacts({
+      realtimeRecords: realtime.realtimeRecords,
+      clipByTranscript,
+      metadataByRecordId: realtimeMetadataByRecordId,
+    }),
+    [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId],
+  );
 
   const artifacts = useMemo(
     () => mergeArtifacts([...persistedArtifacts, ...realtimeArtifacts]),
@@ -299,39 +239,12 @@ function AppContainer(): JSX.Element {
 
   async function transcribeClipAudioFallback(pcm: Uint8Array): Promise<string> {
     const wav = pcm16ToWav(pcm, TARGET_SAMPLE_RATE, 1);
-    const wavBlob = new Blob([new Uint8Array(wav)], { type: "audio/wav" });
-
-    const headers = new Headers();
-    if (apiKey.trim().length > 0) {
-      headers.set("Authorization", `Bearer ${apiKey.trim()}`);
-    }
-
-    for (const endpoint of endpoints) {
-      const formData = new FormData();
-      formData.append("model", model.trim());
-      formData.append("file", wavBlob, "realtime-fallback.wav");
-
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers,
-          body: formData,
-        });
-        const body = await response.text();
-        if (!response.ok) {
-          continue;
-        }
-
-        const parsed = extractTranscriptionResult(body);
-        if (parsed.text.trim().length > 0) {
-          return parsed.text.trim();
-        }
-      } catch {
-        // Try next endpoint.
-      }
-    }
-
-    return "";
+    return transcribePcmFallback({
+      pcmWavBytes: wav,
+      model,
+      apiKey,
+      endpoints,
+    });
   }
 
   useEffect(() => {
@@ -545,58 +458,13 @@ function AppContainer(): JSX.Element {
   }
 
   async function enrichMetadataWithLlm(input: { transcript: string; titleFallback: string }): Promise<ClipMetadata> {
-    const requestBody = {
-      model: llmModel.trim() || "gpt-4o-mini",
-      temperature: 0.2,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You classify transcript clips. Return strict JSON with keys: title (string), notes (string), categories (array of 1-4 short lowercase tags).",
-        },
-        {
-          role: "user",
-          content: `Transcript:\n${input.transcript}`,
-        },
-      ],
-    };
-
-    const headers = new Headers({ "Content-Type": "application/json" });
-    if (llmApiKey.trim().length > 0) {
-      headers.set("Authorization", `Bearer ${llmApiKey.trim()}`);
-    }
-
-    const chatEndpoints = buildChatEndpoints(llmBaseUrl.trim());
-    for (const endpoint of chatEndpoints) {
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(requestBody),
-        });
-        if (!response.ok) {
-          continue;
-        }
-
-        const raw = (await response.json()) as {
-          choices?: Array<{ message?: { content?: string } }>;
-        };
-        const content = raw.choices?.[0]?.message?.content ?? "";
-        const parsed = tryParseMetadata(content);
-        if (parsed) {
-          return parsed;
-        }
-      } catch {
-        // Try next endpoint.
-      }
-    }
-
-    return {
-      title: input.titleFallback,
-      notes: "Auto-generated fallback metadata.",
-      categories: ["capture"],
-    };
+    return inferClipMetadataWithLlm({
+      transcript: input.transcript,
+      titleFallback: input.titleFallback,
+      llmModel,
+      llmBaseUrl,
+      llmApiKey,
+    });
   }
 
   useEffect(() => {
@@ -656,27 +524,7 @@ function AppContainer(): JSX.Element {
   }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId, llmEnabled]);
 
   function handleExportJson(): void {
-    const exportData = artifacts.map(artifact => ({
-      id: artifact.id,
-      source: artifact.source,
-      transcript: artifact.text,
-      title: artifact.title,
-      notes: artifact.notes,
-      categories: artifact.categories,
-      createdAtMs: artifact.createdAtMs,
-      updatedAtMs: artifact.updatedAtMs,
-      hasAudioFile: artifact.hasAudioFile,
-      fileName: artifact.fileName,
-      startedAtMs: artifact.startedAtMs,
-      endedAtMs: artifact.endedAtMs,
-      durationMs: artifact.durationMs,
-    }));
-
-    const json = JSON.stringify(
-      { exportedAtMs: Date.now(), count: exportData.length, clips: exportData },
-      null,
-      2,
-    );
+    const json = buildArtifactExportJson(artifacts);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -823,57 +671,4 @@ function AppContainer(): JSX.Element {
   );
 }
 
-function normalizeTranscriptKey(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
-}
-
-function mapClipToArtifact(clip: ManifestClip): Artifact {
-  return {
-    id: `clip-${clip.id}`,
-    source: "clip",
-    text: clip.transcript,
-    title: clip.title,
-    notes: clip.notes,
-    categories: clip.categories,
-    createdAtMs: clip.createdAtMs,
-    updatedAtMs: clip.endedAtMs,
-    inferenceState: "ready",
-    hasAudioFile: true,
-    clipId: clip.id,
-    fileName: clip.fileName,
-    itemId: "",
-    startedAtMs: clip.startedAtMs,
-    endedAtMs: clip.endedAtMs,
-    durationMs: clip.durationMs,
-  };
-}
-
-function mergeArtifacts(items: Artifact[]): Artifact[] {
-  const byKey = new Map<string, Artifact>();
-
-  for (const artifact of items) {
-    const key = artifact.hasAudioFile
-      ? `clip:${artifact.clipId ?? artifact.id}`
-      : (() => {
-          const keyBase = normalizeTranscriptKey(artifact.text);
-          return keyBase.length > 0 ? keyBase : artifact.id;
-        })();
-    const existing = byKey.get(key);
-    if (!existing) {
-      byKey.set(key, artifact);
-      continue;
-    }
-
-    if (existing.hasAudioFile !== artifact.hasAudioFile) {
-      byKey.set(key, artifact.hasAudioFile ? artifact : existing);
-      continue;
-    }
-
-    if (artifact.updatedAtMs > existing.updatedAtMs) {
-      byKey.set(key, artifact);
-    }
-  }
-
-  return [...byKey.values()].sort((a, b) => b.updatedAtMs - a.updatedAtMs);
-}
 
