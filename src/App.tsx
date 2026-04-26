@@ -25,6 +25,7 @@ import {
   type TranscriptionResult,
 } from "./lib/transcriptionParsing";
 import { HomePage } from "./components/HomePage";
+import { LiveBar } from "./components/LiveBar";
 import { SettingsPage } from "./components/SettingsPage";
 import { UploadPage } from "./components/UploadPage";
 import { AppConfigProvider, useAppConfig } from "./context/AppConfigContext";
@@ -79,6 +80,7 @@ function AppContainer(): JSX.Element {
   const [clipCategoryFilter, setClipCategoryFilter] = useState("all");
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [uploadedArtifacts, setUploadedArtifacts] = useState<Artifact[]>([]);
+  const [audioUrls, setAudioUrls] = useState<Map<string, string>>(() => new Map());
   const [micPermission, setMicPermission] = useState<MicPermission>("unknown");
   const [realtimeMetadataByRecordId, setRealtimeMetadataByRecordId] = useState<Record<string, {
     title: string;
@@ -225,7 +227,8 @@ function AppContainer(): JSX.Element {
   }, [selectedArtifact, manifest.clips]);
 
   const selectedDurationMsResolved = selectedClipFromArtifact?.durationMs ?? 0;
-  const timelineResolved = useTimelinePlayback(selectedClipFromArtifact?.id ?? "", selectedDurationMsResolved);
+  const selectedClipAudioUrl = selectedClipFromArtifact ? audioUrls.get(selectedClipFromArtifact.id) : undefined;
+  const timelineResolved = useTimelinePlayback(selectedClipFromArtifact?.id ?? "", selectedDurationMsResolved, selectedClipAudioUrl);
 
   const clipCategories = useMemo(() => {
     return extractRecordCategories(artifacts);
@@ -286,6 +289,8 @@ function AppContainer(): JSX.Element {
 
     try {
       const { clip } = await persistClipSafe(payload);
+      const audioBlob = new Blob([wav.buffer as ArrayBuffer], { type: "audio/wav" });
+      setAudioUrls(prev => new Map(prev).set(clip.id, URL.createObjectURL(audioBlob)));
       setManifest(previous => ({ ...previous, updatedAtMs: Date.now(), clips: [...previous.clips, clip] }));
       setManifestStatus(`Saved clip ${clip.id}`);
     } catch (persistError) {
@@ -641,21 +646,31 @@ function AppContainer(): JSX.Element {
       </aside>
 
       <div className="app">
+        <LiveBar
+          isRunning={realtime.isRunning}
+          onToggle={() => {
+            if (realtime.isRunning) {
+              setIsAlwaysOnEnabled(false);
+              realtime.stopRealtime();
+            } else {
+              if (!isAlwaysOnEnabled) {
+                setIsAlwaysOnEnabled(true);
+              }
+              void realtime.startRealtime();
+            }
+          }}
+          realtimeText={realtime.realtimeText}
+          audioLevelBars={realtime.audioLevelBars}
+          realtimeStatus={realtime.realtimeStatus}
+          realtimeError={realtime.realtimeError}
+          realtimeLog={realtime.realtimeLog}
+          sentAudioChunks={realtime.sentAudioChunks}
+          receivedEvents={realtime.receivedEvents}
+          lastEventType={realtime.lastEventType}
+        />
+
         {activePage === "home" ? (
           <HomePage
-            isAlwaysOnEnabled={isAlwaysOnEnabled}
-            isRealtimeRunning={realtime.isRunning}
-            onToggleRealtime={() => {
-              if (realtime.isRunning) {
-                setIsAlwaysOnEnabled(false);
-                realtime.stopRealtime();
-              } else {
-                if (!isAlwaysOnEnabled) {
-                  setIsAlwaysOnEnabled(true);
-                }
-                void realtime.startRealtime();
-              }
-            }}
             clipSearch={clipSearch}
             onChangeClipSearch={setClipSearch}
             clipCategoryFilter={clipCategoryFilter}
@@ -663,6 +678,7 @@ function AppContainer(): JSX.Element {
             clipSort={clipSort}
             onChangeClipSort={setClipSort}
             clipCategories={clipCategories}
+            artifacts={filteredRealtimeRecords}
             selectedClip={selectedClipFromArtifact}
             selectedArtifact={selectedArtifact}
             selectedArtifactId={selectedArtifactId}
@@ -679,17 +695,6 @@ function AppContainer(): JSX.Element {
             onToggleTimelinePlay={timelineResolved.togglePlay}
             onSeekBackward={() => timelineResolved.seekByMs(-3000)}
             onSeekForward={() => timelineResolved.seekByMs(3000)}
-            realtimeStatus={realtime.realtimeStatus}
-            artifacts={filteredRealtimeRecords}
-            realtimeCurrentRecord={realtime.realtimeCurrentRecord}
-            micPermissionText={micPermissionText}
-            realtimeError={realtime.realtimeError}
-            realtimeText={realtime.realtimeText}
-            audioLevelBars={realtime.audioLevelBars}
-            sentAudioChunks={realtime.sentAudioChunks}
-            receivedEvents={realtime.receivedEvents}
-            lastEventType={realtime.lastEventType}
-            realtimeLog={realtime.realtimeLog}
           />
         ) : activePage === "upload" ? (
           <section className="pageMain">

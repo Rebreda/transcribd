@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type TimelinePlayback = {
   playheadMs: number;
@@ -9,19 +9,65 @@ type TimelinePlayback = {
   seekByMs: (deltaMs: number) => void;
 };
 
-export function useTimelinePlayback(selectedClipId: string, durationMs: number): TimelinePlayback {
+export function useTimelinePlayback(selectedClipId: string, durationMs: number, audioUrl?: string): TimelinePlayback {
   const [playheadMs, setPlayheadMsState] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const safePlayheadMs = Math.min(Math.max(playheadMs, 0), durationMs);
 
+  // Reset when clip changes.
   useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
     setPlayheadMsState(0);
     setIsPlaying(false);
   }, [selectedClipId]);
 
+  // Wire up a real audio element when we have a URL.
   useEffect(() => {
-    if (!isPlaying || durationMs <= 0) {
+    if (!audioUrl) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
+      audioRef.current = null;
+      return;
+    }
+
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    const onTimeUpdate = (): void => {
+      setPlayheadMsState(Math.floor(audio.currentTime * 1000));
+    };
+    const onEnded = (): void => {
+      setIsPlaying(false);
+      setPlayheadMsState(durationMs);
+    };
+    const onPlay = (): void => setIsPlaying(true);
+    const onPause = (): void => setIsPlaying(false);
+
+    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
+      audio.src = "";
+    };
+  }, [audioUrl, durationMs]);
+
+  // Timer-based fallback when there is no audio URL.
+  useEffect(() => {
+    if (audioUrl || !isPlaying || durationMs <= 0) {
       return;
     }
 
@@ -39,21 +85,36 @@ export function useTimelinePlayback(selectedClipId: string, durationMs: number):
     return () => {
       window.clearInterval(timer);
     };
-  }, [isPlaying, durationMs]);
+  }, [isPlaying, durationMs, audioUrl]);
 
   function setPlayheadMs(value: number): void {
     setPlayheadMsState(value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = value / 1000;
+    }
   }
 
   function togglePlay(): void {
     if (durationMs <= 0) {
       return;
     }
-    setIsPlaying(previous => !previous);
+    if (audioRef.current) {
+      if (audioRef.current.paused) {
+        void audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    } else {
+      setIsPlaying(previous => !previous);
+    }
   }
 
   function seekByMs(deltaMs: number): void {
-    setPlayheadMsState(previous => Math.min(durationMs, Math.max(0, previous + deltaMs)));
+    const newMs = Math.min(durationMs, Math.max(0, playheadMs + deltaMs));
+    setPlayheadMsState(newMs);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newMs / 1000;
+    }
   }
 
   return {

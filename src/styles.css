@@ -84,6 +84,9 @@ body {
   min-width: 0;
   background: var(--bg-elev);
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .pageMain {
@@ -97,10 +100,9 @@ body {
   border: none;
   border-radius: 0;
   overflow: hidden;
-  min-height: 100vh;
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
   background: var(--panel);
 }
 
@@ -109,7 +111,7 @@ body {
   background: linear-gradient(180deg, #25272c 0%, #212329 100%);
   padding: 0.8rem;
   display: grid;
-  grid-template-rows: auto auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
   gap: 0.55rem;
   min-height: 0;
 }
@@ -429,7 +431,9 @@ input::placeholder {
 }
 
 .waveBars span {
-  width: 3px;
+  flex: 1;
+  min-width: 2px;
+  max-width: 10px;
   border-radius: 99px;
   background: linear-gradient(180deg, #8ab4ff 0%, #dfe8ff 100%);
 }
@@ -519,6 +523,86 @@ input::placeholder {
   overflow: visible;
   white-space: nowrap;
   position: relative;
+}
+
+/* ── Persistent live bar ────────────────────────────────────────── */
+.liveBar {
+  flex-shrink: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0 0.9rem;
+  background: #1a1c20;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  position: relative;
+}
+
+.liveBarBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.liveBarBars span {
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  min-height: 3px;
+  opacity: 0.8;
+}
+
+.liveBarText {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.83rem;
+  color: #6e737d;
+  font-style: italic;
+}
+
+.liveBarText.active {
+  color: var(--text);
+  font-style: normal;
+}
+
+.liveBarStatus {
+  flex-shrink: 0;
+  font-size: 0.74rem;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  color: var(--text-dim);
+}
+
+.liveBarError {
+  flex-shrink: 0;
+  color: #ff9095;
+  font-size: 0.78rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.liveBarToggle {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.22rem 0.72rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  background: #2a2d33;
+  cursor: pointer;
+}
+
+.liveBarToggle:hover {
+  background: #3a3f4a;
 }
 
 .realtimeLogToggle {
