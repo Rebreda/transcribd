@@ -176,8 +176,10 @@ input::placeholder {
 
 .clipListCompact {
   display: grid;
+  grid-auto-rows: max-content;
+  align-content: start;
   gap: 0.25rem;
-  overflow: auto;
+  overflow-y: auto;
 }
 
 .clipListCompact.listMode {
@@ -612,7 +614,7 @@ input::placeholder {
 
 .realtimeLogPanel {
   position: absolute;
-  bottom: calc(100% + 4px);
+  top: calc(100% + 4px);
   right: 0;
   width: 520px;
   max-height: 340px;
@@ -625,7 +627,7 @@ input::placeholder {
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.72rem;
-  z-index: 200;
+  z-index: 1200;
 }
 
 .realtimeLogRow {

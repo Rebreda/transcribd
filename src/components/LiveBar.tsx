@@ -89,7 +89,7 @@ function RealtimeEventLog({
           </div>
           {entries.length === 0 && <span className="status">No events yet.</span>}
           {entries.map(entry => (
-            <div key={entry.ts} className="realtimeLogRow">
+            <div key={entry.id} className="realtimeLogRow">
               <span className="logType">{entry.type}</span>
               {entry.text.length > 0 && (
                 <span className="logText">&ldquo;{entry.text}&rdquo;</span>

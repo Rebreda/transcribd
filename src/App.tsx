@@ -254,20 +254,28 @@ function AppContainer(): JSX.Element {
     endedAtMs: number;
   }): Promise<void> {
     const { pcm, transcript, startedAtMs, endedAtMs } = input;
+    let transcriptTrimmed = transcript.trim();
 
-    if (pcm.byteLength < MIN_CLIP_BYTES || transcript.length === 0) {
+    if (pcm.byteLength < MIN_CLIP_BYTES) {
       return;
     }
 
-    const metadata = llmEnabled
-      ? await enrichMetadataWithLlm({ transcript, titleFallback: buildFallbackTitle(transcript) })
-      : buildLocalFallbackMetadata(transcript, endedAtMs);
+    if (transcriptTrimmed.length === 0) {
+      const recovered = await transcribeClipAudioFallback(pcm);
+      transcriptTrimmed = recovered.trim();
+    }
+
+    const transcriptForStorage = transcriptTrimmed.length > 0 ? transcriptTrimmed : "(no transcript returned)";
+
+    const metadata = llmEnabled && transcriptTrimmed.length > 0
+      ? await enrichMetadataWithLlm({ transcript: transcriptForStorage, titleFallback: buildFallbackTitle(transcriptForStorage) })
+      : buildLocalFallbackMetadata(transcriptForStorage, endedAtMs);
 
     const wav = pcm16ToWav(pcm, TARGET_SAMPLE_RATE, 1);
     const payload = {
       objectId: buildObjectId(endedAtMs),
       audioBase64: bytesToBase64(wav),
-      transcript,
+      transcript: transcriptForStorage,
       title: metadata.title,
       notes: metadata.notes,
       categories: metadata.categories,
@@ -287,6 +295,43 @@ function AppContainer(): JSX.Element {
       const detail = persistError instanceof Error ? persistError.message : String(persistError);
       setManifestStatus(`Failed to save clip: ${detail}`);
     }
+  }
+
+  async function transcribeClipAudioFallback(pcm: Uint8Array): Promise<string> {
+    const wav = pcm16ToWav(pcm, TARGET_SAMPLE_RATE, 1);
+    const wavBlob = new Blob([new Uint8Array(wav)], { type: "audio/wav" });
+
+    const headers = new Headers();
+    if (apiKey.trim().length > 0) {
+      headers.set("Authorization", `Bearer ${apiKey.trim()}`);
+    }
+
+    for (const endpoint of endpoints) {
+      const formData = new FormData();
+      formData.append("model", model.trim());
+      formData.append("file", wavBlob, "realtime-fallback.wav");
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: formData,
+        });
+        const body = await response.text();
+        if (!response.ok) {
+          continue;
+        }
+
+        const parsed = extractTranscriptionResult(body);
+        if (parsed.text.trim().length > 0) {
+          return parsed.text.trim();
+        }
+      } catch {
+        // Try next endpoint.
+      }
+    }
+
+    return "";
   }
 
   useEffect(() => {
@@ -807,8 +852,12 @@ function mergeArtifacts(items: Artifact[]): Artifact[] {
   const byKey = new Map<string, Artifact>();
 
   for (const artifact of items) {
-    const keyBase = normalizeTranscriptKey(artifact.text);
-    const key = keyBase.length > 0 ? keyBase : artifact.id;
+    const key = artifact.hasAudioFile
+      ? `clip:${artifact.clipId ?? artifact.id}`
+      : (() => {
+          const keyBase = normalizeTranscriptKey(artifact.text);
+          return keyBase.length > 0 ? keyBase : artifact.id;
+        })();
     const existing = byKey.get(key);
     if (!existing) {
       byKey.set(key, artifact);

@@ -20,6 +20,7 @@ type UseRealtimeCaptureInput = {
 };
 
 export type RealtimeLogEntry = {
+  id: string;
   ts: number;
   type: string;
   text: string;
@@ -96,6 +97,8 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   const smoothedLevelRef = useRef(0);
   const pendingCloseAfterCommitRef = useRef(false);
   const commitCloseTimerRef = useRef<number | null>(null);
+  const logSeqRef = useRef(0);
+  const startInFlightRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -104,10 +107,12 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   }, []);
 
   async function startRealtime(): Promise<void> {
-    if (wsRef.current) {
+    if (wsRef.current || startInFlightRef.current) {
       setRealtimeError("Realtime session already running.");
       return;
     }
+
+    startInFlightRef.current = true;
 
     setRealtimeError("");
     setRealtimeText("");
@@ -124,6 +129,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     if (!wsInfo.ok) {
       setRealtimeStatus("Failed");
       setRealtimeError(wsInfo.error);
+      startInFlightRef.current = false;
       return;
     }
 
@@ -140,6 +146,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     if (!stream.ok) {
       setRealtimeStatus("Failed");
       setRealtimeError(stream.error);
+      startInFlightRef.current = false;
       return;
     }
 
@@ -149,18 +156,21 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     wsRef.current = ws;
 
     ws.onopen = () => {
+      startInFlightRef.current = false;
       setIsRunning(true);
       pendingCloseAfterCommitRef.current = false;
       setRealtimeStatus(isAlwaysOnEnabled ? "Connected (Always-On)" : "Connected");
-      // Lemonade transcribes by default — no input_audio_transcription needed.
-      // Keep turn_detection minimal: let the server apply its own VAD defaults,
-      // only override silence timing for a reasonable capture window.
+      // Request transcription + server-side VAD explicitly for broader compatibility.
       ws.send(
         JSON.stringify({
           type: "session.update",
           session: {
             model: model.trim(),
+            input_audio_transcription: {
+              model: model.trim(),
+            },
             turn_detection: {
+              type: "server_vad",
               threshold: 0.05,
               silence_duration_ms: 1200,
               prefix_padding_ms: 300,
@@ -212,11 +222,13 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     };
 
     ws.onerror = () => {
+      startInFlightRef.current = false;
       setRealtimeStatus("Error");
       setRealtimeError("Realtime websocket connection error.");
     };
 
     ws.onclose = () => {
+      startInFlightRef.current = false;
       clearCommitCloseTimer();
       teardownRealtimeAudioPipeline();
       wsRef.current = null;
@@ -226,6 +238,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   }
 
   function stopRealtime(): void {
+    startInFlightRef.current = false;
     const ws = wsRef.current;
     if (!ws) {
       teardownRealtimeAudioPipeline();
@@ -422,6 +435,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     const textPiece = extractRealtimeText(message);
 
     const entry: RealtimeLogEntry = {
+      id: `log-${Date.now()}-${logSeqRef.current++}`,
       ts: Date.now(),
       type: message.type || "(unknown)",
       text: textPiece,
@@ -490,27 +504,35 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     }
 
     if (message.type === "conversation.item.input_audio_transcription.completed") {
-      const transcript = textPiece || "";
-      if (transcript.length > 0) {
-        const itemId = message.item_id ?? message.item?.id ?? "";
-        if (itemId.length === 0 || itemId === currentInterimItemIdRef.current) {
-          currentInterimItemIdRef.current = "";
-          currentInterimTextRef.current = "";
-          setRealtimeText("");
-          setRealtimeCurrentRecord(null);
-        }
-        activeClipTranscriptRef.current = mergeTranscriptText(activeClipTranscriptRef.current, transcript);
-        const now = Date.now();
-        const recordId = itemId.length > 0 ? `final-${itemId}` : `final-${now}`;
-        setRealtimeRecords(previous => [{
-          id: recordId,
-          itemId,
-          text: transcript,
-          isFinal: true,
-          updatedAtMs: now,
-        }, ...previous].slice(0, 120));
-        void finalizeCompletedSegment(itemId, transcript);
+      const itemId = message.item_id ?? message.item?.id ?? "";
+      const merged = mergeTranscriptText(
+        mergeTranscriptText(activeClipTranscriptRef.current, currentInterimTextRef.current),
+        textPiece,
+      ).trim();
+
+      if (itemId.length === 0 || itemId === currentInterimItemIdRef.current) {
+        currentInterimItemIdRef.current = "";
+        currentInterimTextRef.current = "";
+        setRealtimeText("");
+        setRealtimeCurrentRecord(null);
       }
+
+      if (merged.length === 0) {
+        setRealtimeError("Realtime completed with empty transcript. Check model/server transcription settings.");
+        void finalizeCompletedSegment(itemId, "");
+        return;
+      }
+
+      const now = Date.now();
+      const recordId = itemId.length > 0 ? `final-${itemId}-${now}` : `final-${now}`;
+      setRealtimeRecords(previous => [{
+        id: recordId,
+        itemId,
+        text: merged,
+        isFinal: true,
+        updatedAtMs: now,
+      }, ...previous].slice(0, 120));
+      void finalizeCompletedSegment(itemId, merged);
     }
 
     if (message.type === "input_audio_buffer.speech_started") {
@@ -525,6 +547,14 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     if (message.type === "input_audio_buffer.speech_stopped") {
       if (isAlwaysOnEnabled) {
         stageActiveClipForItem(message.item_id ?? activeClipItemIdRef.current, "vad-stop");
+        const ws = wsRef.current;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          try {
+            ws.send(JSON.stringify({ type: "input_audio_buffer.commit" }));
+          } catch {
+            // Ignore commit send errors; normal close/error flow will handle socket state.
+          }
+        }
       } else {
         speechActiveRef.current = false;
       }
@@ -577,8 +607,11 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   }
 
   async function finalizeCompletedSegment(itemId: string, transcript: string): Promise<void> {
-    const pending = resolvePendingSegment(itemId);
-    if (!pending || transcript.trim().length === 0) {
+    let pending = resolvePendingSegment(itemId);
+    if (!pending) {
+      pending = consumeBufferedSegment("vad-stop");
+    }
+    if (!pending) {
       return;
     }
 
@@ -663,6 +696,28 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     segmentChunksRef.current = [];
     segmentBytesRef.current = 0;
     segmentStartedMsRef.current = 0;
+  }
+
+  function consumeBufferedSegment(reason: "vad-stop" | "max-duration"): PendingSegment | null {
+    if (segmentBytesRef.current < MIN_CLIP_BYTES) {
+      return null;
+    }
+
+    const pcm = concatChunks(segmentChunksRef.current);
+    const endedAtMs = Date.now();
+    const startedAtMs = segmentStartedMsRef.current || endedAtMs;
+    clearSegmentBuffer();
+
+    if (pcm.byteLength < MIN_CLIP_BYTES) {
+      return null;
+    }
+
+    return {
+      pcm,
+      startedAtMs,
+      endedAtMs,
+      reason,
+    };
   }
 
   async function finalizeActiveClip(reason: "vad-stop" | "max-duration"): Promise<void> {
