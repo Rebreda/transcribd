@@ -166,6 +166,30 @@ describe("filterAndSortRecords", () => {
     const result = filterAndSortRecords({ records: [], searchQuery: "hello", categoryFilter: "all", sortBy: "newest" });
     expect(result).toHaveLength(0);
   });
+
+  test("suppresses no-audio style records by default", () => {
+    const recs = [
+      makeRecord({ id: "ok", title: "Meaningful clip", categories: ["capture"] }),
+      makeRecord({ id: "silence", title: "No Audio Content", categories: ["silence"] }),
+    ];
+    const result = filterAndSortRecords({ records: recs, searchQuery: "", categoryFilter: "all", sortBy: "newest" });
+    expect(result.map(r => r.id)).toEqual(["ok"]);
+  });
+
+  test("includeSuppressed keeps no-audio records", () => {
+    const recs = [
+      makeRecord({ id: "ok", title: "Meaningful clip", categories: ["capture"] }),
+      makeRecord({ id: "silence", title: "No Audio Content", categories: ["silence"] }),
+    ];
+    const result = filterAndSortRecords({
+      records: recs,
+      searchQuery: "",
+      categoryFilter: "all",
+      sortBy: "newest",
+      includeSuppressed: true,
+    });
+    expect(result).toHaveLength(2);
+  });
 });
 
 // ── extractClipCategories ─────────────────────────────────────────────────────

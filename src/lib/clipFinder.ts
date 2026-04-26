@@ -1,4 +1,5 @@
 import type { Artifact, ClipSort, ManifestClip, RealtimeObjectRecord } from "./appTypes";
+import { DEFAULT_SUPPRESSED_RECORD_PHRASES } from "./constants";
 
 type SearchableRecord = Artifact | RealtimeObjectRecord;
 
@@ -79,11 +80,12 @@ export function filterAndSortRecords<T extends SearchableRecord>(input: {
   searchQuery: string;
   categoryFilter: string;
   sortBy: ClipSort;
+  includeSuppressed?: boolean;
 }): T[] {
-  const { records, searchQuery, categoryFilter, sortBy } = input;
+  const { records, searchQuery, categoryFilter, sortBy, includeSuppressed = false } = input;
   const query = searchQuery.trim().toLowerCase();
 
-  let filtered = records;
+  let filtered = includeSuppressed ? records : records.filter(record => !isSuppressedRecord(record));
 
   if (query.length > 0) {
     filtered = filtered.filter(record => {
@@ -109,6 +111,21 @@ export function filterAndSortRecords<T extends SearchableRecord>(input: {
   }
 
   return sorted;
+}
+
+function isSuppressedRecord(record: SearchableRecord): boolean {
+  const title = record.title.trim().toLowerCase();
+  const notes = record.notes.trim().toLowerCase();
+  const text = record.text.trim().toLowerCase();
+  const categories = record.categories.map(category => category.trim().toLowerCase());
+
+  return DEFAULT_SUPPRESSED_RECORD_PHRASES.some(phrase => {
+    const token = phrase.toLowerCase();
+    return title.includes(token)
+      || notes.includes(token)
+      || text === `[${token}]`
+      || categories.includes(token);
+  });
 }
 
 /**

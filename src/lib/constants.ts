@@ -32,6 +32,31 @@ export const DEFAULT_SERVER_BASE_URL = "http://localhost:13305/api/v1";
 export const DEFAULT_WHISPER_MODEL = "Whisper-Base";
 export const DEFAULT_LLM_MODEL = "Gemma-4-E4B-it-GGUF";
 
+// Realtime websocket session defaults
+export const DEFAULT_REALTIME_TURN_DETECTION_TYPE = "server_vad";
+export const DEFAULT_REALTIME_VAD_THRESHOLD = 0.05;
+export const DEFAULT_REALTIME_SILENCE_DURATION_MS = 1200;
+export const DEFAULT_REALTIME_PREFIX_PADDING_MS = 300;
+
+// HTTP transcription defaults
+export const DEFAULT_TRANSCRIPTION_RESPONSE_FORMAT = "verbose_json";
+export const DEFAULT_TRANSCRIPTION_TEMPERATURE = 0;
+
+// LLM inference defaults
+export const DEFAULT_LLM_TEMPERATURE = 0.2;
+export const DEFAULT_LLM_RESPONSE_FORMAT = "json_object";
+
 // ── LLM prompts ─────────────────────────────────────────────────────────────
 export const LLM_CLASSIFY_SYSTEM_PROMPT =
   "You classify transcript clips. Return strict JSON with keys: title (string), notes (string), categories (array of 1-4 short lowercase tags).";
+
+// Records that are typically unhelpful in daily browsing.
+export const DEFAULT_SUPPRESSED_RECORD_PHRASES = [
+  "silence",
+  "blank",
+  "blank audio",
+  "no audio",
+  "no audio content",
+  "empty",
+  "unclassified",
+];

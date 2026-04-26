@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { bytesToBase64, pcm16ToWav } from "./lib/audioCodec";
 import {
   type Artifact,
@@ -34,6 +34,8 @@ import {
   normalizeTranscriptKey,
 } from "./lib/artifactDomain";
 import { inferClipMetadataWithLlm, transcribePcmFallback } from "./lib/transcriptionWorkflow";
+import { AUDIO_CHANNELS, AUDIO_SAMPLE_RATE, MIN_CLIP_BYTES } from "./lib/constants";
+import { parseTranscriptionRequestOptions } from "./lib/apiSchemas";
 import { HomePage } from "./components/HomePage";
 import { LiveBar } from "./components/LiveBar";
 import { SettingsPage } from "./components/SettingsPage";
@@ -41,9 +43,6 @@ import { UploadPage } from "./components/UploadPage";
 import { AppConfigProvider, useAppConfig } from "./context/AppConfigContext";
 import { useRealtimeCapture } from "./hooks/useRealtimeCapture";
 import { useTimelinePlayback } from "./hooks/useTimelinePlayback";
-
-const TARGET_SAMPLE_RATE = 16000;
-const MIN_CLIP_BYTES = 3200;
 
 export function App(): JSX.Element {
   return (
@@ -74,6 +73,14 @@ function AppContainer(): JSX.Element {
     setLlmModel,
     llmApiKey,
     setLlmApiKey,
+    realtimeOptions,
+    setRealtimeOptions,
+    transcriptionOptions,
+    setTranscriptionOptions,
+    llmInferenceOptions,
+    setLlmInferenceOptions,
+    showSuppressedRecords,
+    setShowSuppressedRecords,
   } = useAppConfig();
   
 
@@ -98,10 +105,21 @@ function AppContainer(): JSX.Element {
     categories: string[];
     inferenceState: "pending" | "ready" | "error";
   }>>({});
-  const realtimeInferenceInFlightRef = useState(() => new Set<string>())[0];
-  const llmQueue = useState(() => new SerialTaskQueue())[0];
+  const realtimeInferenceInFlightRef = useRef(new Set<string>());
+  const llmQueueRef = useRef(new SerialTaskQueue());
+  const metadataByRecordIdRef = useRef(realtimeMetadataByRecordId);
+  const audioUrlsRef = useRef(audioUrls);
 
   const endpoints = useMemo(() => buildTranscriptionEndpoints(baseUrl), [baseUrl]);
+  const resolvedTranscriptionOptions = useMemo(
+    () => parseTranscriptionRequestOptions(transcriptionOptions),
+    [
+      transcriptionOptions.language,
+      transcriptionOptions.prompt,
+      transcriptionOptions.responseFormat,
+      transcriptionOptions.temperature,
+    ],
+  );
   const canSubmit = selectedFiles.length > 0 && model.trim().length > 0;
 
   const persistedArtifacts = useMemo<Artifact[]>(
@@ -125,6 +143,7 @@ function AppContainer(): JSX.Element {
     model,
     selectedMicId,
     isAlwaysOnEnabled,
+    realtimeOptions,
     onClipCaptured: async input => {
       await handleClipCaptured(input);
     },
@@ -151,8 +170,9 @@ function AppContainer(): JSX.Element {
         searchQuery: clipSearch,
         categoryFilter: clipCategoryFilter,
         sortBy: clipSort,
+        includeSuppressed: showSuppressedRecords,
       }),
-    [artifacts, clipSearch, clipCategoryFilter, clipSort],
+    [artifacts, clipSearch, clipCategoryFilter, clipSort, showSuppressedRecords],
   );
 
   const selectedArtifact = useMemo(
@@ -175,6 +195,40 @@ function AppContainer(): JSX.Element {
   const clipCategories = useMemo(() => {
     return extractRecordCategories(artifacts);
   }, [artifacts]);
+
+  useEffect(() => {
+    metadataByRecordIdRef.current = realtimeMetadataByRecordId;
+  }, [realtimeMetadataByRecordId]);
+
+  useEffect(() => {
+    audioUrlsRef.current = audioUrls;
+  }, [audioUrls]);
+
+  useEffect(() => {
+    return () => {
+      for (const url of audioUrlsRef.current.values()) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const liveClipIds = new Set(manifest.clips.map(clip => clip.id));
+    setAudioUrls(previous => {
+      let hasChanges = false;
+      const next = new Map(previous);
+
+      for (const [clipId, url] of next.entries()) {
+        if (!liveClipIds.has(clipId)) {
+          URL.revokeObjectURL(url);
+          next.delete(clipId);
+          hasChanges = true;
+        }
+      }
+
+      return hasChanges ? next : previous;
+    });
+  }, [manifest.clips]);
 
   useEffect(() => {
     if (filteredRealtimeRecords.length === 0) {
@@ -211,7 +265,7 @@ function AppContainer(): JSX.Element {
       ? await enrichMetadataWithLlm({ transcript: transcriptForStorage, titleFallback: buildFallbackTitle(transcriptForStorage) })
       : buildLocalFallbackMetadata(transcriptForStorage, endedAtMs);
 
-    const wav = pcm16ToWav(pcm, TARGET_SAMPLE_RATE, 1);
+    const wav = pcm16ToWav(pcm, AUDIO_SAMPLE_RATE, AUDIO_CHANNELS);
     const payload = {
       objectId: buildObjectId(endedAtMs),
       audioBase64: bytesToBase64(wav),
@@ -221,14 +275,23 @@ function AppContainer(): JSX.Element {
       categories: metadata.categories,
       startedAtMs,
       endedAtMs,
-      sampleRate: TARGET_SAMPLE_RATE,
-      channels: 1,
+      sampleRate: AUDIO_SAMPLE_RATE,
+      channels: AUDIO_CHANNELS,
     };
 
     try {
       const { clip } = await persistClipSafe(payload);
       const audioBlob = new Blob([wav.buffer as ArrayBuffer], { type: "audio/wav" });
-      setAudioUrls(prev => new Map(prev).set(clip.id, URL.createObjectURL(audioBlob)));
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrls(previous => {
+        const next = new Map(previous);
+        const existing = next.get(clip.id);
+        if (existing) {
+          URL.revokeObjectURL(existing);
+        }
+        next.set(clip.id, url);
+        return next;
+      });
       setManifest(previous => ({ ...previous, updatedAtMs: Date.now(), clips: [...previous.clips, clip] }));
       setManifestStatus(`Saved clip ${clip.id}`);
     } catch (persistError) {
@@ -238,12 +301,13 @@ function AppContainer(): JSX.Element {
   }
 
   async function transcribeClipAudioFallback(pcm: Uint8Array): Promise<string> {
-    const wav = pcm16ToWav(pcm, TARGET_SAMPLE_RATE, 1);
+    const wav = pcm16ToWav(pcm, AUDIO_SAMPLE_RATE, AUDIO_CHANNELS);
     return transcribePcmFallback({
       pcmWavBytes: wav,
       model,
       apiKey,
       endpoints,
+      options: resolvedTranscriptionOptions,
     });
   }
 
@@ -266,7 +330,19 @@ function AppContainer(): JSX.Element {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [isAlwaysOnEnabled, micPermission, selectedMicId, baseUrl, apiKey, model, realtime.isRunning]);
+  }, [
+    isAlwaysOnEnabled,
+    micPermission,
+    selectedMicId,
+    baseUrl,
+    apiKey,
+    model,
+    realtime.isRunning,
+    realtimeOptions.turnDetectionType,
+    realtimeOptions.vadThreshold,
+    realtimeOptions.silenceDurationMs,
+    realtimeOptions.prefixPaddingMs,
+  ]);
 
   useEffect(() => {
     void loadManifest();
@@ -378,6 +454,14 @@ function AppContainer(): JSX.Element {
         const formData = new FormData();
         formData.append("model", model.trim());
         formData.append("file", file, file.name);
+        if (resolvedTranscriptionOptions.language.length > 0) {
+          formData.append("language", resolvedTranscriptionOptions.language);
+        }
+        if (resolvedTranscriptionOptions.prompt.length > 0) {
+          formData.append("prompt", resolvedTranscriptionOptions.prompt);
+        }
+        formData.append("response_format", resolvedTranscriptionOptions.responseFormat);
+        formData.append("temperature", String(resolvedTranscriptionOptions.temperature));
 
         try {
           const response = await fetch(endpoint, {
@@ -415,8 +499,8 @@ function AppContainer(): JSX.Element {
               categories: metadata.categories,
               startedAtMs: now,
               endedAtMs: now,
-              sampleRate: 44100,
-              channels: 1,
+              sampleRate: AUDIO_SAMPLE_RATE,
+              channels: AUDIO_CHANNELS,
             });
             setManifest(previous => ({ ...previous, updatedAtMs: Date.now(), clips: [...previous.clips, clip] }));
             if (firstClipArtifactId === null) {
@@ -464,6 +548,7 @@ function AppContainer(): JSX.Element {
       llmModel,
       llmBaseUrl,
       llmApiKey,
+      llmOptions: llmInferenceOptions,
     });
   }
 
@@ -478,12 +563,20 @@ function AppContainer(): JSX.Element {
         continue;
       }
 
-      if (realtimeMetadataByRecordId[record.id] || realtimeInferenceInFlightRef.has(record.id)) {
+      if (metadataByRecordIdRef.current[record.id] || realtimeInferenceInFlightRef.current.has(record.id)) {
         continue;
       }
 
-      realtimeInferenceInFlightRef.add(record.id);
+      realtimeInferenceInFlightRef.current.add(record.id);
       const immediateMetadata = buildLocalFallbackMetadata(record.text, record.updatedAtMs);
+      metadataByRecordIdRef.current = {
+        ...metadataByRecordIdRef.current,
+        [record.id]: {
+          ...immediateMetadata,
+          notes: llmEnabled ? "Inferring metadata for live object..." : immediateMetadata.notes,
+          inferenceState: "pending" as const,
+        },
+      };
 
       setRealtimeMetadataByRecordId(previous => ({
         ...previous,
@@ -494,11 +587,19 @@ function AppContainer(): JSX.Element {
         },
       }));
 
-      llmQueue.enqueue(async () => {
+      llmQueueRef.current.enqueue(async () => {
         try {
           const inferred = llmEnabled
             ? await enrichMetadataWithLlm({ transcript: record.text, titleFallback: immediateMetadata.title })
             : immediateMetadata;
+
+          metadataByRecordIdRef.current = {
+            ...metadataByRecordIdRef.current,
+            [record.id]: {
+              ...inferred,
+              inferenceState: "ready",
+            },
+          };
 
           setRealtimeMetadataByRecordId(previous => ({
             ...previous,
@@ -508,6 +609,15 @@ function AppContainer(): JSX.Element {
             },
           }));
         } catch {
+          metadataByRecordIdRef.current = {
+            ...metadataByRecordIdRef.current,
+            [record.id]: {
+              ...immediateMetadata,
+              notes: "Metadata inference failed for this live object.",
+              inferenceState: "error",
+            },
+          };
+
           setRealtimeMetadataByRecordId(previous => ({
             ...previous,
             [record.id]: {
@@ -517,11 +627,11 @@ function AppContainer(): JSX.Element {
             },
           }));
         } finally {
-          realtimeInferenceInFlightRef.delete(record.id);
+          realtimeInferenceInFlightRef.current.delete(record.id);
         }
       });
     }
-  }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId, llmEnabled]);
+  }, [realtime.realtimeRecords, clipByTranscript, llmEnabled]);
 
   function handleExportJson(): void {
     const json = buildArtifactExportJson(artifacts);
@@ -662,6 +772,14 @@ function AppContainer(): JSX.Element {
               setLlmModel={setLlmModel}
               llmApiKey={llmApiKey}
               setLlmApiKey={setLlmApiKey}
+              realtimeOptions={realtimeOptions}
+              setRealtimeOptions={setRealtimeOptions}
+              transcriptionOptions={transcriptionOptions}
+              setTranscriptionOptions={setTranscriptionOptions}
+              llmInferenceOptions={llmInferenceOptions}
+              setLlmInferenceOptions={setLlmInferenceOptions}
+              showSuppressedRecords={showSuppressedRecords}
+              setShowSuppressedRecords={setShowSuppressedRecords}
               endpoints={endpoints}
             />
           </section>

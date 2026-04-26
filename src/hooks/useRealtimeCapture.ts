@@ -4,6 +4,8 @@ import type { RealtimeMessage, RealtimeTranscriptRecord } from "../lib/appTypes"
 import { getBestEffortMicrophoneStream } from "../lib/microphone";
 import { discoverRealtimeEndpoint, extractRealtimeText } from "../lib/realtime";
 import { calculateRms, mergeTranscriptText, parseRealtimeFrame } from "../lib/realtimeMessageUtils";
+import { parseRealtimeSessionOptions, type RealtimeSessionOptions } from "../lib/apiSchemas";
+import { AUDIO_SAMPLE_RATE, MAX_CLIP_SECONDS, MIN_CLIP_BYTES, PRE_ROLL_MS } from "../lib/constants";
 
 type UseRealtimeCaptureInput = {
   baseUrl: string;
@@ -11,6 +13,7 @@ type UseRealtimeCaptureInput = {
   model: string;
   selectedMicId: string;
   isAlwaysOnEnabled: boolean;
+  realtimeOptions: RealtimeSessionOptions;
   onClipCaptured: (input: {
     pcm: Uint8Array;
     transcript: string;
@@ -46,11 +49,6 @@ type UseRealtimeCaptureOutput = {
   setRealtimeError: (value: string) => void;
 };
 
-const TARGET_SAMPLE_RATE = 16000;
-const PRE_ROLL_MS = 1200;
-const MAX_CLIP_SECONDS = 90;
-const MIN_CLIP_BYTES = 3200;
-
 type PendingSegment = {
   pcm: Uint8Array;
   startedAtMs: number;
@@ -59,7 +57,8 @@ type PendingSegment = {
 };
 
 export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeCaptureOutput {
-  const { baseUrl, apiKey, model, selectedMicId, isAlwaysOnEnabled, onClipCaptured } = input;
+  const { baseUrl, apiKey, model, selectedMicId, isAlwaysOnEnabled, realtimeOptions, onClipCaptured } = input;
+  const resolvedRealtimeOptions = parseRealtimeSessionOptions(realtimeOptions);
 
   const [realtimeStatus, setRealtimeStatus] = useState("Idle");
   const [realtimeText, setRealtimeText] = useState("");
@@ -171,10 +170,10 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
               model: model.trim(),
             },
             turn_detection: {
-              type: "server_vad",
-              threshold: 0.05,
-              silence_duration_ms: 1200,
-              prefix_padding_ms: 300,
+              type: resolvedRealtimeOptions.turnDetectionType,
+              threshold: resolvedRealtimeOptions.vadThreshold,
+              silence_duration_ms: resolvedRealtimeOptions.silenceDurationMs,
+              prefix_padding_ms: resolvedRealtimeOptions.prefixPaddingMs,
             },
           },
         }),
@@ -317,7 +316,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
         return next;
       });
 
-      const pcm16 = float32ToPcm16Bytes(inputBuffer, event.inputBuffer.sampleRate, TARGET_SAMPLE_RATE);
+      const pcm16 = float32ToPcm16Bytes(inputBuffer, event.inputBuffer.sampleRate, AUDIO_SAMPLE_RATE);
       if (pcm16.length === 0) {
         return;
       }
@@ -328,7 +327,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
       if (speechActiveRef.current) {
         activeClipChunksRef.current.push(pcm16);
         activeClipBytesRef.current += pcm16.byteLength;
-        if (activeClipBytesRef.current > TARGET_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS) {
+        if (activeClipBytesRef.current > AUDIO_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS) {
           void finalizeActiveClip("max-duration");
         }
       }
@@ -401,7 +400,7 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
   }
 
   function pushPreRollChunk(chunk: Uint8Array): void {
-    const maxBytes = Math.floor((TARGET_SAMPLE_RATE * 2 * PRE_ROLL_MS) / 1000);
+    const maxBytes = Math.floor((AUDIO_SAMPLE_RATE * 2 * PRE_ROLL_MS) / 1000);
     preRollChunksRef.current.push(chunk);
     preRollBytesRef.current += chunk.byteLength;
 
@@ -419,12 +418,12 @@ export function useRealtimeCapture(input: UseRealtimeCaptureInput): UseRealtimeC
     segmentChunksRef.current.push(chunk);
     segmentBytesRef.current += chunk.byteLength;
 
-    const maxBytes = TARGET_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS;
+    const maxBytes = AUDIO_SAMPLE_RATE * 2 * MAX_CLIP_SECONDS;
     while (segmentBytesRef.current > maxBytes && segmentChunksRef.current.length > 0) {
       const removed = segmentChunksRef.current.shift();
       segmentBytesRef.current -= removed?.byteLength ?? 0;
       if (segmentStartedMsRef.current !== 0) {
-        segmentStartedMsRef.current += Math.round(((removed?.byteLength ?? 0) / (TARGET_SAMPLE_RATE * 2)) * 1000);
+        segmentStartedMsRef.current += Math.round(((removed?.byteLength ?? 0) / (AUDIO_SAMPLE_RATE * 2)) * 1000);
       }
     }
   }

@@ -1,6 +1,12 @@
 import { useMemo } from "react";
 import type { AudioInputDevice, MicPermission } from "../lib/appTypes";
 import { MICROPHONE_TROUBLESHOOTING_STEPS, normalizeEndpointList } from "../lib/settingsUploadUtils";
+import type { LlmInferenceOptions, RealtimeSessionOptions, TranscriptionRequestOptions } from "../lib/apiSchemas";
+
+function parseNumberOrFallback(raw: string, fallback: number): number {
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
 
 type SettingsPageProps = {
   baseUrl: string;
@@ -27,6 +33,14 @@ type SettingsPageProps = {
   setLlmModel: (value: string) => void;
   llmApiKey: string;
   setLlmApiKey: (value: string) => void;
+  realtimeOptions: RealtimeSessionOptions;
+  setRealtimeOptions: (value: RealtimeSessionOptions) => void;
+  transcriptionOptions: TranscriptionRequestOptions;
+  setTranscriptionOptions: (value: TranscriptionRequestOptions) => void;
+  llmInferenceOptions: LlmInferenceOptions;
+  setLlmInferenceOptions: (value: LlmInferenceOptions) => void;
+  showSuppressedRecords: boolean;
+  setShowSuppressedRecords: (value: boolean) => void;
 
   endpoints: string[];
 };
@@ -56,6 +70,14 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
     setLlmModel,
     llmApiKey,
     setLlmApiKey,
+    realtimeOptions,
+    setRealtimeOptions,
+    transcriptionOptions,
+    setTranscriptionOptions,
+    llmInferenceOptions,
+    setLlmInferenceOptions,
+    showSuppressedRecords,
+    setShowSuppressedRecords,
     endpoints,
   } = props;
 
@@ -115,6 +137,65 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
             />
             <span>Always-on VAD clip saving</span>
           </label>
+
+          <label className="field">
+            <span>Turn Detection Type</span>
+            <select
+              value={realtimeOptions.turnDetectionType}
+              onChange={event => setRealtimeOptions({
+                ...realtimeOptions,
+                turnDetectionType: event.target.value as RealtimeSessionOptions["turnDetectionType"],
+              })}
+            >
+              <option value="server_vad">server_vad</option>
+              <option value="none">none</option>
+            </select>
+          </label>
+
+          <label className="field">
+            <span>VAD Threshold (0-1)</span>
+            <input
+              type="number"
+              min={0}
+              max={1}
+              step={0.01}
+              value={realtimeOptions.vadThreshold}
+              onChange={event => setRealtimeOptions({
+                ...realtimeOptions,
+                vadThreshold: parseNumberOrFallback(event.target.value, realtimeOptions.vadThreshold),
+              })}
+            />
+          </label>
+
+          <label className="field">
+            <span>Silence Duration (ms)</span>
+            <input
+              type="number"
+              min={200}
+              max={10000}
+              step={50}
+              value={realtimeOptions.silenceDurationMs}
+              onChange={event => setRealtimeOptions({
+                ...realtimeOptions,
+                silenceDurationMs: parseNumberOrFallback(event.target.value, realtimeOptions.silenceDurationMs),
+              })}
+            />
+          </label>
+
+          <label className="field">
+            <span>Prefix Padding (ms)</span>
+            <input
+              type="number"
+              min={0}
+              max={5000}
+              step={25}
+              value={realtimeOptions.prefixPaddingMs}
+              onChange={event => setRealtimeOptions({
+                ...realtimeOptions,
+                prefixPaddingMs: parseNumberOrFallback(event.target.value, realtimeOptions.prefixPaddingMs),
+              })}
+            />
+          </label>
         </div>
 
         <div className="row">
@@ -145,6 +226,65 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
       )}
 
       <section className="panel">
+        <h2>Transcription API Settings</h2>
+        <div className="grid2">
+          <label className="field">
+            <span>Language (optional)</span>
+            <input
+              value={transcriptionOptions.language}
+              onChange={event => setTranscriptionOptions({
+                ...transcriptionOptions,
+                language: event.target.value,
+              })}
+              placeholder="en"
+            />
+          </label>
+
+          <label className="field">
+            <span>Response Format</span>
+            <select
+              value={transcriptionOptions.responseFormat}
+              onChange={event => setTranscriptionOptions({
+                ...transcriptionOptions,
+                responseFormat: event.target.value as TranscriptionRequestOptions["responseFormat"],
+              })}
+            >
+              <option value="verbose_json">verbose_json</option>
+              <option value="json">json</option>
+              <option value="text">text</option>
+            </select>
+          </label>
+
+          <label className="field">
+            <span>Temperature (0-1)</span>
+            <input
+              type="number"
+              min={0}
+              max={1}
+              step={0.05}
+              value={transcriptionOptions.temperature}
+              onChange={event => setTranscriptionOptions({
+                ...transcriptionOptions,
+                temperature: parseNumberOrFallback(event.target.value, transcriptionOptions.temperature),
+              })}
+            />
+          </label>
+
+          <label className="field fullSpanField">
+            <span>Prompt (optional)</span>
+            <input
+              value={transcriptionOptions.prompt}
+              onChange={event => setTranscriptionOptions({
+                ...transcriptionOptions,
+                prompt: event.target.value,
+              })}
+              placeholder="Bias terms and style hints for transcription"
+            />
+          </label>
+        </div>
+      </section>
+
+      <section className="panel">
         <h2>LLM Metadata Settings</h2>
         <div className="grid2">
           <label className="checkRow">
@@ -170,6 +310,56 @@ export function SettingsPage(props: SettingsPageProps): JSX.Element {
               onChange={event => setLlmApiKey(event.target.value)}
               placeholder="Bearer token"
             />
+          </label>
+
+          <label className="field">
+            <span>Inference Response Format</span>
+            <select
+              value={llmInferenceOptions.responseFormat}
+              onChange={event => setLlmInferenceOptions({
+                ...llmInferenceOptions,
+                responseFormat: event.target.value as LlmInferenceOptions["responseFormat"],
+              })}
+            >
+              <option value="json_object">json_object</option>
+              <option value="text">text</option>
+            </select>
+          </label>
+
+          <label className="field">
+            <span>Inference Temperature (0-2)</span>
+            <input
+              type="number"
+              min={0}
+              max={2}
+              step={0.1}
+              value={llmInferenceOptions.temperature}
+              onChange={event => setLlmInferenceOptions({
+                ...llmInferenceOptions,
+                temperature: parseNumberOrFallback(event.target.value, llmInferenceOptions.temperature),
+              })}
+            />
+          </label>
+
+          <label className="field fullSpanField">
+            <span>Inference System Prompt</span>
+            <textarea
+              value={llmInferenceOptions.systemPrompt}
+              onChange={event => setLlmInferenceOptions({
+                ...llmInferenceOptions,
+                systemPrompt: event.target.value,
+              })}
+              rows={4}
+            />
+          </label>
+
+          <label className="checkRow fullSpanField">
+            <input
+              type="checkbox"
+              checked={showSuppressedRecords}
+              onChange={event => setShowSuppressedRecords(event.target.checked)}
+            />
+            <span>Show suppressed "silence/no audio" records in Home list</span>
           </label>
         </div>
       </section>

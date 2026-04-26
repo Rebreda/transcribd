@@ -1,14 +1,22 @@
 import { buildChatEndpoints, tryParseMetadata } from "./metadata";
 import type { ClipMetadata } from "./appTypes";
 import { extractTranscriptionResult } from "./transcriptionParsing";
+import {
+  parseLlmInferenceOptions,
+  parseTranscriptionRequestOptions,
+  type LlmInferenceOptions,
+  type TranscriptionRequestOptions,
+} from "./apiSchemas";
 
 export async function transcribePcmFallback(input: {
   pcmWavBytes: Uint8Array;
   model: string;
   apiKey: string;
   endpoints: string[];
+  options?: TranscriptionRequestOptions;
 }): Promise<string> {
-  const { pcmWavBytes, model, apiKey, endpoints } = input;
+  const { pcmWavBytes, model, apiKey, endpoints, options } = input;
+  const resolvedOptions = parseTranscriptionRequestOptions(options ?? {});
   const wavBlob = new Blob([new Uint8Array(pcmWavBytes)], { type: "audio/wav" });
 
   const headers = new Headers();
@@ -20,6 +28,14 @@ export async function transcribePcmFallback(input: {
     const formData = new FormData();
     formData.append("model", model.trim());
     formData.append("file", wavBlob, "realtime-fallback.wav");
+    if (resolvedOptions.language.length > 0) {
+      formData.append("language", resolvedOptions.language);
+    }
+    if (resolvedOptions.prompt.length > 0) {
+      formData.append("prompt", resolvedOptions.prompt);
+    }
+    formData.append("response_format", resolvedOptions.responseFormat);
+    formData.append("temperature", String(resolvedOptions.temperature));
 
     try {
       const response = await fetch(endpoint, {
@@ -50,17 +66,18 @@ export async function inferClipMetadataWithLlm(input: {
   llmModel: string;
   llmBaseUrl: string;
   llmApiKey: string;
+  llmOptions?: LlmInferenceOptions;
 }): Promise<ClipMetadata> {
-  const { transcript, titleFallback, llmModel, llmBaseUrl, llmApiKey } = input;
+  const { transcript, titleFallback, llmModel, llmBaseUrl, llmApiKey, llmOptions } = input;
+  const resolvedLlmOptions = parseLlmInferenceOptions(llmOptions ?? {});
   const requestBody = {
     model: llmModel.trim() || "gpt-4o-mini",
-    temperature: 0.2,
-    response_format: { type: "json_object" },
+    temperature: resolvedLlmOptions.temperature,
+    response_format: { type: resolvedLlmOptions.responseFormat },
     messages: [
       {
         role: "system",
-        content:
-          "You classify transcript clips. Return strict JSON with keys: title (string), notes (string), categories (array of 1-4 short lowercase tags).",
+        content: resolvedLlmOptions.systemPrompt,
       },
       {
         role: "user",
