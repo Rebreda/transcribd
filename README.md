@@ -1,5 +1,7 @@
 # Transcribd
 
+![Transcribd screenshot](./Transcribd-screenshot.png)
+
 Transcribd is an always-on, privacy-preserving audio platform that transcribes and enriches your discourse. If you've ever wished you could have rememebered what you said in a past conversation, consider this the tool for you. 
 
 Using VAD and LLMs, transcribd is able to very efficently capture, record and save audio data in real time without blowing up your CPU or storage. 

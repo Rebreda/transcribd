@@ -18,7 +18,8 @@ import {
   getMicrophonePermissionText,
 } from "./lib/microphone";
 import { loadManifestSafe, persistClipSafe } from "./lib/manifestStore";
-import { buildObjectId } from "./lib/objectHelpers";
+import { buildLocalFallbackMetadata, buildObjectId } from "./lib/objectHelpers";
+import { SerialTaskQueue } from "./lib/serialTaskQueue";
 import {
   buildTranscriptionEndpoints,
   extractTranscriptionResult,
@@ -65,6 +66,7 @@ function AppContainer(): JSX.Element {
     llmApiKey,
     setLlmApiKey,
   } = useAppConfig();
+  
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [status, setStatus] = useState("Idle");
@@ -79,7 +81,6 @@ function AppContainer(): JSX.Element {
   const [clipSort, setClipSort] = useState<ClipSort>("newest");
   const [clipCategoryFilter, setClipCategoryFilter] = useState("all");
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
-  const [uploadedArtifacts, setUploadedArtifacts] = useState<Artifact[]>([]);
   const [audioUrls, setAudioUrls] = useState<Map<string, string>>(() => new Map());
   const [micPermission, setMicPermission] = useState<MicPermission>("unknown");
   const [realtimeMetadataByRecordId, setRealtimeMetadataByRecordId] = useState<Record<string, {
@@ -89,6 +90,7 @@ function AppContainer(): JSX.Element {
     inferenceState: "pending" | "ready" | "error";
   }>>({});
   const realtimeInferenceInFlightRef = useState(() => new Set<string>())[0];
+  const llmQueue = useState(() => new SerialTaskQueue())[0];
 
   const endpoints = useMemo(() => buildTranscriptionEndpoints(baseUrl), [baseUrl]);
   const canSubmit = selectedFiles.length > 0 && model.trim().length > 0;
@@ -198,8 +200,8 @@ function AppContainer(): JSX.Element {
   }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId]);
 
   const artifacts = useMemo(
-    () => mergeArtifacts([...persistedArtifacts, ...realtimeArtifacts, ...uploadedArtifacts]),
-    [persistedArtifacts, realtimeArtifacts, uploadedArtifacts],
+    () => mergeArtifacts([...persistedArtifacts, ...realtimeArtifacts]),
+    [persistedArtifacts, realtimeArtifacts],
   );
 
   const filteredRealtimeRecords = useMemo(
@@ -245,14 +247,6 @@ function AppContainer(): JSX.Element {
     }
   }, [filteredRealtimeRecords, selectedArtifactId]);
 
-  useEffect(() => {
-    setUploadedArtifacts(loadUploadedArtifacts());
-  }, []);
-
-  useEffect(() => {
-    saveUploadedArtifacts(uploadedArtifacts);
-  }, [uploadedArtifacts]);
-
   async function handleClipCaptured(input: {
     pcm: Uint8Array;
     transcript: string;
@@ -267,11 +261,7 @@ function AppContainer(): JSX.Element {
 
     const metadata = llmEnabled
       ? await enrichMetadataWithLlm({ transcript, titleFallback: buildFallbackTitle(transcript) })
-      : {
-          title: buildFallbackTitle(transcript),
-          notes: "Auto-saved from always-on listener.",
-          categories: ["capture"],
-        };
+      : buildLocalFallbackMetadata(transcript, endedAtMs);
 
     const wav = pcm16ToWav(pcm, TARGET_SAMPLE_RATE, 1);
     const payload = {
@@ -416,7 +406,8 @@ function AppContainer(): JSX.Element {
       headers.set("Authorization", `Bearer ${apiKey.trim()}`);
     }
 
-    const newArtifacts: Artifact[] = [];
+    let firstClipArtifactId: string | null = null;
+    let successCount = 0;
     let lastResult: TranscriptionResult | null = null;
     const allErrors: string[] = [];
 
@@ -451,28 +442,34 @@ function AppContainer(): JSX.Element {
           const fallbackTitle = buildFallbackTitle(transcript);
           const metadata = llmEnabled
             ? await enrichMetadataWithLlm({ transcript, titleFallback: fallbackTitle })
-            : { title: fallbackTitle, notes: `Transcribed from ${file.name}`, categories: ["upload"] as string[] };
+            : buildLocalFallbackMetadata(transcript, Date.now());
 
           const now = Date.now();
-          const artifact: Artifact = {
-            id: `upload-${now}-${file.name}`,
-            source: "upload",
-            text: transcript,
-            title: metadata.title,
-            notes: metadata.notes,
-            categories: metadata.categories,
-            createdAtMs: now,
-            updatedAtMs: now,
-            inferenceState: "ready",
-            hasAudioFile: false,
-            clipId: null,
-            fileName: file.name,
-            itemId: "",
-            startedAtMs: now,
-            endedAtMs: now,
-            durationMs: 0,
-          };
-          newArtifacts.push(artifact);
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const audioBase64 = bytesToBase64(new Uint8Array(arrayBuffer));
+            const { clip } = await persistClipSafe({
+              objectId: buildObjectId(now),
+              audioBase64,
+              transcript,
+              title: metadata.title,
+              notes: metadata.notes,
+              categories: metadata.categories,
+              startedAtMs: now,
+              endedAtMs: now,
+              sampleRate: 44100,
+              channels: 1,
+            });
+            setManifest(previous => ({ ...previous, updatedAtMs: Date.now(), clips: [...previous.clips, clip] }));
+            if (firstClipArtifactId === null) {
+              firstClipArtifactId = `clip-${clip.id}`;
+            }
+          } catch (persistError) {
+            const detail = persistError instanceof Error ? persistError.message : String(persistError);
+            setManifestStatus(`Failed to save upload: ${detail}`);
+          }
+
+          successCount += 1;
           succeeded = true;
           break;
         } catch (requestError) {
@@ -486,11 +483,12 @@ function AppContainer(): JSX.Element {
       }
     }
 
-    if (newArtifacts.length > 0) {
-      setUploadedArtifacts(previous => [...newArtifacts, ...previous].slice(0, 200));
-      setSelectedArtifactId(newArtifacts[0]!.id);
+    if (successCount > 0) {
+      if (firstClipArtifactId !== null) {
+        setSelectedArtifactId(firstClipArtifactId);
+      }
       setActivePage("home");
-      setStatus(`Done — ${newArtifacts.length} file${newArtifacts.length > 1 ? "s" : ""} transcribed`);
+      setStatus(`Done — ${successCount} file${successCount > 1 ? "s" : ""} transcribed`);
     } else {
       setStatus("Failed");
       setError(allErrors.join(" | "));
@@ -572,29 +570,22 @@ function AppContainer(): JSX.Element {
       }
 
       realtimeInferenceInFlightRef.add(record.id);
-      const fallback = {
-        title: buildFallbackTitle(record.text),
-        notes: "Inferring metadata for live object...",
-        categories: ["capture"],
-      };
+      const immediateMetadata = buildLocalFallbackMetadata(record.text, record.updatedAtMs);
 
       setRealtimeMetadataByRecordId(previous => ({
         ...previous,
         [record.id]: {
-          ...fallback,
-          inferenceState: "pending",
+          ...immediateMetadata,
+          notes: llmEnabled ? "Inferring metadata for live object..." : immediateMetadata.notes,
+          inferenceState: "pending" as const,
         },
       }));
 
-      void (async () => {
+      llmQueue.enqueue(async () => {
         try {
           const inferred = llmEnabled
-            ? await enrichMetadataWithLlm({ transcript: record.text, titleFallback: fallback.title })
-            : {
-                title: fallback.title,
-                notes: "Live object captured without file attachment.",
-                categories: ["capture"],
-              };
+            ? await enrichMetadataWithLlm({ transcript: record.text, titleFallback: immediateMetadata.title })
+            : immediateMetadata;
 
           setRealtimeMetadataByRecordId(previous => ({
             ...previous,
@@ -607,7 +598,7 @@ function AppContainer(): JSX.Element {
           setRealtimeMetadataByRecordId(previous => ({
             ...previous,
             [record.id]: {
-              ...fallback,
+              ...immediateMetadata,
               notes: "Metadata inference failed for this live object.",
               inferenceState: "error",
             },
@@ -615,9 +606,40 @@ function AppContainer(): JSX.Element {
         } finally {
           realtimeInferenceInFlightRef.delete(record.id);
         }
-      })();
+      });
     }
   }, [realtime.realtimeRecords, clipByTranscript, realtimeMetadataByRecordId, llmEnabled]);
+
+  function handleExportJson(): void {
+    const exportData = artifacts.map(artifact => ({
+      id: artifact.id,
+      source: artifact.source,
+      transcript: artifact.text,
+      title: artifact.title,
+      notes: artifact.notes,
+      categories: artifact.categories,
+      createdAtMs: artifact.createdAtMs,
+      updatedAtMs: artifact.updatedAtMs,
+      hasAudioFile: artifact.hasAudioFile,
+      fileName: artifact.fileName,
+      startedAtMs: artifact.startedAtMs,
+      endedAtMs: artifact.endedAtMs,
+      durationMs: artifact.durationMs,
+    }));
+
+    const json = JSON.stringify(
+      { exportedAtMs: Date.now(), count: exportData.length, clips: exportData },
+      null,
+      2,
+    );
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `vocalis-export-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <main className="appShell">
@@ -642,6 +664,13 @@ function AppContainer(): JSX.Element {
           onClick={() => setActivePage("settings")}
         >
           Settings
+        </button>
+        <button
+          className="navButton"
+          onClick={handleExportJson}
+          disabled={artifacts.length === 0}
+        >
+          Export JSON
         </button>
       </aside>
 
@@ -799,41 +828,3 @@ function mergeArtifacts(items: Artifact[]): Artifact[] {
   return [...byKey.values()].sort((a, b) => b.updatedAtMs - a.updatedAtMs);
 }
 
-function loadUploadedArtifacts(): Artifact[] {
-  try {
-    const raw = localStorage.getItem("vocalis.uploadArtifacts.v1");
-    if (!raw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.filter((item): item is Artifact => {
-      if (typeof item !== "object" || item === null) {
-        return false;
-      }
-
-      const record = item as Record<string, unknown>;
-      return (
-        typeof record.id === "string"
-        && typeof record.text === "string"
-        && typeof record.title === "string"
-        && typeof record.notes === "string"
-        && Array.isArray(record.categories)
-      );
-    });
-  } catch {
-    return [];
-  }
-}
-
-function saveUploadedArtifacts(items: Artifact[]): void {
-  try {
-    localStorage.setItem("vocalis.uploadArtifacts.v1", JSON.stringify(items));
-  } catch {
-    // Ignore browser storage errors.
-  }
-}
